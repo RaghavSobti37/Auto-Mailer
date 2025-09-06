@@ -64,6 +64,7 @@ def confirm_dataset(csv_path):
     """
     Loads the dataset, filters it to include only non-promo contacts,
     and asks the user for confirmation before proceeding.
+    Attaches the full dataframe to the filtered dataframe for later use.
     """
     try:
         print(f"\nLoading dataset from: {csv_path}")
@@ -90,6 +91,9 @@ def confirm_dataset(csv_path):
     if confirm != "y":
         print("Aborted by user.")
         exit(0)
+    
+    # Attach the full dataframe to the filtered one for easy access later
+    df.attrs['full_df'] = full_df
     return df
 
 def send_emails(params, template_func, df_to_send, full_df):
@@ -127,16 +131,45 @@ def send_emails(params, template_func, df_to_send, full_df):
     server.quit()
     return full_df
 
+def update_db_from_log(df, log_path):
+    """
+    Retroactively updates the DataFrame based on the email log.
+    This ensures any previously sent emails are marked as promo=True.
+    """
+    try:
+        if not os.path.exists(log_path):
+            print(f"\nLog file '{log_path}' not found. Skipping log-based update.")
+            return df
+
+        log_df = pd.read_csv(log_path)
+        # Get unique emails that were successfully sent
+        sent_emails = log_df[log_df['Status'] == 'SENT']['EmailID'].unique()
+
+        # Update the 'havells promo' column for emails found in the log
+        initial_true_count = df['havells promo'].sum()
+        df.loc[df['email'].isin(sent_emails), 'havells promo'] = True
+        final_true_count = df['havells promo'].sum()
+
+        print(f"\nUpdated {final_true_count - initial_true_count} additional records based on '{log_path}'.")
+        return df
+    except Exception as e:
+        print(f"Could not update from log file due to an error: {e}")
+        return df
+
 if __name__ == '__main__':
     params, template_func = choose_params()
-    # Load the full dataset first
-    try:
-        main_df = pd.read_csv(params.CSV_PATH)
-    except FileNotFoundError:
-        print(f"ERROR: The file '{params.CSV_PATH}' was not found. Exiting.")
-        exit(1)
+    
     df_to_send = confirm_dataset(params.CSV_PATH)
-    updated_df = send_emails(params, template_func, df_to_send, main_df)
-    updated_df.to_csv(params.CSV_PATH, index=False)
+    # The confirm_dataset function now returns the full dataframe and the filtered one
+    full_df = df_to_send.attrs['full_df']
+    
+    updated_df = send_emails(params, template_func, df_to_send, full_df)
+    
+    # Now, run the update from the log file as a final check
+    log_file_path = os.path.join('csv', 'email_log.csv')
+    final_df = update_db_from_log(updated_df, log_file_path)
+    
+    # Save the final, fully updated dataframe
+    final_df.to_csv(params.CSV_PATH, index=False)
     print(f"\nSuccessfully updated '{params.CSV_PATH}' with the new email statuses.")
     print("All emails processed.")

@@ -11,7 +11,7 @@ def update_master_db_from_log():
     """
     # Define file paths
     log_file_path = os.path.join('csv', 'email_log.csv')
-    master_db_path = os.path.join('csv', 'master_db.csv')
+    master_db_path = os.path.join('csv', 'master_db_cleaned.csv')
     updated_db_path = os.path.join('csv', 'master_db_updated.csv')
 
     try:
@@ -36,9 +36,6 @@ def update_master_db_from_log():
         # 5. Save the updated DataFrame to a new file
         master_df.to_csv(updated_db_path, index=False)
         print(f"\nSuccessfully updated the database. The new file is saved at:\n{os.path.abspath(updated_db_path)}")
-
-        # 6. Print 'meher' as requested
-        print(f"\nmeher")
 
     except FileNotFoundError as e:
         print(f"ERROR: Could not find a required file. Please check the path.\n{e}")
