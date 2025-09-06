@@ -1,0 +1,213 @@
+Delivered-To: rohitsobti1@gmail.com
+Received: by 2002:a05:6504:2155:b0:2b0:7bd0:e89f with SMTP id n21csp1429835lts;
+        Fri, 20 Jun 2025 23:17:29 -0700 (PDT)
+X-Received: by 2002:a17:903:17c5:b0:235:f091:11e5 with SMTP id d9443c01a7336-237dafd1a49mr81933515ad.10.1750486649228;
+        Fri, 20 Jun 2025 23:17:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1750486649; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Okl92x6h2i9/mcV6zER1vgjvw+7QlfvHUKontdvb/BYfKoK6sVvktc75YQ2it1wJjT
+         yrL/I5v5yW3NLSi/bJ8EM9vFPVaHgBuCI+BK4rGGjZAxVNzSLQOtc6o6/NVqIN9XdIqV
+         lvJiLuoosw2UCBG48tlM19UVAvxbSpKveq4kA04+CETAw67kftinh4IiK28QrF1RUVqB
+         9IoBfdvbAgYFcTXvLYaJWtGAEfyB75T14B9SO/XfcNMmqugGtEDVnVue1xKZxHBb5cLu
+         A+N/U1Ebn/CAoMaPCVRiWzOBPKeYCSpoJ9RzjoAxkEDcNzzyojYnJcOPGZrrNQkziSSp
+         T69Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=GEKOHPt+3p1gC+Wam2wYbUj7hp9/H3eph6hGMpHEJGU=;
+        fh=bHN8VH3pdHHtcTUqiJ1cO4wMrRqAkoa2ybG0hP8Hx9w=;
+        b=hBuYPRJ/YgqaFDpEv7rJxFMEbBaE+3G2uzvND6ac2b7W/i7TzXW+1PliOCoI0xK8Ki
+         vDlIhCsvDEj6Igg4Jg6ifcA0srvFeYxNz9xarmCh6p4UdzbIuEU8ZpW83KuUNQy5utpu
+         Lj4PPn0UeyNmamCZcHQ3+q8WL1+GImp3oiptjy8zkJFCh0RkhgNmASa1t7bmMQGLu1cC
+         jGsCXhEftI01I1DAIabbD3ChndQigR11CBtut9SDaa4K2vnNGj+SOOP4YyuvgZ+N7So8
+         Vw4lHpXJIpj8USkzLeK177hLsUrGe0OZmlmrIP7lwZNpiyTCjlodNuLFqYFjKVhADeGY
+         wJuw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=ui022jst;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+Return-Path: <rohit@artistefirst.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id d9443c01a7336-237cbb200f1sor39797685ad.3.2025.06.20.23.17.29
+        for <rohitsobti1@gmail.com>
+        (Google Transport Security);
+        Fri, 20 Jun 2025 23:17:29 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=ui022jst;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=artistefirst-com.20230601.gappssmtp.com; s=20230601; t=1750486648; x=1751091448; dara=google.com;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=GEKOHPt+3p1gC+Wam2wYbUj7hp9/H3eph6hGMpHEJGU=;
+        b=ui022jstmZeCj3ICCtu7Squj5V3BLfLydeDtLeMg4sfd1BT7X47ht1BDbObPBVuv6t
+         dnOwaEgCIbwVTaZwTXCy1kps63H0xE8DJO7DumZUQbEVOhZSWDu0cF/xK/CFLI5EW0pj
+         Up0UYMCOCIwJSZElRtxdgggDIESEmbyvDuFZ6FksblI2gjP4HXHey149geHSsDrK9FrC
+         Feo1ZaA37MrKeI6ODRcZmlFPtgSLukXgHhPRNUkS4JXo8w7YKIgti44X/ZhmQk/ArwTJ
+         pt318Pg1GX/3ikVFZ1gQ13E5M0z9R4EeoUbrG91q/yIEGUFDUEOc7sgzvSCUwFZ1GtjE
+         p3fA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750486648; x=1751091448;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GEKOHPt+3p1gC+Wam2wYbUj7hp9/H3eph6hGMpHEJGU=;
+        b=TMI2TumvRMnQToHmCo13EZL5gV26Sy0ZfJAt/0u4F6ZAY3aMQ7kyfhcH40sLJGlM9c
+         VI5f92YZOcXhrwpzpgItn3R4aHFFPKIl+hrXwgW4WevSRBgM2+EQI2k2vrmamPkF/7sB
+         J/VGXMC0fuJG/OZjyTc0+6oO6j/g8ktMCpups8p932oKR4WOjYJmAt6+VgXoJ+2LvECR
+         rQ2rTDgyW3m0N55eMynpaIcP4MuUy16EaBdDYnEClliFPwFzeKl/p4CCXV38Oms6N0UE
+         OFC1eSB54ozUCz+wm2DhjukufHT3xX9+9Kf/pCsGbp2RHzsU1NGjW27VJTun0yVYOJMs
+         jtLg==
+X-Gm-Message-State: AOJu0YywJpHxq0FBZXZZ0duYnHEPtkJevBOtDHiTsAdOe7GvLllE2aYp
+	kbt8PM9s8EE+38uDBI8AxkkRzPYmCEBidPLkGTyez3ZlUwBLUbyb3TqLloTsuekJfnBdtEwF+I1
+	zwbkqsDSyQH91WvTVM7Ad6OYHIdwuSXuhhCSiS+c+DFJg4fjRInCV8wg=
+X-Gm-Gg: ASbGncteZP++h3msCCOqSXBfw4ib9RStA0N4ZYfuarPmphBHHq5r7RCekPAsdinKhf/
+	324ExZ1A43450uc9XhhzK6y3ITKgSvlEldfpvzmlluoIsSE2suaikgSun4S/dI5xhx+LNJ/5pn5
+	3LFaPSGBgSA4ytl/vQdm2xJSmcyQYK61n6qY4ye+TD6zepWg==
+X-Google-Smtp-Source: AGHT+IE66FGpQlLx3VbhooA9m07rkgqm1h/2IFkNhn12I+E5yuKiI8wlzhfjjO0vKmRAXK4bAb+SqaCeuT01V1nXPGw=
+X-Received: by 2002:a17:90b:5450:b0:314:2cd2:595d with SMTP id
+ 98e67ed59e1d1-3159f48149emr8243912a91.8.1750486647947; Fri, 20 Jun 2025
+ 23:17:27 -0700 (PDT)
+MIME-Version: 1.0
+References: <85c5bf8e.AU0AAG6Yr8sAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoOTzk@mailjet.com>
+In-Reply-To: <85c5bf8e.AU0AAG6Yr8sAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoOTzk@mailjet.com>
+From: Rohit Sobti <rohit@artistefirst.com>
+Date: Sat, 21 Jun 2025 11:47:16 +0530
+X-Gm-Features: AX0GCFvogaX2qq6SE8CjzWN-zRHybSvpGHzT3F_B0SRVHB-XBD1lyLR9UITxcko
+Message-ID: <CABFMbjTSR2AhtPwqv6wdjd34tDy+Hdx1rD14nDuGcRZp5A9LfA@mail.gmail.com>
+Subject: Fwd: Artiste First - New form submission from Contact Us
+To: rohit sobti <rohitsobti1@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000d5df9906380eee3f"
+
+--000000000000d5df9906380eee3f
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+---------- Forwarded message ---------
+From: Artiste First Form from Webflow forms <no-reply-forms@webflow.com>
+Date: Fri, 30 May 2025 at 10:36
+Subject: Artiste First - New form submission from Contact Us
+To: <rohit@tmmusic.in>
+
+
+You just got a form submission!
+
+*Form*
+Contact Us
+
+*Site*
+Artiste First
+
+*Submitted content*
+0: Submit
+Name: Matthew Liu
+Email: matthew.liu@chinaregistry.net.cn
+Phone: +86-216191 8696
+Link-to-your-work: (It's very urgent, therefore we kindly ask you to
+forward this message to your CEO. If you believe this has been sent to you
+in error, please ignore it. Thanks) Dear CEO, This email is from China
+domain name registration center, which mainly deal with the domain name
+registration in China. On May 27, 2025, we received an application from
+Jiahai Holdings Ltd requested the "tmmusic" as their internet keyword and
+Chinese (CN) domain names (tmmusic.cn, tmmusic.com.cn, tmmusic.net.cn,
+tmmusic.org.cn). But after checking it, we find this name conflict with
+your website name or company name. In order to deal with this matter
+better, it's necessary to send this message to your company and confirm
+whether this company is your distributor or business partner in China? Best
+regards Matthew Liu General Manager China Registry Tel: +86-2161918696 |
+Fax: +86-2161918697 | Mob: +86-13816428671 12F Kaike Building, No. 1801
+Hongmei Road, Shanghai 200233, China
+
+*Number of submissions received*
+100/unlimited this month
+May 1st =E2=80=93 May 31st
+
+*Need more submissions?*
+Please contact your website administrator.
+
+If you believe this is a spam submission, please forward to
+form-spam-reports@support.webflow.com
+
+Unsubscribe
+<https://webflow.com/dashboard/unsubscribeForm?t=3Df988fed5c2ff942a64c59681=
+b183cee1bd48ac635ad010de2c74c10775921f4c&s=3D6432699ccbc3b75def5d2905&sn=3D=
+Artiste%20First&e=3Drohit%40tmmusic.in&d=3D1748581603352>
+from notifications for this site.
+
+--000000000000d5df9906380eee3f
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><br><div class=3D"gmail_quote gmail_quote_container"><=
+div dir=3D"ltr" class=3D"gmail_attr">---------- Forwarded message ---------=
+<br>From: <strong class=3D"gmail_sendername" dir=3D"auto">Artiste First For=
+m from Webflow forms</strong> <span dir=3D"auto">&lt;<a href=3D"mailto:no-r=
+eply-forms@webflow.com">no-reply-forms@webflow.com</a>&gt;</span><br>Date: =
+Fri, 30 May 2025 at 10:36<br>Subject: Artiste First - New form submission f=
+rom Contact Us<br>To:  &lt;<a href=3D"mailto:rohit@tmmusic.in">rohit@tmmusi=
+c.in</a>&gt;<br></div><br><br>You just got a form submission!
+<br><br>
+<strong>Form</strong>
+<br>
+Contact Us
+<br><br>
+<strong>Site</strong>
+<br>
+Artiste First
+<br><br>
+<strong>Submitted content</strong>
+<br>0: Submit
+<br>Name: Matthew Liu
+<br>Email: <a href=3D"mailto:matthew.liu@chinaregistry.net.cn" target=3D"_b=
+lank">matthew.liu@chinaregistry.net.cn</a>
+<br>Phone: +86-216191 8696
+<br>Link-to-your-work: (It&#39;s very urgent, therefore we kindly ask you t=
+o forward this message to your CEO. If you believe this has been sent to yo=
+u in error, please ignore it. Thanks)
+
+Dear CEO,
+
+This email is from China domain name registration center, which mainly deal=
+ with the domain name registration in China. On May 27, 2025, we received a=
+n application from Jiahai Holdings Ltd requested the &quot;tmmusic&quot; as=
+ their internet keyword and Chinese (CN) domain names (<a href=3D"http://tm=
+music.cn" target=3D"_blank">tmmusic.cn</a>, <a href=3D"http://tmmusic.com.c=
+n" target=3D"_blank">tmmusic.com.cn</a>, <a href=3D"http://tmmusic.net.cn" =
+target=3D"_blank">tmmusic.net.cn</a>, <a href=3D"http://tmmusic.org.cn" tar=
+get=3D"_blank">tmmusic.org.cn</a>). But after checking it, we find this nam=
+e conflict with your website name or company name. In order to deal with th=
+is matter better, it&#39;s necessary to send this message to your company a=
+nd confirm whether this company is your distributor or business partner in =
+China?
+
+
+Best regards
+
+Matthew Liu
+General Manager
+China Registry
+Tel: +86-2161918696 | Fax: +86-2161918697 | Mob: +86-13816428671
+12F Kaike Building, No. 1801 Hongmei Road, Shanghai 200233, China
+<br><br>
+<strong>Number of submissions received</strong>
+<br>100/unlimited this month
+<br>
+May 1st =E2=80=93 May 31st<br><br>
+<strong>Need more submissions?</strong>
+<br>Please contact your website administrator.<br><br>
+If you believe this is a spam submission, please forward to <a href=3D"mail=
+to:form-spam-reports@support.webflow.com" target=3D"_blank">form-spam-repor=
+ts@support.webflow.com</a><br><br><a href=3D"https://webflow.com/dashboard/=
+unsubscribeForm?t=3Df988fed5c2ff942a64c59681b183cee1bd48ac635ad010de2c74c10=
+775921f4c&amp;s=3D6432699ccbc3b75def5d2905&amp;sn=3DArtiste%20First&amp;e=
+=3Drohit%40tmmusic.in&amp;d=3D1748581603352" target=3D"_blank">Unsubscribe<=
+/a> from notifications for this site.
+
+<img src=3D"https://x9x26.mjt.lu/oo/AU0AAG6Yr8sAAAAAAAAAARE3D40AAAAAjncAAAA=
+AABhTEABoOTzkNhn26BtfSAucTjcKmYPVlwAA7QM/ba213020/e.gif" height=3D"1" width=
+=3D"1" alt=3D"" border=3D"0" style=3D"height:1px;width:1px;border:0">
+</div></div>
+
+--000000000000d5df9906380eee3f--

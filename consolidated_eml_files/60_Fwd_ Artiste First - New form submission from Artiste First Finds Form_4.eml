@@ -1,0 +1,193 @@
+Delivered-To: rohitsobti1@gmail.com
+Received: by 2002:a05:6504:2155:b0:2b0:7bd0:e89f with SMTP id n21csp1429910lts;
+        Fri, 20 Jun 2025 23:17:46 -0700 (PDT)
+X-Received: by 2002:a17:90b:2dd0:b0:311:9c1f:8522 with SMTP id 98e67ed59e1d1-3159d6466bfmr8983802a91.10.1750486666220;
+        Fri, 20 Jun 2025 23:17:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1750486666; cv=none;
+        d=google.com; s=arc-20240605;
+        b=PYsw9U1mhxsciGc2pd38D4T5awfZMuJwh74YYgihp6A6BwFIdu0L/gjsz6rhLowHSx
+         7+5aANwXTDSf56P8DHEe0CNSbQYGOiHThyLSM42SQBq50fuUSlLBJ8cYaXxIdpQ5JpBn
+         Qr0vkF8jL3z7xYNrQggCMheN0sEUjiaxdeUx/GwrTUCU7ShTVoKvmDpHLN/AtkRKZ5w2
+         BsaxCiKgcl14K00ooYnMcmdwFIShkMu1aFElyJQbNYZv+fQyrjESsZBBF8wcEEypBhKB
+         Ul+QE2oMBJ2izoD32sZ0CFCDFeCC/V8rSc1pmzNty4kozCyn73cCXqux7ruAKJ8EIIR4
+         Gyhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=1v3XVZBsPuxurpl9pDF7I5k2Ua1LX/LdGi80bzCVFIM=;
+        fh=bHN8VH3pdHHtcTUqiJ1cO4wMrRqAkoa2ybG0hP8Hx9w=;
+        b=KyO/gLP6BB+SVFAc/IuEplPe2VDsYxjp6MixbcRc8d+5vtDfMEI6Pn095mieToomq1
+         IzrNcWUvRRA8Sokw4t4yJvfCrKND4IjhicaqNLx5XKeFHxB6ht5GmrYPS8/IaLAB3ciG
+         jIcwZoOhMvKCrF7bOtNvax3qQCgq1yI1c9u76RNwcw6i3+EBWHlSa9spa8+HRQWx2F6N
+         bxDq5akm43U/ByO2//Ruv+sReiw5cfUa8ZBBQk8hpmdzq6+51Dx8aBzYXiY6DXVLGmtC
+         gVUi1iqMsTqcFyOOvaigvcnm+jtnL3qtQ5Q3S00bWS9qxROOYbKgSWuXSoVX/VNOlM5q
+         JN1A==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=vw7BZPXu;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+Return-Path: <rohit@artistefirst.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 98e67ed59e1d1-3159e07c01fsor2170761a91.7.2025.06.20.23.17.46
+        for <rohitsobti1@gmail.com>
+        (Google Transport Security);
+        Fri, 20 Jun 2025 23:17:46 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=vw7BZPXu;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=artistefirst-com.20230601.gappssmtp.com; s=20230601; t=1750486665; x=1751091465; dara=google.com;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=1v3XVZBsPuxurpl9pDF7I5k2Ua1LX/LdGi80bzCVFIM=;
+        b=vw7BZPXuCQMjLN3UnzJ33eYFhpjUejsXWw+bRhzZzK+dSyGKodNJuAWmd1gQNLzEGf
+         fG4KHpj7fnbN4XXEjwTN3EK7FX8JuFwF81xmQYf3O2gHowPtygYlxIuD7Vi05CYqmwti
+         8I4Y5Hk7TS2iiIWjuVFGHsUbxluNQnO5AOcbQBovxr7wC4XDEhToYRdnH2rOY/i6djcC
+         wlfqH8l5+pB2Aa2HdDHOZ3rhpkoS3m1Xd2m1B6WXCnoyVrv6zLL9XKjfY2Z6dlRW7yF9
+         lcL39f4AZYGfTavME1YrEVzfeRKm9UeOIl0plq6eB2eVlX9qFNeWmVguIjGiVSOZNUwI
+         MS7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750486665; x=1751091465;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1v3XVZBsPuxurpl9pDF7I5k2Ua1LX/LdGi80bzCVFIM=;
+        b=izKBRVMSl4n7vCpsTNlaEEbfq89o9Gog+z3dksi3vHiKCuhSQz0RSFDcLuW0zPvRAO
+         IN7UtH2Kk9uDljvrQ5nqoOrKYtPk0jIFEphvvzxSTctSAefTCxwiGe92LIYUUzrvWVPx
+         /n71Iqi0RfCdc2m6noKWVlBwbe8vVu92JowDDqQYsnzdEoE2coaehlIhANa49gYvI2Yc
+         FEGH57bA26WmHG9PdYzSZe5GBDPuWN9mcVIvdqx9ocVG2a9lnSwReGUXm34IgBSVFoYF
+         /AUp1dHW3Wyiq8anARWLrGXbUiCCXKvRDdiHLINzcNYUZYWnMBLYbN7mCatTebaHWpji
+         2RFw==
+X-Gm-Message-State: AOJu0YzB3kJEpmZ6KrYp++hDZsAUfTFM2G2F/CK/yVqHplvEU1m3VDik
+	NlnV+aegp33aZJQt27ISdrV76pZaGKZPX9T5Fqcr8F1b1ZtF21jePwNCKK4DqvkUBGYFc3vS9LZ
+	o9XizDOwNAFmXvpF8xI/S+5T0UA29HEZ+BJv5TgmcMRNB36RMA9p3GSs=
+X-Gm-Gg: ASbGncuDuhS5YZQRYDaj/RJNM8hUrur2YIxAqAarvW+NV7BvRK1JidK7DUL267UXcWV
+	kN+z7bTm1r8N+vjQ1vq6Ri2warBAyxhe2CcSCsyP4f2qcNIBa48hHaa5j/JpRECmr21X71+DcLq
+	z/5JoKASM/ZMCCJ3XQ23eZCg8ByfuLyBNC5gcFjz3+GEk/EQ==
+X-Google-Smtp-Source: AGHT+IGpMbwHD5SXSJt6a0hidNq6Qi7C62mk+MOOQh+AA+AauZb0uTUvjVolaMgJYFWayAgVY1D0okZts0nir9fkR+8=
+X-Received: by 2002:a17:90b:38c6:b0:313:27e5:7ff1 with SMTP id
+ 98e67ed59e1d1-3159d628b64mr7783438a91.1.1750486665254; Fri, 20 Jun 2025
+ 23:17:45 -0700 (PDT)
+MIME-Version: 1.0
+References: <37aeda64.AW4AAHBLk2oAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoPUHj@mailjet.com>
+In-Reply-To: <37aeda64.AW4AAHBLk2oAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoPUHj@mailjet.com>
+From: Rohit Sobti <rohit@artistefirst.com>
+Date: Sat, 21 Jun 2025 11:47:33 +0530
+X-Gm-Features: AX0GCFv7EIRbc4f5MzJxsnqAJe05Sw2FMMATLIuKI0kBampWrxLiDc-ng0Fj5DI
+Message-ID: <CABFMbjRPZQSe6_mDmsZOXUCUXdxacKVBhS35Zb0q9eebgct+jg@mail.gmail.com>
+Subject: Fwd: Artiste First - New form submission from Artiste First Finds Form
+To: rohit sobti <rohitsobti1@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000dded8806380eef8b"
+
+--000000000000dded8806380eef8b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+---------- Forwarded message ---------
+From: Artiste First Form from Webflow forms <no-reply-forms@webflow.com>
+Date: Mon, 2 Jun 2025 at 11:47
+Subject: Artiste First - New form submission from Artiste First Finds Form
+To: <rohit@tmmusic.in>
+
+
+You just got a form submission!
+
+*Form*
+Artiste First Finds Form
+
+*Site*
+Artiste First
+
+*Submitted content*
+Name: Raj Chhadva
+Email: rajchhadva1@gmail.com
+Mobile: 9820431263
+City: Mumbai
+Track Link:
+https://open.spotify.com/track/1tR20aL79Ea4cRTLs4Z5qd?si=3D730e8b7b996b43bd
+Genre: Pop/Bollywood
+Who Are You Singer: false
+Who Are You Music Composer: false
+Who Are You Audio Engineer: false
+Who Are You Lyricist: true
+Who Are You Video Director: false
+Who Are You Music Producer: true
+Agree to T & C: true
+
+*Number of submissions received*
+100/unlimited this month
+June 1st =E2=80=93 June 30th
+
+*Need more submissions?*
+Please contact your website administrator.
+
+If you believe this is a spam submission, please forward to
+form-spam-reports@support.webflow.com
+
+Unsubscribe
+<https://webflow.com/dashboard/unsubscribeForm?t=3D02028b1b987b301c6c79ae43=
+a03d969dcdd3e77d657b42f7808c751a8c361259&s=3D6432699ccbc3b75def5d2905&sn=3D=
+Artiste%20First&e=3Drohit%40tmmusic.in&d=3D1748845026371>
+from notifications for this site.
+
+--000000000000dded8806380eef8b
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><br><div class=3D"gmail_quote gmail_quote_container"><=
+div dir=3D"ltr" class=3D"gmail_attr">---------- Forwarded message ---------=
+<br>From: <strong class=3D"gmail_sendername" dir=3D"auto">Artiste First For=
+m from Webflow forms</strong> <span dir=3D"auto">&lt;<a href=3D"mailto:no-r=
+eply-forms@webflow.com">no-reply-forms@webflow.com</a>&gt;</span><br>Date: =
+Mon, 2 Jun 2025 at 11:47<br>Subject: Artiste First - New form submission fr=
+om Artiste First Finds Form<br>To:  &lt;<a href=3D"mailto:rohit@tmmusic.in"=
+>rohit@tmmusic.in</a>&gt;<br></div><br><br>You just got a form submission!
+<br><br>
+<strong>Form</strong>
+<br>
+Artiste First Finds Form
+<br><br>
+<strong>Site</strong>
+<br>
+Artiste First
+<br><br>
+<strong>Submitted content</strong>
+<br>Name: Raj Chhadva
+<br>Email: <a href=3D"mailto:rajchhadva1@gmail.com" target=3D"_blank">rajch=
+hadva1@gmail.com</a>
+<br>Mobile: 9820431263
+<br>City: Mumbai
+<br>Track Link: <a href=3D"https://open.spotify.com/track/1tR20aL79Ea4cRTLs=
+4Z5qd?si=3D730e8b7b996b43bd" target=3D"_blank">https://open.spotify.com/tra=
+ck/1tR20aL79Ea4cRTLs4Z5qd?si=3D730e8b7b996b43bd</a>
+<br>Genre: Pop/Bollywood
+<br>Who Are You Singer: false
+<br>Who Are You Music Composer: false
+<br>Who Are You Audio Engineer: false
+<br>Who Are You Lyricist: true
+<br>Who Are You Video Director: false
+<br>Who Are You Music Producer: true
+<br>Agree to T &amp; C: true
+<br><br>
+<strong>Number of submissions received</strong>
+<br>100/unlimited this month
+<br>
+June 1st =E2=80=93 June 30th<br><br>
+<strong>Need more submissions?</strong>
+<br>Please contact your website administrator.<br><br>
+If you believe this is a spam submission, please forward to <a href=3D"mail=
+to:form-spam-reports@support.webflow.com" target=3D"_blank">form-spam-repor=
+ts@support.webflow.com</a><br><br><a href=3D"https://webflow.com/dashboard/=
+unsubscribeForm?t=3D02028b1b987b301c6c79ae43a03d969dcdd3e77d657b42f7808c751=
+a8c361259&amp;s=3D6432699ccbc3b75def5d2905&amp;sn=3DArtiste%20First&amp;e=
+=3Drohit%40tmmusic.in&amp;d=3D1748845026371" target=3D"_blank">Unsubscribe<=
+/a> from notifications for this site.
+
+<img src=3D"https://x9x26.mjt.lu/oo/AW4AAHBLk2oAAAAAAAAAARE3D40AAAAAjncAAAA=
+AABhTEABoPUHjV4J5xgXYQfem2UBwe5x4IgAA7QM/f0b649ed/e.gif" height=3D"1" width=
+=3D"1" alt=3D"" border=3D"0" style=3D"height:1px;width:1px;border:0">
+</div></div>
+
+--000000000000dded8806380eef8b--

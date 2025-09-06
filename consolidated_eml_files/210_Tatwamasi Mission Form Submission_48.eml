@@ -1,0 +1,195 @@
+Delivered-To: rohit@artistefirst.com
+Received: by 2002:a05:6a11:24a1:b0:586:997a:a6a1 with SMTP id sg33csp1098650pxb;
+        Mon, 8 Jul 2024 01:16:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=4; AJvYcCUi2+cg9zYGkKLiGeD6IGsMljHKENNemRMCeSRW+Z8p/enlHwaxOdLvfdgefCPD1cGh9d0pXQLDROhpvJM7nnaMe/NlWUFZ
+X-Received: by 2002:a05:6402:1e91:b0:57c:4875:10a9 with SMTP id 4fb4d7f45d1cf-58e59c43474mr7804499a12.24.1720426583702;
+        Mon, 08 Jul 2024 01:16:23 -0700 (PDT)
+ARC-Seal: i=3; a=rsa-sha256; t=1720426583; cv=pass;
+        d=google.com; s=arc-20160816;
+        b=Xj+UWijxaq4uA9e5DzrhE2YvvmJCw/XfY8t0iyQyW7Xr0qSIdfYKFXJOgcxCeV60k8
+         4WaMv4D79zlZRsJ6hBhe8ouEWvy/c06pvBL2XoNA2RFj1Y3+2UvsNrCpq9mZRKW4pw6k
+         0wHCPzTMpTL59LUnLuKTQ6F18PaOV0HR+I5ZUvVnYxPXE0Zi8jXNLne7kvv76L1lncff
+         qoDoY5SQ7JqhJBVjo5l4CUQyMW8FIMTheecGop9I0yD+dB0d2MyvOVR37KWxZj9ET/94
+         X9k6MPEG1xeYd6ngd0mnlXEavlqJ5y+FMOU5WSMnlYGEIiEoGn1odV5R8rPVHVES8yZI
+         yiRA==
+ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=content-transfer-encoding:feedback-id:list-unsubscribe
+         :list-unsubscribe-post:date:subject:to:from:mime-version:message-id
+         :dkim-signature:delivered-to;
+        bh=K26wAXEnn47NxjgnS1qDqhK47db7PjWhcriYaeNZqws=;
+        fh=oBXqoKrWcEEmfO79rbGkcrIFvI8O7Z5qRwacBdO8rIA=;
+        b=iOWKi0rdz+/N0pu0tHzRlZrLsfPfJahzC9NEmXRW4ukj8HWQokPj6Pqi8AEHSA0f9b
+         e/d+7EdWseC7flHMYG/FRwbiN9KHPqAoTVxXRNNxi9B3A59sE5FuDLwROkUL1vgEUuzW
+         Ch8bOa6GmVAXXEeA0B4A+5NJG5CMkBwgx+9qJV/xReRjtvmSA6qrNUIrYwcqsA618LlY
+         y2BEBSMVRqmOPPCt97RpOZJ5Wf6yTqrHm6ZKNkp/btkq0HKPS54fYn06SBnMfJlr8Owt
+         sX3rhgwZ270EMA+k1QkYRzXTNmQnfnnbjK/zK2RLSlvslSlUkp8vyjlRvi/nbwDs9ZfA
+         TxXQ==;
+        dara=google.com
+ARC-Authentication-Results: i=3; mx.google.com;
+       dkim=pass header.i=@webflow.com header.s=mailjet header.b=q+9I9RV1;
+       arc=pass (i=2 spf=pass spfdomain=bnc3.webflow.com dkim=pass dkdomain=webflow.com dmarc=pass fromdomain=webflow.com);
+       spf=pass (google.com: domain of rohit+caf_=rohit=artistefirst.com@tmmusic.in designates 209.85.220.41 as permitted sender) smtp.mailfrom="rohit+caf_=rohit=artistefirst.com@tmmusic.in";
+       dmarc=pass (p=REJECT sp=NONE dis=NONE) header.from=webflow.com
+Return-Path: <rohit+caf_=rohit=artistefirst.com@tmmusic.in>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 4fb4d7f45d1cf-58612e757basor8510945a12.1.2024.07.08.01.16.23
+        for <rohit@artistefirst.com>
+        (Google Transport Security);
+        Mon, 08 Jul 2024 01:16:23 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rohit+caf_=rohit=artistefirst.com@tmmusic.in designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@webflow.com header.s=mailjet header.b=q+9I9RV1;
+       arc=pass (i=2 spf=pass spfdomain=bnc3.webflow.com dkim=pass dkdomain=webflow.com dmarc=pass fromdomain=webflow.com);
+       spf=pass (google.com: domain of rohit+caf_=rohit=artistefirst.com@tmmusic.in designates 209.85.220.41 as permitted sender) smtp.mailfrom="rohit+caf_=rohit=artistefirst.com@tmmusic.in";
+       dmarc=pass (p=REJECT sp=NONE dis=NONE) header.from=webflow.com
+ARC-Seal: i=2; a=rsa-sha256; t=1720426583; cv=pass;
+        d=google.com; s=arc-20160816;
+        b=Ivnl3e6OKnr4xS+0DV+FgzrVjlANxHEzNZTfdiKFPqwuAKkCNftB/vU/fEtZGS7vc/
+         FDsd4oPeA0QfjzNnKSi+BK9gF6XzxVSTYU1Uz9I0tnIubVQ55JNlBt7NXuQx9HJgMZpN
+         +sHRyx0l8jR1qgmBOU7G8YrQ8LCC8r0/uPjNJwGMDUc2J2bwKKh6xW7XN1SvGcwsIcWO
+         hrJTlLaOV0RKH67fBsYbBDuXsu/ZB/bF9+Sfl3nSvMKHDQXOXX/LzhI1/hnieeUbjy2i
+         EjFB9uVZAtW+Yb/NhSOnJTabmxJAH53xiuoc+cvwoBdH+/hwjubZUnHJBc8toDYal//u
+         8l4A==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=content-transfer-encoding:feedback-id:list-unsubscribe
+         :list-unsubscribe-post:date:subject:to:from:mime-version:message-id
+         :dkim-signature:delivered-to;
+        bh=K26wAXEnn47NxjgnS1qDqhK47db7PjWhcriYaeNZqws=;
+        fh=oBXqoKrWcEEmfO79rbGkcrIFvI8O7Z5qRwacBdO8rIA=;
+        b=go9MEAV8zTiYk9jA4sSB18jxQUboGARgyJNmBgU2lhzK1h/qLRhGfe46fu2cOkt2vM
+         1iJpbmcMuqmi0JB7QsqDBeoqNvE1mmLL050nCHfJ+bf791049pqCPoWMTYYygIyG+oVm
+         GZ4g+64JkP4+5BIyStNuy9797yjmncnCTjk4Mmp1P3qU+mNWVMluc76D50P37v8y8D1x
+         86e9aY+Lj/rcHskh54fSE/7t1ZIP4b1SvWL/uEpX9Kot/hJNGhgbyVsXRZe1ZHGR+ATa
+         7JzuRlCZH71XcXcLcUfokpchRW++hfwM4URWvJD6y/SRAoUF3O4gu/mOLcmw8M994KuZ
+         vj+g==;
+        darn=artistefirst.com
+ARC-Authentication-Results: i=2; mx.google.com;
+       dkim=pass header.i=@webflow.com header.s=mailjet header.b=q+9I9RV1;
+       spf=pass (google.com: domain of 62b1733b.awiaaeaipisaaaaaaaaaare3d40aaaaajncaaaaaabhteabmi6bu@bnc3.webflow.com designates 87.253.236.107 as permitted sender) smtp.mailfrom=62b1733b.AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BU@bnc3.webflow.com;
+       dmarc=pass (p=REJECT sp=NONE dis=NONE) header.from=webflow.com
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1720426583; x=1721031383;
+        h=content-transfer-encoding:feedback-id:list-unsubscribe
+         :list-unsubscribe-post:date:subject:to:from:mime-version:message-id
+         :dkim-signature:delivered-to:x-forwarded-for:x-forwarded-to
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=K26wAXEnn47NxjgnS1qDqhK47db7PjWhcriYaeNZqws=;
+        b=pgbebsyAH2W1a5RGpJOloosGO59bd8SZMIsaHFRdIcpg4jJtAjSEic3rAbgKXHVC5w
+         1CPyXvAhAdz5REO4xeAvHnIC8neNGGtIAToFhUcg+LporpCiGOV4R5jOBP09LyLtXJVo
+         IjjG2RMzomIIdxM9F7OHRdsfyX0P1oZ0QcCFuHZbo/P0y8nGngrxUjkeVcQbT0JB/xpC
+         4BUI5MkH4nNlHvZhqJe2cAJwrKwyUpIqyy6cq9s9qS9K8Nbq+/h5fXV/LNTJb+IEZaTS
+         Cp2BSfQSL+FC8P4cNzaWTiovkaewMjF1thYdUAWCPApo+ial3JCvmv1mBXQIxu7Vrpy1
+         EWGw==
+X-Forwarded-Encrypted: i=2; AJvYcCWr0oKNBr6VyKdzp2WaS1N5XGtiSwyOljcY+crVG4tOYJO9Ptk8joct6UPEAkoEZhYetqjLVWlv3jeYNPAZQsHsqqYRx7ei
+X-Gm-Message-State: AOJu0YzUMPEgMZqPy6U7m1CmD8S+sl2w9qf6IeVB4dtRAo6jtymXibpa
+	V9/ozda4K0ekBZfbDoO9MBh07zZGnmqD6e+z+cb3WKl49SlYJXU+rKbNWJuYhO5noyqhwm4pCZQ
+	6I8qUwWxyrQZRo79KBiTqHDJkBHpgw0mrw+OGhyiO7Cm7AkhWJOKnj+G35leea06FenU+yjdhZr
+	wd
+X-Received: by 2002:aa7:c25a:0:b0:58b:585b:42a2 with SMTP id 4fb4d7f45d1cf-58e5bb8742emr5340560a12.38.1720426583231;
+        Mon, 08 Jul 2024 01:16:23 -0700 (PDT)
+X-Forwarded-To: rohit@artistefirst.com
+X-Forwarded-For: rohit@tmmusic.in rohit@artistefirst.com
+Delivered-To: rohit@tmmusic.in
+Received: by 2002:a50:8d89:0:b0:57d:3163:890c with SMTP id r9csp5619457edh;
+        Mon, 8 Jul 2024 01:16:21 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHGx3fuAKRW0KYyJofcz8c4wO3CXMo3EeYy8ug4hcWE/Wu56woaMKRxzyJfWz1trytEgr9q
+X-Received: by 2002:adf:f548:0:b0:367:4e05:bb7b with SMTP id ffacd0b85a97d-3679dd66e8emr8164771f8f.53.1720426581293;
+        Mon, 08 Jul 2024 01:16:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1720426581; cv=none;
+        d=google.com; s=arc-20160816;
+        b=F/Dk5Hd0yxbmh1cNbLHK8up4QaC2c91hS+r2JLM9GewLGmb1QPXTyoVSaVEJyvinMH
+         u/0zv3eHfZW+zbPtQ7eh0/WaRl3xmrkTlXpAgVk5R9HrgK+SjEiezJBNcdTZ+0ErCiUw
+         FhNtH+IsLr4ksBhqwyOOTVPgOXGz+1QNxEuBMZOjjelNnwjWiy/05T5niak+yDi0c4ej
+         6JAu84CQfdMBPHeOitrUB4f1//DhhtbmLpJZiZCz9AOFR8/qUWWKoAUlnZXJpFe9Ok9U
+         kG3Zeomadr4XRgW/UwkC9rRqgUOJKTSRdSoTWMtZrx+IQ5WLHXHCOH6DARZBXtTynOSM
+         iiow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=content-transfer-encoding:feedback-id:list-unsubscribe
+         :list-unsubscribe-post:date:subject:to:from:mime-version:message-id
+         :dkim-signature;
+        bh=K26wAXEnn47NxjgnS1qDqhK47db7PjWhcriYaeNZqws=;
+        fh=JS5UUT/HsY95o86uPr7muSsPKW2zUqHiuLcF7WCtt+U=;
+        b=LB8NqxIFZFCoBcq9RHZg874Bj2pg3Y9YJuKDtkgnVIIftYDHtI1x9QLC5EkGLLtu+t
+         AutenoU26PsuOHX6EaGPMjyElIWt73gadnZPhPk1gX+giYRpaRTMXW2RjMruLDmKgEHK
+         TZo1Up2QAfUbH2HC3oCsI6wv5kdrDfQ0AbpoIDEBC8OFIAg6AkpHUiO63N+x65/ZA2iS
+         cnyXVBplvhAL91rWXQXlD/rcW+JAzc9U9BSFyFkU63EhAGqYVflxaRaeQ0hbzgaQNqj/
+         8JXGVdLY3BJVHU444evOVuOEb5ButKYjvOEaGHRtzflC/QnHYeye0fwXIGrioC6+rWBM
+         qGgg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@webflow.com header.s=mailjet header.b=q+9I9RV1;
+       spf=pass (google.com: domain of 62b1733b.awiaaeaipisaaaaaaaaaare3d40aaaaajncaaaaaabhteabmi6bu@bnc3.webflow.com designates 87.253.236.107 as permitted sender) smtp.mailfrom=62b1733b.AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BU@bnc3.webflow.com;
+       dmarc=pass (p=REJECT sp=NONE dis=NONE) header.from=webflow.com
+Return-Path: <62b1733b.AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BU@bnc3.webflow.com>
+Received: from o107.p11.mailjet.com (o107.p11.mailjet.com. [87.253.236.107])
+        by mx.google.com with UTF8SMTPS id ffacd0b85a97d-36784ae2bc3si7717087f8f.971.2024.07.08.01.16.20
+        for <rohit@tmmusic.in>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 08 Jul 2024 01:16:21 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 62b1733b.awiaaeaipisaaaaaaaaaare3d40aaaaajncaaaaaabhteabmi6bu@bnc3.webflow.com designates 87.253.236.107 as permitted sender) client-ip=87.253.236.107;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; q=dns/txt;
+  d=webflow.com; i=no-reply-forms@webflow.com; s=mailjet; x=1720433780;
+  h=message-id:mime-version:from:from:to:to:subject:subject:date:date:list-unsubscribe-post:list-unsubscribe:
+  feedback-id:x-csa-complaints:x-mj-mid:x-mj-smtpguid:x-report-abuse-to:
+  content-type:content-transfer-encoding;
+  bh=K26wAXEnn47NxjgnS1qDqhK47db7PjWhcriYaeNZqws=;
+  b=q+9I9RV1AUAFgCXJat6NtnjyQdNJbmlbck9b14dmCNNxEZNC2WaIJtISH
+ JhsjW6kTfysf6jZhrm/ZsXf7hUbEeDFcCzOlcElYcpnlA237UooWhA74TUMv
+ QSK2kNqnTmrBH7M4VvisNUvyJC3WRv9UVNq6TDzZyxn+BhhM4sWxNY=
+Return-Path:
+	<62b1733b.AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BU@bnc3.webflow.com>
+Message-Id: <62b1733b.AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BU@mailjet.com>
+MIME-Version: 1.0
+From: Tatwamasi Mission Form Webflow Forms <no-reply-forms@webflow.com>
+To: rohit@tmmusic.in
+Subject: Tatwamasi Mission Form Submission
+Date: Mon, 08 Jul 2024 08:16:20 +0000
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+List-Unsubscribe:
+	<mailto:unsub-62b1733b.x9x26.l6k44nh569pn@bnc3.mailjet.com>,
+	<https://x9x26.mjt.lu/unsub2?m=AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BUMHDWDzvjSjWHvrYmaVyQmAAA7QM&b=62b1733b&e=34f39c02&x=aAlL-99Y0FLiXxWUQ0db7Q>
+Feedback-Id: 42.1594128.60675:MJ
+X-CSA-Complaints: csa-complaints@eco.de
+X-MJ-Mid:
+	AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABmi6BUMHDWDzvjSjWHvrYmaVyQmAAA7QM
+X-MJ-SMTPGUID: 3070d60f-3be3-4a35-87be-b626695c9098
+X-REPORT-ABUSE-TO: Message sent by Mailjet please report to
+	abuse@mailjet.com with a copy of the message
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+You just got a form submission!
+<br><br>
+<strong>Form</strong>
+<br>
+Email Form
+<br><br>
+<strong>Site</strong>
+<br>
+Tatwamasi
+<br><br>
+<strong>Submitted content</strong>
+<br>Name: Rahul Dutta
+<br>Email: duttamanisha207@gmail.com
+<br>Ypur Mobile: 6299752013
+<br>Your City: Barharwa
+<br>Checkbox: true
+<br><br>
+<strong>Number of submissions received</strong>
+<br>52/1000 this month
+<br>
+July 1st &ndash; July 31st<br><br>
+<strong>Need more submissions?</strong>
+<br>Please contact your website administrator.<br><br>
+If you believe this is a spam submission, please forward to form-spam-repor=
+ts@support.webflow.com<br><br><a href=3D"https://webflow.com/dashboard/unsu=
+bscribeForm?t=3Daa70942321c029408584d1f9941d6c422d98cd523b3059987493e87d012=
+cd132&amp;s=3D63818ab4e34a5e21afc62f49&amp;sn=3DTatwamasi&amp;e=3Drohit%40t=
+mmusic.in&amp;d=3D1720426580131">Unsubscribe</a> from notifications for thi=
+s site.
+
+<br/><img src=3D"https://x9x26.mjt.lu/oo/AWIAAEaIpIsAAAAAAAAAARE3D40AAAAAjn=
+cAAAAAABhTEABmi6BUMHDWDzvjSjWHvrYmaVyQmAAA7QM/b7108588/e.gif" height=3D"1" =
+width=3D"1" alt=3D"" border=3D"0" style=3D"height:1px;width:1px;border:0;"/=
+>
+=

@@ -1,0 +1,196 @@
+Delivered-To: rohitsobti1@gmail.com
+Received: by 2002:a05:6504:2155:b0:2b0:7bd0:e89f with SMTP id n21csp1429805lts;
+        Fri, 20 Jun 2025 23:17:24 -0700 (PDT)
+X-Received: by 2002:a17:902:d543:b0:235:e942:cb9d with SMTP id d9443c01a7336-237d980e771mr98067885ad.17.1750486644597;
+        Fri, 20 Jun 2025 23:17:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1750486644; cv=none;
+        d=google.com; s=arc-20240605;
+        b=bUIoGwuPY6Zw7DgYIFmVx7z6KC03ifbQwFMJj7nS4SIzUjsmTdHgH/1wScpsiOCzTd
+         w3Fn4mKnsbURf0yV4ocZtgMpreIxwubj4/i+QFJwOTjDbKwJcBYo1MRquZRoJ/miiSIR
+         M5p0T/54/vAukEp2Km9vteRWe7N8JJx/dZqCCXP9VCAM3id3nP1+FhWJ80e2Vn5iVdjk
+         zelJG7USgcsq6ydDM3a6AIm6aT4suBFyTBJOHMSQGRU8g8OZT4c8cI0hbqOOyEnV3fQ/
+         nXrPUj7S4jo+fvVKC4S3A9xzOq7HpkocrL9SFgNR4wm/n0aM7bmcKkLDtIR/0Gvu+rOE
+         XG6A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=/mESPeONuRFrNNU7+P+4RS73Ic3vTivF6UroLP1SgMA=;
+        fh=bHN8VH3pdHHtcTUqiJ1cO4wMrRqAkoa2ybG0hP8Hx9w=;
+        b=j7bGjBWk7L0bmSY2T3ErNf/8crXcqCvFVBp0Zfe8n/UW3dG2UDise8uogEv/ea4DLE
+         +GULWsAjVhtyh2L25eSWUDW+S6iULWkamunCi0DUZK3OjONrLogrRH0fE8BbNWnZeGYY
+         3/bdsIxNV+uk08ZyW0bFoALZ/wbfng8ROM/dgBFY/PqQsGZBR45yod14UmvTUMnxNTCL
+         zZrxaYB/ONcysr8IojrzO1NldL1+1Wfmnjamfi/qwUx4w7+T3k3OHdTzJlbQsVHzYRB+
+         ScFA43LJaeOjC4PgsC8mYswRhzxsNKnv3kntwDd/VigBFBneYA6H1HeS5VcGK6yw+w29
+         iGxg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=hHhCaA+u;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+Return-Path: <rohit@artistefirst.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 98e67ed59e1d1-3159e038e7fsor2536352a91.6.2025.06.20.23.17.24
+        for <rohitsobti1@gmail.com>
+        (Google Transport Security);
+        Fri, 20 Jun 2025 23:17:24 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=hHhCaA+u;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=artistefirst-com.20230601.gappssmtp.com; s=20230601; t=1750486644; x=1751091444; dara=google.com;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=/mESPeONuRFrNNU7+P+4RS73Ic3vTivF6UroLP1SgMA=;
+        b=hHhCaA+uU4kH0PVgSxbvx8hxj+i9dQWW/smGKYhuzH8/QY5Wm7D5YJnFjCccTzMao4
+         0EJ8lFYYeXj35jZAZ10WCV/N0292DdgDt/tpDvrnL3t/ImpsUlA1j53ozWF3esXkimw5
+         ujphJdGxtRwFQ4Fg+Bw62g7Xt4EUYHb/D2oGSz30s03ibCMyxgGDPwCg0pyokBoUdmxv
+         K5Rkzygvd2OKReMn03cyOFdMffvb/oUfQIhv2ov8xYxbSQR418etNvctaEGwBAIQZM8f
+         MYeVnCtpQ/TZH4KM7IyfDBBztNyHZRkdE80XCQV81pGRdDd6J4k8nt8A6pr/TxkCCAVv
+         5jdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750486644; x=1751091444;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/mESPeONuRFrNNU7+P+4RS73Ic3vTivF6UroLP1SgMA=;
+        b=HZqvGj/NwlLdRhi/PmJrvN+D8kuih9XBYfwzAnVPSiYduyDOddvHMLhvqgCrOUEfy0
+         Vbksoz28alF6dv1Cn2YQfifcGqKINjIs1l0iznaXjatfreGIMjWZM461tKsdAj5rwv2e
+         Opp6Z30EN/MR8E0AMxfjqGqhNiHM/hryXN40i8zYhyA2WVKjiy/xZaeyeG1u0dYBb43W
+         lrVqzAES82YdNk7DeNE0oUVtsj+qHk3kTlrMFTyH0xVVuzex1unfookY2zi7ZlfFsq34
+         MktOlq0JfsjB1iauuewtv1bUcZIn2mi9cB4gOK6IXoo9NDUioyB+cisVmXdANYedMGrO
+         XVFg==
+X-Gm-Message-State: AOJu0Yyx9PiEHioSpk1tA9RTjdXOeTZUewTjR6urrMqaTw6Y8AAw+4+2
+	u0rSfzz87fHGtekJ2HuYqdZTZj1LQpbY6FKmOlImrTB3U0CRvd1xmnxj7WCCOeE+BVzyDVHdw1u
+	ktrJ5JkkVbrOxfuK230zbX5UVw+mwfXqKJOLSKDhDa8yqjo+cjQqNXA0=
+X-Gm-Gg: ASbGncvU12CRXdbFv9Ceoce891arTdJmNC/Y52E95SOnUyeZ02CsmQFvl9Jktql88g4
+	J93wrf8XMnpm8sQ2rt0FGVswlqEBEPg6Cec+qkESQXp/zUYxS6QdiwsnUc6SaLGVdsagWQ3jQhH
+	OdS5ngvXOz2J3KWnDzJrjM5lWpKgdTntVrbRBx7KOcbEtUrQ==
+X-Google-Smtp-Source: AGHT+IFSlGO4x97Msm6jo6rT5DlQq6ZJ39lSnwcMY0gL1yHL6CnOphmkuH4rcAnXdN7ZFIW/vi7CyK2EWoqIvLdkAyY=
+X-Received: by 2002:a17:90b:3c4b:b0:311:f2f6:44ff with SMTP id
+ 98e67ed59e1d1-3159d8c3e2dmr10507336a91.17.1750486643485; Fri, 20 Jun 2025
+ 23:17:23 -0700 (PDT)
+MIME-Version: 1.0
+References: <82852d19.AWgAAHC0oMAAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoNwrN@mailjet.com>
+In-Reply-To: <82852d19.AWgAAHC0oMAAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoNwrN@mailjet.com>
+From: Rohit Sobti <rohit@artistefirst.com>
+Date: Sat, 21 Jun 2025 11:47:12 +0530
+X-Gm-Features: AX0GCFvOwo-PjKfa4fZFTsxOvyblM7RHgcwMWkSfFmADgPBKMC-8IZPKuhPoK2o
+Message-ID: <CABFMbjTK-C2b+pN7GTbx9HARTNBAfOsBbvibosBJQRcP6nZ7Jw@mail.gmail.com>
+Subject: Fwd: Artiste First - New form submission from Contact Us
+To: rohit sobti <rohitsobti1@gmail.com>
+Content-Type: multipart/alternative; boundary="00000000000091bcff06380eee68"
+
+--00000000000091bcff06380eee68
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+---------- Forwarded message ---------
+From: Artiste First Form from Webflow forms <no-reply-forms@webflow.com>
+Date: Wed, 28 May 2025 at 18:39
+Subject: Artiste First - New form submission from Contact Us
+To: <rohit@tmmusic.in>
+
+
+You just got a form submission!
+
+*Form*
+Contact Us
+
+*Site*
+Artiste First
+
+*Submitted content*
+0: Submit
+Name: Janna
+Email: info@moll.bangeshop.com
+Phone: 435444875
+Link-to-your-work: Hi, I hope you're doing well. I wanted to let you know
+about our new BANGE backpacks and sling bags that just released. The bags
+are waterproof and anti-theft, and have a built-in USB cable that can
+recharge your phone while you're on the go. Both bags are made of durable
+and high-quality materials, and are perfect for everyday use or travel.
+Order yours now at 50% OFF with FREE Shipping: http://bangeshop.com The
+Best, Janna
+
+*Number of submissions received*
+100/unlimited this month
+May 1st =E2=80=93 May 31st
+
+*Need more submissions?*
+Please contact your website administrator.
+
+If you believe this is a spam submission, please forward to
+form-spam-reports@support.webflow.com
+
+Unsubscribe
+<https://webflow.com/dashboard/unsubscribeForm?t=3Db1246e6dafc27cf816e5f34a=
+9d804bfa7ba1502338995c1d8cdc4b540e6a0014&s=3D6432699ccbc3b75def5d2905&sn=3D=
+Artiste%20First&e=3Drohit%40tmmusic.in&d=3D1748437707897>
+from notifications for this site.
+
+--00000000000091bcff06380eee68
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><br><div class=3D"gmail_quote gmail_quote_container"><=
+div dir=3D"ltr" class=3D"gmail_attr">---------- Forwarded message ---------=
+<br>From: <strong class=3D"gmail_sendername" dir=3D"auto">Artiste First For=
+m from Webflow forms</strong> <span dir=3D"auto">&lt;<a href=3D"mailto:no-r=
+eply-forms@webflow.com">no-reply-forms@webflow.com</a>&gt;</span><br>Date: =
+Wed, 28 May 2025 at 18:39<br>Subject: Artiste First - New form submission f=
+rom Contact Us<br>To:  &lt;<a href=3D"mailto:rohit@tmmusic.in">rohit@tmmusi=
+c.in</a>&gt;<br></div><br><br>You just got a form submission!
+<br><br>
+<strong>Form</strong>
+<br>
+Contact Us
+<br><br>
+<strong>Site</strong>
+<br>
+Artiste First
+<br><br>
+<strong>Submitted content</strong>
+<br>0: Submit
+<br>Name: Janna
+<br>Email: <a href=3D"mailto:info@moll.bangeshop.com" target=3D"_blank">inf=
+o@moll.bangeshop.com</a>
+<br>Phone: 435444875
+<br>Link-to-your-work: Hi,=20
+
+I hope you&#39;re doing well. I wanted to let you know about our new BANGE =
+backpacks and sling bags that just released.
+
+The bags are waterproof and anti-theft, and have a built-in USB cable that =
+can recharge your phone while you&#39;re on the go.
+
+Both bags are made of durable and high-quality materials, and are perfect f=
+or everyday use or travel.
+
+Order yours now at 50% OFF with FREE Shipping: <a href=3D"http://bangeshop.=
+com" target=3D"_blank">http://bangeshop.com</a>
+
+The Best,
+
+Janna
+<br><br>
+<strong>Number of submissions received</strong>
+<br>100/unlimited this month
+<br>
+May 1st =E2=80=93 May 31st<br><br>
+<strong>Need more submissions?</strong>
+<br>Please contact your website administrator.<br><br>
+If you believe this is a spam submission, please forward to <a href=3D"mail=
+to:form-spam-reports@support.webflow.com" target=3D"_blank">form-spam-repor=
+ts@support.webflow.com</a><br><br><a href=3D"https://webflow.com/dashboard/=
+unsubscribeForm?t=3Db1246e6dafc27cf816e5f34a9d804bfa7ba1502338995c1d8cdc4b5=
+40e6a0014&amp;s=3D6432699ccbc3b75def5d2905&amp;sn=3DArtiste%20First&amp;e=
+=3Drohit%40tmmusic.in&amp;d=3D1748437707897" target=3D"_blank">Unsubscribe<=
+/a> from notifications for this site.
+
+<img src=3D"https://x9x26.mjt.lu/oo/AWgAAHC0oMAAAAAAAAAAARE3D40AAAAAjncAAAA=
+AABhTEABoNwrNcTi35pQAS4WaArLe8FkQkQAA7QM/6c05a413/e.gif" height=3D"1" width=
+=3D"1" alt=3D"" border=3D"0" style=3D"height:1px;width:1px;border:0">
+</div></div>
+
+--00000000000091bcff06380eee68--

@@ -1,0 +1,183 @@
+Delivered-To: rohitsobti1@gmail.com
+Received: by 2002:a05:6504:2155:b0:2b0:7bd0:e89f with SMTP id n21csp1430917lts;
+        Fri, 20 Jun 2025 23:20:45 -0700 (PDT)
+X-Received: by 2002:a17:903:4b30:b0:234:8c3d:2912 with SMTP id d9443c01a7336-237d96b6361mr87348975ad.11.1750486845130;
+        Fri, 20 Jun 2025 23:20:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1750486845; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Ze+u2E93wl/NLfIUJM9QCP+rbqiKNIRTCNSHvPpEn4lXd0OJypOBE6pUnKmSQDrZDx
+         sMNr+ySz3sut0P01WueKuBd3xVTvEaYGkinTpx4Kmixds/J6/HaqAYBrr2nelo9/Lj9M
+         1gLtUqZCleXeaGQ6HOq14dtuEf1YOHsnckEv4w5QasYzEb7567porCSsngjUcvlCs1hr
+         roLXT0AS/kT7w3JAhSQP6ZTqb9Hy+VsWiToBh02Mk9aWceKJrqeBFgrWb1LoJQzXfMtC
+         xHfgk/UvwusJbyJMXnIVup9oCAYnAKhfW899KNz6q4FGwvQo5EW5oWmufL5uD0RmYmnS
+         9L2w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=qCYBYHUhVmhwv6OrVbGNisGeYupGUIuMNnWqCj+7dU0=;
+        fh=bHN8VH3pdHHtcTUqiJ1cO4wMrRqAkoa2ybG0hP8Hx9w=;
+        b=Q4ah3GuR+dMIMXstSDnZpxnf5sJAh6I9LTVhWiyNtzS4ZycpFy55sOqTOHLrpEVwDJ
+         xnWpDu/mfpc5KsPbN0g1d5qX9fj0j7qAtSYXnZOib4v78/uakEpVQmXUyaW5Ci1ru63x
+         sn8E+PQMe4oLh6L2lDgY5XYDcRfuVCoa0L911PeyPj7Hv8bNZp79oWaO/60fT6r29g17
+         mMHIp3aYmJZkozAJppY+AdPFEcEuDsa1Om9sid1laR5bGBlJ8NtQeVZ4HlLXMzTPSs9+
+         erDb01d1hPYUrq7MCuJ0eJsebmQzRKaSCkZFP6wc8aMc18VaUMRAtQVghyY/iCV8TYlP
+         xHag==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=3X9k4wKe;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+Return-Path: <rohit@artistefirst.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id d9443c01a7336-237d8308705sor20903315ad.4.2025.06.20.23.20.44
+        for <rohitsobti1@gmail.com>
+        (Google Transport Security);
+        Fri, 20 Jun 2025 23:20:45 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@artistefirst-com.20230601.gappssmtp.com header.s=20230601 header.b=3X9k4wKe;
+       spf=pass (google.com: domain of rohit@artistefirst.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=rohit@artistefirst.com;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=artistefirst-com.20230601.gappssmtp.com; s=20230601; t=1750486844; x=1751091644; dara=google.com;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=qCYBYHUhVmhwv6OrVbGNisGeYupGUIuMNnWqCj+7dU0=;
+        b=3X9k4wKeKbHWXsT2XguJmIeu6vBp7zviEfuMsTzXHUpwdCzgaucAf/NTeNoPeTWgQq
+         0VWO9VyyIZTN+Sl4FtvnbPUtMCrNxiJMt1sCkd2EEkHC3W+GE5TXP2Syt0iTwZHv9Pme
+         IbuO5VNuPYUJCMDSez9/Byjcxv971MpCqFbWmu1h2l0y7UzsAPiBmMxu2ZpJzqgV/rgK
+         /9hzb+nPyh6ziEixz5VUsEnK0nCZeZ1sC3r0BGm4FGDRg9VcZbEVHO839bUP0kkbHRB9
+         brw/T0L7v9N5QJXuRZT8/b4uEWnKq0c2UmHZjlVein7qweFDTdtmdsUM2Ct+TtnsYUDR
+         /FHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750486844; x=1751091644;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qCYBYHUhVmhwv6OrVbGNisGeYupGUIuMNnWqCj+7dU0=;
+        b=r/+fVvcmL96rJ+xqVTfyA3xOMPjde83Waz+sd3l/i7fK1zpmbQhZVcsY4CFc3wbBXg
+         EikPCq2RPpfEWgzu3io39LX87RjsZCdi0hAOkgYgyjdLhtiUjUTAuAMay+Ns+t4vMRHW
+         URyIgwkzW/dOlj1SVibwdZzYjvJ2DnNMHSAIBeCNgwBOM86vtlXyaJKyUd5XXMRn3w6Y
+         701CvCiTztgqK7KFENkPN22qsrZKo93JMJs5hi8k/C5GnNUxEQyLprtMVycxcmSarBfS
+         QHG2jznTeQ1/6Z8Jno1Oche9lu5+66Lp4cFAC9So3FdQgL0502erIo1XKHmT3cf+6ni7
+         w9Kw==
+X-Gm-Message-State: AOJu0YzXVRfwzD03qOaMgvJQ15UG+L+nFg6rw6SJvFM+k12Zj0sLU6/7
+	MHJHJ0BNyjGtu6tyIYGVJ51EiOl/UMhyw7I16tVxiIX2y2m/CCvjqAFbtJYiSAbP3cDW6WZSxRb
+	D4hCJMejy0hBoi1AtYl6WeS/yzNygG6/2+LbKYbYJ06Z3xXh/9bnG6RU=
+X-Gm-Gg: ASbGncuV502Nay2fx79LXAXIVyjmWDlaIudWjzQFolKOq7FrueMImPsJr58YzEMJ2j/
+	S8Xay3XIqszCF/eSN1z0q7ZW8AHzy/5AVMXpv3cAvPY67MJt/ep7nCMKdi2uzMue7SR1Lp0w2Ed
+	Yz/FY1/2zI6/oWGNu/Tk+92iKQjK9dQCLAIKcqNNqCfL0TVcCwqLaMkkb4
+X-Google-Smtp-Source: AGHT+IHwQU6dPiOulPqTF3tKSkc/lRd4tseeFCX6feejikhu2PCC0MWNoDCpmWlPPNxQZbtRGzC667J564kt+jRQcNU=
+X-Received: by 2002:a17:903:46cb:b0:236:6f5f:cac1 with SMTP id
+ d9443c01a7336-237d998df09mr82599665ad.46.1750486844137; Fri, 20 Jun 2025
+ 23:20:44 -0700 (PDT)
+MIME-Version: 1.0
+References: <2a1b314a.AWMAAG0wefgAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoNLqM@mailjet.com>
+In-Reply-To: <2a1b314a.AWMAAG0wefgAAAAAAAAAARE3D40AAAAAjncAAAAAABhTEABoNLqM@mailjet.com>
+From: Rohit Sobti <rohit@artistefirst.com>
+Date: Sat, 21 Jun 2025 11:50:33 +0530
+X-Gm-Features: AX0GCFsU_MbFUypHb5eiXeDdRQTl6gRLODS2bkmdku96eu1PC8EJvzbOj4DjEwI
+Message-ID: <CABFMbjRNZ3u1BJVfv5g=tyiKHiNsbmhg5iavHrKHDWpkQdW3bA@mail.gmail.com>
+Subject: Fwd: Artiste First - New form submission from Contact Us
+To: rohit sobti <rohitsobti1@gmail.com>
+Content-Type: multipart/alternative; boundary="0000000000008779c606380efab0"
+
+--0000000000008779c606380efab0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+---------- Forwarded message ---------
+From: Artiste First Form from Webflow forms <no-reply-forms@webflow.com>
+Date: Tue, 27 May 2025 at 00:31
+Subject: Artiste First - New form submission from Contact Us
+To: <rohit@tmmusic.in>
+
+
+You just got a form submission!
+
+*Form*
+Contact Us
+
+*Site*
+Artiste First
+
+*Submitted content*
+0: Submit
+Name: Brian WRIGHT Eng.
+Email: newsletter@wexxon.com
+Phone: 7209248652
+Link-to-your-work: Are you dating someone, and would you like to know if
+they can be your best mate who will be romantically compatible with you?
+Can you create a long-lasting romantic relationship and even a marriage?
+Get your ROMANTIC COMPATIBILITY report at
+https://wexxon.com/en/home/9-romantic-compatibility.html
+
+*Number of submissions received*
+100/unlimited this month
+May 1st =E2=80=93 May 31st
+
+*Need more submissions?*
+Please contact your website administrator.
+
+If you believe this is a spam submission, please forward to
+form-spam-reports@support.webflow.com
+
+Unsubscribe
+<https://webflow.com/dashboard/unsubscribeForm?t=3De3420aa26f56d151ad3da8c0=
+943d5e73f9682c26cb47a9627527a4af1d3fe512&s=3D6432699ccbc3b75def5d2905&sn=3D=
+Artiste%20First&e=3Drohit%40tmmusic.in&d=3D1748286091325>
+from notifications for this site.
+
+--0000000000008779c606380efab0
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><br><div class=3D"gmail_quote gmail_quote_container"><=
+div dir=3D"ltr" class=3D"gmail_attr">---------- Forwarded message ---------=
+<br>From: <strong class=3D"gmail_sendername" dir=3D"auto">Artiste First For=
+m from Webflow forms</strong> <span dir=3D"auto">&lt;<a href=3D"mailto:no-r=
+eply-forms@webflow.com">no-reply-forms@webflow.com</a>&gt;</span><br>Date: =
+Tue, 27 May 2025 at 00:31<br>Subject: Artiste First - New form submission f=
+rom Contact Us<br>To:  &lt;<a href=3D"mailto:rohit@tmmusic.in">rohit@tmmusi=
+c.in</a>&gt;<br></div><br><br>You just got a form submission!
+<br><br>
+<strong>Form</strong>
+<br>
+Contact Us
+<br><br>
+<strong>Site</strong>
+<br>
+Artiste First
+<br><br>
+<strong>Submitted content</strong>
+<br>0: Submit
+<br>Name: Brian WRIGHT Eng.
+<br>Email: <a href=3D"mailto:newsletter@wexxon.com" target=3D"_blank">newsl=
+etter@wexxon.com</a>
+<br>Phone: 7209248652
+<br>Link-to-your-work: Are you dating someone, and would you like to know i=
+f they can be your best mate who will be romantically compatible with you? =
+Can you create a long-lasting romantic relationship and even a marriage? Ge=
+t your ROMANTIC COMPATIBILITY report at <a href=3D"https://wexxon.com/en/ho=
+me/9-romantic-compatibility.html" target=3D"_blank">https://wexxon.com/en/h=
+ome/9-romantic-compatibility.html</a>
+<br><br>
+<strong>Number of submissions received</strong>
+<br>100/unlimited this month
+<br>
+May 1st =E2=80=93 May 31st<br><br>
+<strong>Need more submissions?</strong>
+<br>Please contact your website administrator.<br><br>
+If you believe this is a spam submission, please forward to <a href=3D"mail=
+to:form-spam-reports@support.webflow.com" target=3D"_blank">form-spam-repor=
+ts@support.webflow.com</a><br><br><a href=3D"https://webflow.com/dashboard/=
+unsubscribeForm?t=3De3420aa26f56d151ad3da8c0943d5e73f9682c26cb47a9627527a4a=
+f1d3fe512&amp;s=3D6432699ccbc3b75def5d2905&amp;sn=3DArtiste%20First&amp;e=
+=3Drohit%40tmmusic.in&amp;d=3D1748286091325" target=3D"_blank">Unsubscribe<=
+/a> from notifications for this site.
+
+<img src=3D"https://x9x26.mjt.lu/oo/AWMAAG0wefgAAAAAAAAAARE3D40AAAAAjncAAAA=
+AABhTEABoNLqMlttBjpTOR0SQDkfOgL-VFQAA7QM/a0ce4836/e.gif" height=3D"1" width=
+=3D"1" alt=3D"" border=3D"0" style=3D"height:1px;width:1px;border:0">
+</div></div>
+
+--0000000000008779c606380efab0--
