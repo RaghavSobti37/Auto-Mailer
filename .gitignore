@@ -18,6 +18,7 @@ venv/
 
 # Data files - Exclude all CSV files
 *.csv
+*.eml
 
 # Log files
 *.log
