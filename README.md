@@ -1,46 +1,47 @@
 # AutoMailer - Automated Email Campaign Tool
 
-AutoMailer is a Python-based tool designed to manage and execute automated email campaigns. It allows users to send personalized emails from a contact database, track sent statuses, and maintain a clean, updated list of contacts.
+AutoMailer is a powerful, Python-based toolkit designed to manage and execute automated email campaigns. It allows users to send personalized HTML emails from a CSV contact database, track sent statuses, and maintain a clean, validated, and up-to-date list of contacts.
 
 ## Features
 
 - **Dynamic Email Campaigns**: Choose between different email templates (e.g., Teaser, Main Campaign) at runtime.
 - **Database Management**: Uses a CSV file (`master_db.csv`) as the primary contact database.
 - **Prevents Duplicate Emails**: Automatically updates a `havells promo` flag in the database to `True` after an email is sent, preventing the same contact from being emailed again in future campaigns.
-- **Comprehensive Logging**: Logs the status of every email sent (`SENT` or `FAILED`) with timestamps and error details in `email_log.csv`.
+- **Comprehensive Logging**: Logs the status of every email (`SENT` or `FAILED`) with timestamps and error details into `email_log.csv`.
 - **Data Cleaning & Standardization**: Includes a robust script (`clean_master_db.py`) to clean the master database by:
   - Validating email formats.
   - Standardizing names, phone numbers, and gender entries.
   - Removing duplicate contacts.
   - Correcting data types.
-- **Log-based Database Updates**: Includes a script (`update_db_from_log.py`) to retroactively update the master database based on the `email_log.csv`, ensuring contacts who have already received an email are correctly marked.
+- **Log-based Database Updates**: Includes a script (`update_db_from_log.py`) to retroactively update the master database based on `email_log.csv`, ensuring contacts who have already received an email are correctly marked.
 - **Secure Credential Management**: Uses a `.env` file to securely store email credentials, keeping them out of the main codebase.
 
 ---
 
 ## Project Structure
 
-```
+```plaintext
 AutoMailer/
 ├── assets/
 │   ├── banner.jpg
 │   └── pixel.png
 ├── csv/
-│   ├── master_db.csv         # Main contact database (Not committed)
-│   ├── email_log.csv         # Log of sent emails (Not committed)
-│   └── master_db_cleaned.csv # Output of the cleaning script (Not committed)
+│   ├── master_db.csv           # Main contact database (Not committed)
+│   ├── email_log.csv           # Log of sent emails (Not committed)
+│   ├── master_db_cleaned.csv   # Output of the cleaning script (Not committed)
+│   └── master_db_updated.csv   # Output of the update_db_from_log script (Not committed)
 ├── params/
 │   ├── __init__.py
 │   ├── email_template.py     # HTML template for the main campaign
 │   ├── main_params.py        # Parameters for the main campaign
 │   ├── teaser_template.py    # HTML template for the teaser mail
 │   └── teaser_params.py      # Parameters for the teaser mail
-├── .env                      # Environment variables (Not committed)
-├── .gitignore                # Specifies files to be ignored by Git
-├── clean_master_db.py        # Script to clean and validate the master DB
-├── test.py                   # Main script to run email campaigns
-├── update_db_from_log.py     # Script to update master DB from the log
-└── README.md                 # This file
+├── .env                        # Environment variables (Not committed)
+├── .gitignore                  # Specifies files to be ignored by Git
+├── clean_master_db.py          # Script to clean and validate the master DB
+├── test.py                     # Main script to run email campaigns
+├── update_db_from_log.py       # Script to update master DB from the log
+└── README.md                   # This documentation file
 ```
 
 ---
