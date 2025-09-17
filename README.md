@@ -1,48 +1,23 @@
 # AutoMailer - Automated Email Campaign Tool
 
-AutoMailer is a powerful, Python-based toolkit designed to manage and execute automated email campaigns. It allows users to send personalized HTML emails from a CSV contact database, track sent statuses, and maintain a clean, validated, and up-to-date list of contacts.
+AutoMailer is a powerful, Python-based toolkit designed to manage and execute automated email campaigns. It allows users to send personalized HTML emails from a consolidated contact database, track sent statuses, and maintain a clean, validated, and up-to-date list of contacts.
 
 ## Features
 
 - **Dynamic Email Campaigns**: Choose between different email templates (e.g., Teaser, Main Campaign) at runtime.
-- **Database Management**: Uses a CSV file (`master_db.csv`) as the primary contact database.
-- **Prevents Duplicate Emails**: Automatically updates a `havells promo` flag in the database to `True` after an email is sent, preventing the same contact from being emailed again in future campaigns.
+- **Centralized Database Management**:
+  - Ingest new contacts from various sources (Excel, CSV, `.eml` files) directly into a raw master database (`master_db.csv`).
+  - A robust cleaning script processes the raw data to produce a clean, deduplicated, and ready-to-use contact list (`master_db_cleaned.csv`).
+- **Prevents Duplicate Emails**: Automatically updates a `havells promo` flag in the database after an email is sent, preventing the same contact from being emailed again in future campaigns.
 - **Comprehensive Logging**: Logs the status of every email (`SENT` or `FAILED`) with timestamps and error details into `email_log.csv`.
 - **Data Cleaning & Standardization**: Includes a robust script (`clean_master_db.py`) to clean the master database by:
   - Validating email formats.
   - Standardizing names, phone numbers, and gender entries.
   - Removing duplicate contacts.
   - Correcting data types.
-- **Log-based Database Updates**: Includes a script (`update_db_from_log.py`) to retroactively update the master database based on `email_log.csv`, ensuring contacts who have already received an email are correctly marked.
+- **Log-based Database Updates**: Includes a script (`updatedb.py`) to retroactively update the master database based on `email_log.csv`, ensuring contacts who have already received an email are correctly marked.
 - **Secure Credential Management**: Uses a `.env` file to securely store email credentials, keeping them out of the main codebase.
-
----
-
-## Project Structure
-
-```plaintext
-AutoMailer/
-├── assets/
-│   ├── banner.jpg
-│   └── pixel.png
-├── csv/
-│   ├── master_db.csv           # Main contact database (Not committed)
-│   ├── email_log.csv           # Log of sent emails (Not committed)
-│   ├── master_db_cleaned.csv   # Output of the cleaning script (Not committed)
-│   └── master_db_updated.csv   # Output of the update_db_from_log script (Not committed)
-├── params/
-│   ├── __init__.py
-│   ├── email_template.py     # HTML template for the main campaign
-│   ├── main_params.py        # Parameters for the main campaign
-│   ├── teaser_template.py    # HTML template for the teaser mail
-│   └── teaser_params.py      # Parameters for the teaser mail
-├── .env                        # Environment variables (Not committed)
-├── .gitignore                  # Specifies files to be ignored by Git
-├── clean_master_db.py          # Script to clean and validate the master DB
-├── test.py                     # Main script to run email campaigns
-├── update_db_from_log.py       # Script to update master DB from the log
-└── README.md                   # This documentation file
-```
+- **Progress Reporting**: A `show_progress.py` script provides a high-level overview of campaign progress, including sent, failed, and remaining emails.
 
 ---
 
@@ -75,23 +50,32 @@ AutoMailer/
 
 5.  **Prepare your data:**
     - Place your master contact list in `csv/master_db.csv`. It should have columns like `name`, `email`, `number`, `city`, `gender`, and `havells promo`.
+    - Place any new Excel or CSV files you want to add into the `csv/` folder.
+    - Place any `.eml` files containing form submissions into the `eml/` folder.
     - Place your banner image at `assets/banner.jpg`.
 
 ---
 
 ## How to Use
 
-### 1. Clean the Database (Optional but Recommended)
+### 1. Add New Data and Clean the Database
 
-Before running a campaign, it's a good practice to clean your master database.
-```bash
-python clean_master_db.py
-```
-This will generate a `master_db_cleaned.csv` file. You can then rename this to `master_db.csv` to use it as your main contact list.
+This is the primary workflow for expanding your contact list.
+
+- **To add contacts from an Excel or CSV file:**
+  1.  Place the file in the `csv/` folder.
+  2.  Update the `new_source_file` variable in `utils/newdata.py`.
+  3.  Run the script: `python utils/newdata.py`.
+
+- **To add contacts from `.eml` files:**
+  1.  Place the `.eml` files in the `eml/` folder.
+  2.  Run the script: `python utils/extract_eml_data.py`.
+
+Both scripts will append the new raw data to `master_db.csv` and then automatically trigger the cleaning process, which creates an updated `master_db_cleaned.csv`.
 
 ### 2. Run an Email Campaign
 
-Execute the main script to start sending emails.
+Execute the main script to start sending emails. It will use the `master_db_cleaned.csv` file.
 ```bash
 python test.py
 ```

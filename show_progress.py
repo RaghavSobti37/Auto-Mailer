@@ -1,86 +1,97 @@
 import pandas as pd
 import os
+from datetime import datetime
 
 # --- Configuration ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Use the cleaned master database for the Email report
-Email_CSV_PATH = os.path.join(BASE_DIR, 'csv', 'master_db_cleaned.csv')
+MASTER_DB_PATH = os.path.join(BASE_DIR, 'csv', 'master_db_updated.csv')
 EMAIL_LOG_PATH = os.path.join(BASE_DIR, 'csv', 'email_log.csv')
 CAMPAIGN_COLUMN = 'havells promo'
 
-def show_campaign_progress():
+def show_email_campaign_progress():
     """
-    Reads the campaign CSVs and prints the progress statistics to the terminal.
+    Reads the master database and email log to generate a consolidated
+    progress report for the email campaign.
     """
-    # --- Email Progress ---
-    print("\n--- Havells Email Campaign Progress ---")
+    print("\n--- Email Campaign Progress Report ---")
 
-    if not os.path.exists(Email_CSV_PATH):
-        print(f"\n❌ Error: Email data file not found at '{Email_CSV_PATH}'")
-        print("Please ensure the cleaned master database exists.")
-    else:
+    # --- 1. Load Master Database ---
+    if not os.path.exists(MASTER_DB_PATH):
+        print(f"\n❌ Error: Master data file not found at '{MASTER_DB_PATH}'")
+        print("Please ensure the cleaned master database exists to generate a report.")
+        return
+
+    try:
+        df_master = pd.read_csv(MASTER_DB_PATH)
+        total_contacts = len(df_master)
+        if total_contacts == 0:
+            print("\n🟡 Master database is empty. No progress to report.")
+            return
+    except Exception as e:
+        print(f"\n❌ Error reading master data file: {e}")
+        return
+
+    # --- 2. Load and Process Email Log ---
+    sent_emails = set()
+    failed_emails = set()
+    daily_counts = {}
+    total_sent_from_log = 0
+    total_failed_from_log = 0
+
+    if os.path.exists(EMAIL_LOG_PATH):
         try:
-            # Read the CSV, ensuring the campaign column is treated as a string
-            # to correctly handle 'True'/'False' text values.
-            df_Email = pd.read_csv(Email_CSV_PATH, dtype={CAMPAIGN_COLUMN: str})
+            df_log = pd.read_csv(EMAIL_LOG_PATH)
+            if 'Timestamp' in df_log.columns and 'Status' in df_log.columns and 'EmailID' in df_log.columns:
+                # Filter for SENT and FAILED statuses, dropping duplicates to count unique emails
+                sent_df = df_log[df_log['Status'].str.upper() == 'SENT'].drop_duplicates(subset=['EmailID'])
+                failed_df = df_log[df_log['Status'].str.upper() == 'FAILED'].drop_duplicates(subset=['EmailID'])
 
-            if CAMPAIGN_COLUMN not in df_Email.columns:
-                print(f"\n❌ Error: Campaign tracking column '{CAMPAIGN_COLUMN}' not found in the CSV.")
+                sent_emails = set(sent_df['EmailID'])
+                # Exclude emails that were successfully sent later from the failed set
+                failed_emails = set(failed_df['EmailID']) - sent_emails
+
+                total_sent_from_log = len(sent_emails)
+                total_failed_from_log = len(failed_emails)
+
+                # Calculate daily breakdown
+                sent_df['send_date'] = pd.to_datetime(sent_df['Timestamp']).dt.date
+                daily_counts = sent_df.groupby('send_date').size()
             else:
-                total_contacts = len(df_Email)
-                
-                # Count 'sent' by checking for the string 'True' (case-insensitive).
-                # This is robust against how pandas might read boolean-like strings.
-                sent_count = df_Email[CAMPAIGN_COLUMN].str.lower().eq('true').sum()
-                
-                left_to_send = total_contacts - sent_count
-
-                print(f"\n📊 Email Stats for '{os.path.basename(Email_CSV_PATH)}':\n")
-                print(f"  - Total Contacts:      {total_contacts}")
-                print(f"  - Messages Sent:       {sent_count}  ✅")
-                print(f"  - Remaining to Send:   {left_to_send}  ⏳")
-                
-                # Calculate and display percentage with a progress bar
-                if total_contacts > 0:
-                    percentage_complete = (sent_count / total_contacts) * 100
-                    print(f"\n  - Progress:            {percentage_complete:.2f}% complete")
-                    
-                    bar_length = 30
-                    filled_length = int(bar_length * sent_count // total_contacts)
-                    bar = '█' * filled_length + '-' * (bar_length - filled_length)
-                    print(f"    [{bar}]")
+                print(f"\n🟡 Warning: Log file '{os.path.basename(EMAIL_LOG_PATH)}' is missing required columns ('Timestamp', 'Status', 'EmailID').")
         except Exception as e:
-            print(f"\nAn unexpected error occurred while reading Email data: {e}")
-
-    # --- Email Progress ---
-    print("\n--- Email Campaign Daily Report ---")
-    if not os.path.exists(EMAIL_LOG_PATH):
-        print(f"\n🟡 Info: Email log file not found at '{EMAIL_LOG_PATH}'.")
+            print(f"\n🟡 Warning: Could not process email log file: {e}")
     else:
-        try:
-            df_email = pd.read_csv(EMAIL_LOG_PATH)
-            
-            if 'Timestamp' not in df_email.columns or 'Status' not in df_email.columns:
-                 print(f"\n❌ Error: 'Timestamp' or 'Status' column missing in '{os.path.basename(EMAIL_LOG_PATH)}'.")
-            else:
-                df_sent = df_email[df_email['Status'].str.upper() == 'SENT'].copy()
-                
-                if df_sent.empty:
-                    print("\nNo emails have been marked as 'SENT' in the log file yet.")
-                else:
-                    df_sent['send_date'] = pd.to_datetime(df_sent['Timestamp']).dt.date
-                    daily_counts = df_sent.groupby('send_date').size()
-                    total_sent = daily_counts.sum()
+        print(f"\n🟡 Info: Email log file not found at '{EMAIL_LOG_PATH}'. Stats will be based on the master file only.")
 
-                    print(f"\n📧 Email Stats from '{os.path.basename(EMAIL_LOG_PATH)}':\n")
-                    print(f"  - Total Emails Sent:   {total_sent}  ✅\n")
-                    print("  Daily Breakdown (most recent first):")
-                    for date, count in daily_counts.sort_index(ascending=False).items():
-                        print(f"  - {date.strftime('%Y-%m-%d')}:  {count} emails")
-        except Exception as e:
-            print(f"\nAn unexpected error occurred while reading email log: {e}")
 
-    print("\n-----------------------------------------------")
+    # --- 3. Generate and Display Report ---
+    remaining_to_send = total_contacts - total_sent_from_log
+
+    print(f"\n📊 Overall Campaign Stats (based on '{os.path.basename(MASTER_DB_PATH)}' and logs):\n")
+    print(f"  - Total Contacts in Master List: {total_contacts}")
+    print(f"  - Unique Emails Sent Successfully: {total_sent_from_log} ✅")
+    print(f"  - Unique Emails Failed:          {total_failed_from_log} ❌")
+    print(f"  - Remaining to Send:             {remaining_to_send} ⏳")
+
+    # --- Progress Bar ---
+    if total_contacts > 0:
+        percentage_complete = (total_sent_from_log / total_contacts) * 100
+        print(f"\n  - Campaign Completion:           {percentage_complete:.2f}%")
+        
+        bar_length = 30
+        filled_length = int(bar_length * total_sent_from_log // total_contacts)
+        bar = '█' * filled_length + '-' * (bar_length - filled_length)
+        print(f"    [{bar}]")
+
+    # --- Daily Breakdown ---
+    if not daily_counts.empty:
+        print("\n\n📈 Daily Send Breakdown (most recent first):")
+        for date, count in daily_counts.sort_index(ascending=False).items():
+            print(f"  - {date.strftime('%Y-%m-%d')}:  {count} emails")
+
+    print("\n-------------------------------------------")
+
 
 if __name__ == "__main__":
-    show_campaign_progress()
+    show_email_campaign_progress()
+

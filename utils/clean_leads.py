@@ -34,18 +34,23 @@ def clean_master_db(input_path, output_path):
     
     # --- 2. Clean 'name' column ---
     # Convert to string to handle potential float/int errors
-    df['name'] = df['name'].astype(str)
-    # Remove non-alphabetic characters (except spaces) and standardize to Title Case
-    df['name'] = df['name'].str.replace(r'[^a-zA-Z\s]', '', regex=True).str.strip()
-    df['name'] = df['name'].str.title()
+    df['name'] = df['name'].astype(str).str.strip()
+    # Remove text in parentheses (e.g., "(KASHISH)")
+    df['name'] = df['name'].str.replace(r'\s*\(.*\)\s*', '', regex=True).str.strip()
+    # Remove any remaining non-alphabetic characters (except spaces) and standardize to Title Case
+    df['name'] = df['name'].str.replace(r'[^a-zA-Z\s]', '', regex=True).str.strip().str.title()
     # Replace empty names with a placeholder
     df['name'].replace('', 'Valued Customer', inplace=True)
     print("Cleaned and standardized the 'name' column.")
 
     # --- 3. Clean 'number' column ---
-    # Convert to string, extract digits, and keep only 10-digit numbers
-    df['number'] = df['number'].astype(str).str.extract(r'(\d{10,})').iloc[:, 0]
-    df['number'] = df['number'].apply(lambda x: x if isinstance(x, str) and len(x) == 10 else np.nan)
+    # More aggressive cleaning for the 'number' column
+    # 1. Convert to string and remove all non-digit characters
+    # 2. Extract the first sequence of 10 digits found
+    df['number'] = df['number'].astype(str).str.replace(r'\D', '', regex=True)
+    # Extract the first 10-digit number found in the string of digits
+    df['number'] = df['number'].str.extract(r'(\d{10})').iloc[:, 0]
+    # Any number that isn't exactly 10 digits after extraction becomes NaN (Not a Number/blank)
     print("Cleaned and standardized the 'number' column to 10-digit format.")
 
     # --- 4. Clean 'gender' column ---
@@ -73,7 +78,8 @@ def clean_master_db(input_path, output_path):
     try:
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         df.to_csv(output_path, index=False)
-        print(f"\nSuccessfully cleaned the database.")
+        print(f"\nSuccessfully cleaned the entire master database.")
+        print(f"This output file '{os.path.basename(output_path)}' contains all cleaned and deduplicated records from '{os.path.basename(input_path)}'.")
         print(f"{len(df)} valid records saved to '{os.path.abspath(output_path)}'.")
     except Exception as e:
         print(f"Error saving the cleaned file: {e}")
@@ -85,4 +91,3 @@ if __name__ == '__main__':
     
     clean_master_db(master_db_file, cleaned_db_file)
     print("\nCleaning process complete.")
-

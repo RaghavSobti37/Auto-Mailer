@@ -39,6 +39,11 @@ def build_master_db():
             'is_promo': False,
             'required': False # The script will only warn if this file is missing.
         },
+        'idol_13_l2': {
+            'path': os.path.join(CSV_FOLDER, 'IDOL 13 - L2 master sheet citywise.xlsx'),
+            'is_promo': False,
+            'required': False
+        },
         'promo_leads': {
             'path': os.path.join(CSV_FOLDER, 'test_leads_cleaned.csv'),
             'is_promo': True,
@@ -56,6 +61,8 @@ def build_master_db():
             'Email': 'email',
             'Mobile': 'number',
             'phone': 'number',
+            'contact no': 'number',
+            'hometown': 'city',
             'City': 'city'
         }
         # Create a map of only the columns that actually exist in the dataframe to avoid errors.
@@ -76,7 +83,10 @@ def build_master_db():
             if os.path.exists(file_path):
                 try:
                     print(f"Loading data from: {file_path}")
-                    df = pd.read_csv(file_path)
+                    if file_path.endswith('.xlsx'):
+                        df = pd.read_excel(file_path)
+                    else:
+                        df = pd.read_csv(file_path)
                     
                     # Standardize columns for the current DataFrame.
                     standardize_columns(df)
