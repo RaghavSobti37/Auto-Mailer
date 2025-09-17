@@ -85,5 +85,5 @@ The script will prompt you to choose between the "Teaser Mail" and the "Main Cam
 
 If you need to manually sync the `havells promo` status in your `master_db.csv` from the `email_log.csv`, run this script. It creates a new file, `master_db_updated.csv`, with the updated statuses.
 ```bash
-python update_db_from_log.py
+python updatedb.py
 ```
