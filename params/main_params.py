@@ -1,5 +1,7 @@
-CSV_PATH = 'csv/master_db_updated.csv'
-SUBJECT = "Havells mYOUsic - A Space for Original Artists"
-FORM_LINK = 'https://forms.gle/eFyhEW3ifTdtByvm7'
-TEMPLATE_FUNC = 'get_html_template'
+CSV_PATH = 'csv/test_leads.csv'
+SUBJECT = "🚀 The InstaMusic League is LIVE — ₹10 LAKH to Win!"
+FORM_LINK = 'https://iml.tscacademy.in/' 
+TEMPLATE_MODULE = 'iml_email_template'
+TEMPLATE_FUNC = 'get_iml_html_template'
 INCLUDE_BANNER = True
+BANNER_PATH = 'assets/iml banner v1.png'

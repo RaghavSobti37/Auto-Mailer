@@ -71,7 +71,10 @@ def clean_database(input_path, output_path):
     print("\n--- Database Cleaning Complete ---")
 
 if __name__ == '__main__':
-    base_dir = r'c:\Users\Raghav Raj Sobti\Desktop\AutoMailer'
+    # Dynamically determine the project's base directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(script_dir) # Go up one level from 'utils'
+
     # This script now takes the raw submission data and cleans it.
     input_db = os.path.join(base_dir, 'csv', 'submission_data.csv')
     output_db = os.path.join(base_dir, 'csv', 'submission_data_processed.csv')

@@ -79,16 +79,19 @@ def merge_csv_files(file_paths, output_path):
 
 if __name__ == '__main__':
     # --- Configuration ---
-    base_dir = r'c:\Users\Raghav Raj Sobti\Desktop\AutoMailer'
-    
+    # Dynamically determine the project's base directory
+    # This avoids hardcoding paths and makes the script portable
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(script_dir) # Go up one level from 'utils'
+
     # List of CSV files to merge. Add more files here if needed.
     input_files = [
-        os.path.join(base_dir, 'test_leads_cleaned.csv'),
-        os.path.join(base_dir, 'submission_data.csv') # The output from extract_eml_data.py
+        os.path.join(base_dir, 'csv', 'test_leads_cleaned.csv'),
+        os.path.join(base_dir, 'csv', 'submission_data.csv')
     ]
-    
+
     # The final, merged database file
-    output_file = os.path.join(base_dir, 'Shakti DB.csv')
+    output_file = os.path.join(base_dir, 'csv', 'Shakti DB.csv')
     # --- End Configuration ---
 
     merge_csv_files(input_files, output_file)

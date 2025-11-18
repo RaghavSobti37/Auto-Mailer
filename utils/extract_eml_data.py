@@ -46,27 +46,22 @@ def get_text_payload(msg):
 
 def extract_contacts_from_text(text):
     """Uses regex to find all form submissions in the email body."""
+    # This pattern is designed to find contact blocks from two different form types.
+    # It looks for Name, Email, Mobile, and City fields, allowing for variations in labels
+    # like 'Mobile'/'Ypur Mobile' and 'City'/'Your City'.
+    # It captures content up to the end of the line for each field to avoid over-matching.
     pattern = re.compile(
-        r"Name:\s*(.*?)\s*(?:<br>|[\n\r])"
-        r"Email:\s*(.*?)\s*(?:<br>|[\n\r])"
-        r"(?:Ypur Mobile|Mobile):\s*(.*?)\s*(?:<br>|[\n\r])"  # Matches 'Ypur Mobile' OR 'Mobile'
-        r"Your City:\s*(.*?)\s*", # This will match until the next submission block or end of text
-        re.DOTALL
+        r"Name:\s*([^\r\n]*?)\s*[\r\n]+"
+        r"Email:\s*([^\r\n]*?)\s*[\r\n]+"
+        r"(?:Ypur Mobile|Mobile):\s*([^\r\n]*?)\s*[\r\n]+"
+        r"(?:Your City|City):\s*([^\r\n]*)",
+        re.IGNORECASE
     )
     
     found_contacts = []
-    # Split the body by the "Forwarded Conversation" separator to handle multiple submissions
-    # The separator can be '----------' or 'Forwarded Conversation'
-    submission_blocks = re.split(r'-{10,}|Forwarded Conversation', text)
-
-    for block in submission_blocks:
-        # --- DEBUGGING: Print the block of text being searched ---
-        # print("\n--- Searching Block ---")
-        # print(block)
-        # print("-----------------------\n")
-        match = pattern.search(block)
-        if not match:
-            continue
+    # Use finditer to discover all non-overlapping matches in the text.
+    # This is more robust than splitting the text by a fixed separator.
+    for match in pattern.finditer(text):
         # Unpack the captured groups from the regex match
         name, email_addr, mobile, city = match.groups()
         contact = {
@@ -118,7 +113,11 @@ def process_eml_files(source_dir, output_csv):
     print(f"\nSuccessfully appended {len(all_extracted_contacts)} contacts to '{output_csv}'.")
 
 if __name__ == '__main__':
-    base_dir = r'c:\Users\Raghav Raj Sobti\Desktop\AutoMailer'
+    # Dynamically determine the project's base directory
+    # This avoids hardcoding paths and makes the script portable
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(script_dir) # Go up one level from 'utils'
+
     eml_source_folder = os.path.join(base_dir, 'eml')
     output_db_file = os.path.join(base_dir, 'csv', 'master_db.csv')
 
