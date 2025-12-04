@@ -1,4 +1,6 @@
+# Force recompile
 import os
+import sys
 from datetime import datetime
 import csv
 import pandas as pd
@@ -10,12 +12,14 @@ import smtplib
 from PIL import Image
 import numpy as np
 
-from params.teaser_template import get_teaser_template
-from params.email_template import get_html_template
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from src.templates import get_teaser_template, get_html_template
 
 # --- Setup folders ---
 os.makedirs('assets', exist_ok=True)
-os.makedirs('csv', exist_ok=True)
+os.makedirs('data/csv', exist_ok=True)
 
 # --- Create pixel.png if not exists (optional, can be removed if not needed) ---
 pixel_path = os.path.join('assets', 'pixel.png')
@@ -38,7 +42,7 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
 BANNER_PATH = os.path.join('assets', 'banner.jpg')
 
 def log_email_status(recipient, name, status, error_message=''):
-    log_file = os.path.join('csv', 'email_log.csv')
+    log_file = os.path.join('data/csv', 'email_log.csv')
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # Create file with headers if it doesn't exist
     try:
@@ -53,32 +57,45 @@ def log_email_status(recipient, name, status, error_message=''):
         writer.writerow([timestamp, recipient, name, status, error_message])
 
 def choose_params():
+    from src.templates import (
+        get_teaser_template,
+        get_html_template,
+        get_iml_reminder_template,
+        get_final_call_template,
+        get_masterclass_template
+    )
+    from config.campaigns import (
+        TeaserParams,
+        MainParams,
+        IMLPromoParams,
+        IMLReminderParams,
+        IMLFinalCallParams,
+        MasterclassParams
+    )
+    
     print("Choose which mail to send:")
     print("1. Teaser Mail")
     print("2. Main Campaign Mail")
     print("3. IML Promo Mail")
-    choice = input("Enter 1, 2, or 3: ").strip()
-    if choice == "1":
-        import params.teaser_params as params
-        from params.teaser_template import get_teaser_template
-        template_func = get_teaser_template
-        promo_column = 'havells promo'
-    elif choice == "2":
-        import params.main_params as params
-        import importlib
-        template_module = importlib.import_module(f"params.{params.TEMPLATE_MODULE}")
-        template_func = getattr(template_module, params.TEMPLATE_FUNC)
-        promo_column = 'havells promo'
-    elif choice == "3":
-        import params.main_params as params
-        import importlib
-        template_module = importlib.import_module(f"params.{params.TEMPLATE_MODULE}")
-        template_func = getattr(template_module, params.TEMPLATE_FUNC)
-        promo_column = 'iml promo'
-    else:
+    print("4. IML Submission Reminder")
+    print("5. IML Final Call")
+    print("6. Masterclass Ad")
+    choice = input("Enter 1, 2, 3, 4, 5, or 6: ").strip()
+    
+    campaigns = {
+        "1": (TeaserParams(), get_teaser_template, 'havells promo'),
+        "2": (MainParams(), get_html_template, 'havells promo'),
+        "3": (IMLPromoParams(), get_html_template, 'iml promo'),
+        "4": (IMLReminderParams(), get_iml_reminder_template, 'reminder_sent'),
+        "5": (IMLFinalCallParams(), get_final_call_template, 'final_call_sent'),
+        "6": (MasterclassParams(), get_masterclass_template, 'masterclass_ad_sent'),
+    }
+    
+    if choice not in campaigns:
         print("Invalid choice. Exiting.")
         exit(1)
-    return params, template_func, promo_column
+    
+    return campaigns[choice]
 
 def confirm_dataset(csv_path, promo_column):
     """
@@ -89,6 +106,8 @@ def confirm_dataset(csv_path, promo_column):
     try:
         print(f"\nLoading dataset from: {csv_path}")
         full_df = pd.read_csv(csv_path)
+        # Standardize column names for consistency
+        full_df.rename(columns={'Email': 'email', 'Name': 'name'}, inplace=True)
         print(f"Total records found in the source file: {len(full_df)}")
     except FileNotFoundError:
         print(f"ERROR: The file '{csv_path}' was not found.")
@@ -126,18 +145,29 @@ def send_emails(params, template_func, df_to_send, full_df, promo_column):
         recipient = row['email']
         name = row['name']
         
-        # Check if the template function requires FORM_LINK
+        # Check template function signature and call it accordingly
         import inspect
         sig = inspect.signature(template_func)
+        
+        # Prepare arguments for the template function
+        template_args = {}
+        if 'name' in sig.parameters:
+            template_args['name'] = name
         if 'FORM_LINK' in sig.parameters:
-            html_body = template_func(name, params.FORM_LINK)
+            template_args['FORM_LINK'] = params.FORM_LINK
+            
+        result = template_func(**template_args)
+
+        if isinstance(result, tuple) and len(result) == 2:
+            subject, html_body = result
         else:
-            html_body = template_func(name)
+            subject = params.SUBJECT
+            html_body = result
 
         msg = MIMEMultipart()
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = recipient
-        msg['Subject'] = params.SUBJECT
+        msg['Subject'] = subject
         msg['X-Priority'] = '1'
         msg['Importance'] = 'High'
         msg.attach(MIMEText(html_body, 'html'))
@@ -166,6 +196,7 @@ def update_db_from_log(df, log_path, promo_column):
     """
     Retroactively updates the DataFrame based on the email log.
     This ensures any previously sent emails are marked as promo=True.
+    Also syncs the updated DataFrame back to master_db_cleaned.csv.
     """
     try:
         if not os.path.exists(log_path):
@@ -184,6 +215,12 @@ def update_db_from_log(df, log_path, promo_column):
         final_true_count = df[promo_column].sum()
 
         print(f"\nUpdated {final_true_count - initial_true_count} additional records based on '{log_path}'.")
+        
+        # Save the updated DataFrame back to master_db_cleaned.csv
+        master_db_path = os.path.join('data/csv', 'master_db_cleaned.csv')
+        df.to_csv(master_db_path, index=False)
+        print(f"Synced updates back to '{master_db_path}'.")
+        
         return df
     except Exception as e:
         print(f"Could not update from log file due to an error: {e}")
@@ -199,7 +236,7 @@ if __name__ == '__main__':
     updated_df = send_emails(params, template_func, df_to_send, full_df, promo_column)
     
     # Now, run the update from the log file as a final check
-    log_file_path = os.path.join('csv', 'email_log.csv')
+    log_file_path = os.path.join('data/csv', 'email_log.csv')
     final_df = update_db_from_log(updated_df, log_file_path, promo_column)
     
     # Save the final, fully updated dataframe
