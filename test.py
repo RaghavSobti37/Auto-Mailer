@@ -15,7 +15,11 @@ import numpy as np
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.templates import get_teaser_template, get_html_template
+from src.templates import get_teaser_template, get_html_template, get_gmi_confirmation_template
+try:
+    from scripts.merge_gmi_data import merge_gmi_data
+except ImportError:
+    from merge_gmi_data import merge_gmi_data
 
 # --- Setup folders ---
 os.makedirs('assets', exist_ok=True)
@@ -39,7 +43,7 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     print("EMAIL_PASSWORD=your_password")
     exit(1)
 
-BANNER_PATH = os.path.join('assets', 'banner.jpg')
+BANNER_PATH = os.path.join('assets', 'Havells_banner.jpg')
 
 def log_email_status(recipient, name, status, error_message=''):
     log_file = os.path.join('data/csv', 'email_log.csv')
@@ -56,39 +60,66 @@ def log_email_status(recipient, name, status, error_message=''):
         writer = csv.writer(f)
         writer.writerow([timestamp, recipient, name, status, error_message])
 
+class GMIConfirmationParams:
+    CSV_PATH = os.path.join('data', 'Delhi GMI auditions 22nd Feb.csv')
+    SUBJECT = "Confirmation for Havells mYOUsic"
+    FORM_LINK = "https://havellsmyousic.com"
+    INCLUDE_BANNER = True
+    BANNER_PATH = os.path.join('assets', 'Havells_banner.jpg')
+    # PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
+    # IMPORTANT: Deploy as "Execute as: Me" and "Who has access: Anyone"
+    # The URL must end in '/exec'
+    WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5uwfmkq-s5S_p9nWqLRhTkpfS6p8zStj45fgHBQ9QsGLVbnryRE3qoo5dQn1lCmZQ-A/exec"
+
+class TestGMIParams:
+    CSV_PATH = os.path.join('data', 'test_leads.csv')
+    SUBJECT = "TEST: 🎤 Your Music Journey Begins: Confirmation for Havells mYOUsic"
+    FORM_LINK = "https://havellsmyousic.com"
+    INCLUDE_BANNER = True
+    BANNER_PATH = os.path.join('assets', 'Havells_banner.jpg')
+    # PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
+    # IMPORTANT: Deploy as "Execute as: Me" and "Who has access: Anyone"
+    # The URL must end in '/exec'
+    WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5uwfmkq-s5S_p9nWqLRhTkpfS6p8zStj45fgHBQ9QsGLVbnryRE3qoo5dQn1lCmZQ-A/exec"
+
+class MergeOnlyParams:
+    """Dummy class to trigger merge-only mode."""
+    pass
+
 def choose_params():
     from src.templates import (
         get_teaser_template,
         get_html_template,
-        get_iml_reminder_template,
-        get_final_call_template,
-        get_masterclass_template
+        get_masterclass_template,
+        get_havells_myousic_template
     )
     from config.campaigns import (
         TeaserParams,
         MainParams,
-        IMLPromoParams,
-        IMLReminderParams,
-        IMLFinalCallParams,
-        MasterclassParams
+        MasterclassParams,
+        HavellsMyousicParams
     )
     
     print("Choose which mail to send:")
     print("1. Teaser Mail")
     print("2. Main Campaign Mail")
-    print("3. IML Promo Mail")
-    print("4. IML Submission Reminder")
-    print("5. IML Final Call")
-    print("6. Masterclass Ad")
-    choice = input("Enter 1, 2, 3, 4, 5, or 6: ").strip()
+    print("3. Masterclass Ad")
+    print("4. Havells mYOUsic Campaign")
+    print("5. Havells GMI Confirmation (Auto-Merge CSVs)")
+    print("6. Fix Contact Info CSV (Extract Name/Email)")
+    print("7. Test GMI Confirmation (test_leads.csv)")
+    print("8. Merge GMI Data Only")
+    choice = input("Enter 1, 2, 3, 4, 5, 6, 7, or 8: ").strip()
     
     campaigns = {
         "1": (TeaserParams(), get_teaser_template, 'havells promo'),
         "2": (MainParams(), get_html_template, 'havells promo'),
-        "3": (IMLPromoParams(), get_html_template, 'iml promo'),
-        "4": (IMLReminderParams(), get_iml_reminder_template, 'reminder_sent'),
-        "5": (IMLFinalCallParams(), get_final_call_template, 'final_call_sent'),
-        "6": (MasterclassParams(), get_masterclass_template, 'masterclass_ad_sent'),
+        "3": (MasterclassParams(), get_masterclass_template, 'masterclass_ad_sent'),
+        "4": (HavellsMyousicParams(), get_havells_myousic_template, 'havells_myousic_sent'),
+        "5": (GMIConfirmationParams(), get_gmi_confirmation_template, 'gmi_confirmation_sent'),
+        "6": (None, None, None), # Special case
+        "7": (TestGMIParams(), get_gmi_confirmation_template, 'gmi_test_sent'),
+        "8": (MergeOnlyParams(), None, None),
     }
     
     if choice not in campaigns:
@@ -155,6 +186,16 @@ def send_emails(params, template_func, df_to_send, full_df, promo_column):
             template_args['name'] = name
         if 'FORM_LINK' in sig.parameters:
             template_args['FORM_LINK'] = params.FORM_LINK
+        if 'email' in sig.parameters:
+            template_args['email'] = recipient
+        if 'WEB_APP_URL' in sig.parameters:
+            url = getattr(params, 'WEB_APP_URL', '')
+            template_args['WEB_APP_URL'] = url
+            if idx == 0:
+                print(f"\n🔍 DEBUG: Verifying Link Generation")
+                print(f"   Base URL: {url}")
+                print(f"   Test Link: {url}?email={recipient}&status=yes")
+                print(f"   (Please copy the Test Link above and open it in Incognito mode to verify)\n")
             
         result = template_func(**template_args)
 
@@ -229,6 +270,27 @@ def update_db_from_log(df, log_path, promo_column):
 if __name__ == '__main__':
     params, template_func, promo_column = choose_params()
     
+    # Special case for option 6
+    if params is None:
+        try:
+            from scripts.extract_clean_csv import extract_clean_data
+            extract_clean_data()
+        except ImportError:
+            print("Script not found. Please ensure scripts/extract_clean_csv.py exists.")
+        exit(0)
+    
+    # If GMI Confirmation is selected, run the merge first
+    if isinstance(params, GMIConfirmationParams):
+        print("Initiating CSV merge for GMI Confirmation...")
+        merge_gmi_data(os.path.join('data'), params.CSV_PATH)
+    
+    # If Merge Only is selected
+    if isinstance(params, MergeOnlyParams):
+        print("Initiating CSV merge for GMI Confirmation...")
+        merge_gmi_data(os.path.join('data'), GMIConfirmationParams.CSV_PATH)
+        print(f"✅ Merge complete. Data saved to: {GMIConfirmationParams.CSV_PATH}")
+        exit(0)
+
     df_to_send = confirm_dataset(params.CSV_PATH, promo_column)
     # The confirm_dataset function now returns the full dataframe and the filtered one
     full_df = df_to_send.attrs['full_df']

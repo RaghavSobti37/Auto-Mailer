@@ -9,6 +9,10 @@ A professional Python-based toolkit for managing and executing automated email c
   - Ingest contacts from multiple sources (Excel, CSV, email files)
   - Automatic data cleaning, validation, and deduplication
   - Prevent duplicate emails with campaign tracking flags
+  - **Intelligent GMI Data Merging**:
+    - Smart column mapping (detects Name, Email, Phone, City, Role variations)
+    - Completeness-based deduplication (keeps the record with the most data)
+    - Support for mixed CSV and Excel inputs
 - **Smart Email Delivery**:
   - Personalized HTML emails with dynamic content
   - Optional banner image embedding
@@ -45,8 +49,11 @@ AutoMailer/
 │   ├── show_progress.py         # Campaign progress reporting
 │   ├── update_db.py             # Update DB from email logs
 │   └── generate_whatsapp_db.py  # WhatsApp database generation
+│   ├── merge_gmi_data.py        # GMI Data Merging logic
+│   └── extract_clean_csv.py     # Contact Info CSV Cleaner
 ├── config/                       # Configuration files
 │   └── campaigns.py             # Campaign parameters
+├── test.py                      # Main GMI Campaign Orchestrator
 ├── data/                         # Data files
 │   ├── csv/                     # CSV data files
 │   │   ├── master_db.csv               # Raw contact list
@@ -106,6 +113,35 @@ EMAIL_PASSWORD=your_gmail_app_password
 - **Banner Images**: Place promotional images in the `assets/` folder
 
 ## 📋 Usage Guide
+
+### 🎵 Running GMI Campaigns (New)
+
+The project now includes a specialized orchestrator for Havells GMI campaigns. This is the primary entry point for GMI workflows.
+
+```bash
+python test.py
+```
+
+**Key Options:**
+
+- **Option 5: Havells GMI Confirmation (Auto-Merge)**
+  - Automatically scans `data/` for all CSV/Excel files.
+  - Merges them using intelligent column mapping.
+  - Deduplicates records (prioritizing rows with more data).
+  - Sends confirmation emails to the merged list.
+
+- **Option 6: Fix Contact Info CSV**
+  - Specifically targets problematic "Contact Information" export files.
+  - Fixes header issues and validates "Name" vs "Phone" columns.
+
+- **Option 7: Test GMI Confirmation**
+  - Sends the GMI confirmation template to contacts in `data/test_leads.csv`.
+  - Uses the configured Google Apps Script for redirect links.
+
+- **Option 8: Merge GMI Data Only**
+  - Runs the merge and deduplication process.
+  - Saves the result to `data/Delhi GMI auditions 22nd Feb.csv` without sending emails.
+
 
 ### Running Email Campaigns
 

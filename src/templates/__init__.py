@@ -42,10 +42,11 @@ def get_html_template(name, FORM_LINK):
                         <li><b>Grow Together:</b> Be part of a creative journey where every artist supports and inspires each other.</li>
                     </ul>
                     <p>Whether you're a <span style='color:#ff0000; font-weight:bold;'>Composer</span>, <span style='color:#ff0000; font-weight:bold;'>Singer</span>, <span style='color:#ff0000; font-weight:bold;'>Writer</span>, <span style='color:#ff0000; font-weight:bold;'>Music Producer</span>, or part of a <span style='color:#ff0000; font-weight:bold;'>Band ( Original songs only)</span> - there's a place for you here. If you know someone whose original music deserves to be heard, invite them to join us too!</p>
+                    <p style='text-align:center; font-size:1.1em; margin-top:20px;'><b>Submission Deadline: 19th Feb 11:59pm</b></p>
                     <div style='text-align:center; margin:40px 0;'>
                         <a href='{FORM_LINK}' style='background:#ff0000; color:#fff; padding:20px 40px; border-radius:8px; text-decoration:none; font-size:1.3em; font-weight:bold; display:inline-block;'>Begin Your Journey Here</a>
                     </div>
-                    <p style='text-align:center; font-size:0.9em; color:#666; margin-top:15px;'>Submissions will only be accepted through the above link (google form) and submit your original work to be reviewed</p>
+                    <p style='text-align:center; font-size:0.9em; color:#666; margin-top:15px;'>Submissions will only be accepted through the above link and submit your original work to be reviewed</p>
                 </div>
             </div>
         </body>
@@ -53,82 +54,8 @@ def get_html_template(name, FORM_LINK):
     """
 
 
-def get_iml_reminder_template(name):
-    """IML Reminder email template."""
-    subject = "Don't Miss Out – Submit Your Entry for Insta Music League"
-    
-    html_body = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Don't Miss Out – Submit Your Entry for Insta Music League</title>
-</head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
-        <tr>
-            <td align="center">
-                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; margin: 20px 0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                    <tr>
-                        <td style="padding: 40px 30px;">
-                            <h2 style="color: #333333; text-align: center; font-size: 24px; margin-bottom: 20px;">Don't Miss Out – Submit Your Entry!</h2>
-                            <p style="font-size: 16px; color: #555555;">Hey {name},</p>
-                            <p style="font-size: 16px; color: #555555;">We have received your registration for the Insta Music League!</p>
-                            <p style="font-size: 16px; color: #555555;"><strong>Time is running out</strong> to submit your songs — <strong>we can't wait to hear your sound!</strong></p>
-                            <h3 style="color: #333333; border-bottom: 2px solid #ff0000; padding-bottom: 5px; margin-top: 30px;">Here's How to Participate:</h3>
-                            <ol style="font-size: 16px; color: #555555; line-height: 1.8; padding-left: 20px;">
-                                <li style="margin-bottom: 10px;"><strong>Record</strong> – Sing and record in a clear, quiet space. Home recordings are perfect!</li>
-                                <li style="margin-bottom: 10px;"><strong>Upload</strong> – Post your clip as a Reel, use #IMLbyTSC, and send us a collab invite on @the_shakti_collective.</li>
-                                <li style="margin-bottom: 10px;"><strong>Apply</strong> – Complete the official application form to confirm your entry.</li>
-                            </ol>
-                            <p style="font-size: 16px; color: #555555; text-align: center; margin-top: 30px;">You can submit up to <strong>5 original songs</strong> by <strong>December 7, 2025, 11:59 PM</strong>.</p>
-                            <p style="font-size: 16px; color: #555555; text-align: center;"><strong>Don't miss your chance</strong> to showcase your talent to the world.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="center" style="padding: 20px 30px 40px;">
-                            <a href="http://iml.tscacademy.in" style="background-color: #ff0000; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Submit Now!</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 20px 30px; background-color: #f2f2f2; text-align: center;">
-                            <p style="font-size: 16px; color: #555555; margin: 0;">Warm regards,<br><strong>Team Insta Music League</strong></p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-"""
-    return subject, html_body
 
 
-def get_final_call_template(name):
-    """IML Final Call email template."""
-    subject = "FINAL CALL: 2000+ Entries In, Secure Your Spot in the Insta Music League."
-    
-    html_body = f"""
-<html>
-    <body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 0; margin: 0;'>
-        <div style='max-width:600px; margin:auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);'>
-            <div style='padding:32px;'>
-                <h2 style='color:#ff0000; text-align:center;'>FINAL CALL: Your Last Chance!</h2>
-                <p>Dear <b>{name}</b>,</p>
-                <p>Over <b>2000+ talented artists</b> have already submitted their entries to the Insta Music League!</p>
-                <p>This is your <b>final call</b> to showcase your talent and join this incredible community.</p>
-                <p>Don't let this opportunity slip away!</p>
-                <div style='text-align:center; margin:40px 0;'>
-                    <a href='http://iml.tscacademy.in' style='background:#ff0000; color:#fff; padding:20px 40px; border-radius:8px; text-decoration:none; font-size:1.2em; font-weight:bold; display:inline-block;'>Submit Your Entry Now</a>
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
-"""
-    return subject, html_body
 
 
 def get_masterclass_template(name):
@@ -150,6 +77,224 @@ def get_masterclass_template(name):
             </div>
         </div>
     </body>
+</html>
+"""
+    return subject, html_body
+
+
+def get_havells_myousic_template(name):
+    """Havells mYOUsic platform promotional email template."""
+    subject = "Amplify Your Music on Havells mYOUsic 🎵"
+    
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style='margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f5f5f5;'>
+    <div style='max-width:700px; margin:auto; background:#ffffff;'>
+        
+        <!-- Banner Image -->
+        <div style='overflow:hidden;'>
+            <img src='cid:bannerimage' alt='Havells mYOUsic' style='width:100%; display:block; max-height:280px; object-fit:cover;'>
+        </div>
+        
+        <!-- Main Content -->
+        <div style='padding:40px 50px; background:#ffffff;'>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Hey {name},
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                We hope this finds you well.
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Havells mYOUsic is building a platform where emerging music talent gets discovered, nurtured, and celebrated—and we'd love your help in spreading the word.
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                This initiative offers young and independent artists access to mentorship from industry legends, immersive bootcamps, and opportunities to create original music, shoot videos, and professionally record their tracks.
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 35px 0; text-align:justify;'>
+                If you know of any artists, musicians, composers, singers, or creators who would benefit from this opportunity, we'd greatly appreciate it if you could share this with them and help us reach the right talent.
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 35px 0; text-align:justify;'>
+                Together, let's amplify voices that deserve to be heard.
+            </p>
+            
+            <p style='font-size:18px; font-weight:bold; color:#000000; margin:0 0 35px 0; text-align:center;'>Ready to amplify your music?</p>
+            
+            <!-- Primary CTA Button -->
+            <table width='100%' cellspacing='0' cellpadding='0' style='margin:0 0 25px 0;'>
+                <tr>
+                    <td align='center'>
+                        <a href='https://forms.gle/eFyhEW3ifTdtByvm7' style='background:#c7302f; color:#ffffff; padding:16px 50px; text-decoration:none; border-radius:2px; font-size:16px; font-weight:bold; display:inline-block; border:none; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.15); letter-spacing:1px;'>REGISTER NOW</a>
+                    </td>
+                </tr>
+            </table>
+            
+            <!-- Secondary CTA Link -->
+            <p style='font-size:14px; margin:20px 0 0 0; text-align:center;'>
+                For more details visit - <a href='https://havellsmyousic.com' style='color:#c7302f; text-decoration:none; font-weight:bold;'>havellsmyousic.com</a>
+            </p>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div style='padding:30px; text-align:center; background:#000000; color:#ffffff; font-size:12px; line-height:1.6; border-top:3px solid #c7302f;'>
+            <p style='margin:0 0 8px 0;'>Warm regards,</p>
+            <p style='margin:0; color:#cccccc;'>Team Havells mYOUsic<br>© 2026 Havells mYOUsic. All rights reserved.</p>
+        </div>
+        
+    </div>
+</body>
+</html>
+"""
+    return subject, html_body
+
+
+def get_havells_myousic_call_template(name):
+    """Havells mYOUsic final call email template with submission deadline and audition details."""
+    subject = "Last Chance to Submit Your Music to Havells mYOUsic 🎵"
+    
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style='margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f5f5f5;'>
+    <div style='max-width:700px; margin:auto; background:#ffffff;'>
+        
+        <!-- Banner Image -->
+        <div style='overflow:hidden;'>
+            <img src='cid:bannerimage' alt='Havells mYOUsic' style='width:100%; display:block; max-height:280px; object-fit:cover;'>
+        </div>
+        
+        <!-- Main Content -->
+        <div style='padding:40px 50px; background:#ffffff;'>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Hey,
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Hope you're doing great!
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Havells mYOUsic is the platform discovering, nurturing, and celebrating emerging music talent—and we need your help to spread the word.
+            </p>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Young artists get mentorship from industry legends, immersive bootcamps, and chances to create original tracks, shoot videos, and record professionally.
+            </p>
+            
+            <!-- Important Deadline Alert -->
+            <div style='background:#fff3cd; border-left:4px solid #c7302f; padding:15px; margin:30px 0; border-radius:4px;'>
+                <p style='font-size:15px; font-weight:bold; color:#c7302f; margin:0 0 10px 0;'>⏰ Last Chance!</p>
+                <p style='font-size:15px; line-height:1.8; color:#333333; margin:0; text-align:justify;'>
+                    Last chance to submit entries: <strong>February 21st, 11:59 PM</strong>
+                </p>
+                <p style='font-size:14px; line-height:1.8; color:#333333; margin:10px 0 0 0; text-align:justify;'>
+                    <strong>Plus, join our offline audition in Delhi on February 22nd!</strong>
+                </p>
+            </div>
+            
+            <p style='font-size:15px; line-height:1.8; color:#333333; margin:0 0 25px 0; text-align:justify;'>
+                Know any musicians, composers, singers, or creators who'd thrive here? Please share this with them—we're counting on you to connect us with the next big voices.
+            </p>
+            
+            <!-- Primary CTA Button -->
+            <table width='100%' cellspacing='0' cellpadding='0' style='margin:0 0 25px 0;'>
+                <tr>
+                    <td align='center'>
+                        <a href='https://forms.gle/eFyhEW3ifTdtByvm7' style='background:#c7302f; color:#ffffff; padding:16px 50px; text-decoration:none; border-radius:2px; font-size:16px; font-weight:bold; display:inline-block; border:none; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.15); letter-spacing:1px;'>REGISTER NOW</a>
+                    </td>
+                </tr>
+            </table>
+            
+            <!-- Secondary CTA Link -->
+            <p style='font-size:14px; margin:20px 0 0 0; text-align:center;'>
+                Details at - <a href='https://havellsmyousic.com' style='color:#c7302f; text-decoration:none; font-weight:bold;'>havellsmyousic.com</a>
+            </p>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div style='padding:30px; text-align:center; background:#000000; color:#ffffff; font-size:12px; line-height:1.6; border-top:3px solid #c7302f;'>
+            <p style='margin:0 0 8px 0;'>Warm regards,</p>
+            <p style='margin:0; color:#cccccc;'>Team Havells mYOUsic<br>© 2026 Havells mYOUsic. All rights reserved.</p>
+        </div>
+        
+    </div>
+</body>
+</html>
+"""
+    return subject, html_body
+
+
+def get_gmi_confirmation_template(name):
+    """Havells mYOUsic GMI Event Confirmation email template."""
+    subject = "🎤 Your Music Journey Begins: Confirmation for Havells mYOUsic"
+    
+    instagram_link = "https://www.instagram.com/the_shakti_collective/"
+    
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 0; margin: 0;'>
+    <div style='max-width:600px; margin:auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);'>
+        <img src='cid:bannerimage' alt='Havells mYOUsic Banner' style='width:100%; display:block;'>
+        <div style='padding:32px;'>
+            <p>Hello <b>{name}</b>!</p>
+            <p>Thank you for registering for <b>Havells mYOUsic</b>. We are thrilled to welcome you into a space designed specifically to celebrate and elevate emerging artist talent.</p>
+            <p>This isn't just an audition—it's an opportunity to showcase your sound and engage in exclusive knowledge-sharing sessions with seasoned mentors in the music industry. Whether you are on stage or in the audience, come prepared to learn, connect, and grow.</p>
+            
+            <h3 style='color:#ff0000; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;'>Event Details:</h3>
+            <ul style='list-style: none; padding: 0;'>
+                <li>📅 <b>Date:</b> Sunday, 22nd February</li>
+                <li>📍 <b>Venue:</b> Global Music Institute (GMI), Noida</li>
+                <li>⏰ <b>Gate Timings:</b> 08:30 AM – 10:30 AM <span style='color:#ff0000;'>(Entry closes strictly at 10:30 AM)</span></li>
+                <li>🌐 <b>Official Portal:</b> <a href='https://havellsmyousic.com' style='color:#ff0000; text-decoration:none;'>havellsmyousic.com</a></li>
+            </ul>
+
+            <h3 style='color:#ff0000; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;'>What to Expect:</h3>
+            <ul style='padding-left: 20px;'>
+                <li><b>Live Auditions:</b> Your moment to shine in front of our panel.</li>
+                <li><b>Mentor Interactions:</b> Gain insights into the industry directly from the pros.</li>
+                <li><b>Networking:</b> Connect with fellow artists and the Havells mYOUsic community.</li>
+            </ul>
+
+            <h3 style='color:#ff0000; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;'>Important Instructions:</h3>
+            <ul style='padding-left: 20px;'>
+                <li>Please carry a valid <b>government ID</b> for entry.</li>
+                <li><b>8:30am Gate opens</b> to settle in and soak up the atmosphere before your check-in.</li>
+                <li>If you have specific technical needs for your set, our stage crew will be available to assist you upon arrival.</li>
+            </ul>
+
+            <p style='text-align:center; font-weight:bold; font-size:1.1em; margin-top:30px;'>Stay updated with the latest announcements!</p>
+            
+            <div style='text-align:center; margin:20px 0;'>
+                <a href='{instagram_link}' style='background:#E1306C; color:#fff; padding:15px 30px; border-radius:5px; text-decoration:none; font-weight:bold; margin:5px; display:inline-block;'>📸 Visit Instagram for Updates</a>
+            </div>
+
+            <p>We can’t wait to hear your story and your sound!</p>
+            
+            <p style='margin-top:30px; color:#666;'>
+                Best regards,<br>
+                <b>Team Havells mYOUsic</b>
+            </p>
+        </div>
+    </div>
+</body>
 </html>
 """
     return subject, html_body

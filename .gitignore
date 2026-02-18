@@ -18,9 +18,6 @@ venv/
 consolidated_eml_files/
 
 # Data and email files - Exclude all CSV and EML files
-*.csv
-*.eml
-*.xlsx
 
 # Log files
 *.log

@@ -130,6 +130,10 @@ def prepare_contacts_for_db(df, required_columns=['name', 'email', 'number', 'ci
     Returns:
         Processed DataFrame with only required columns
     """
+    # Remove duplicate columns (keep first occurrence)
+    if df.columns.duplicated().any():
+        df = df.loc[:, ~df.columns.duplicated(keep='first')]
+    
     # Determine which columns are actually present
     cols_to_keep = [col for col in required_columns if col in df.columns]
 

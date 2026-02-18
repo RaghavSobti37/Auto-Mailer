@@ -93,20 +93,22 @@ def add_and_clean_new_data(new_source_paths, master_db_path, cleaned_db_path):
 
 if __name__ == '__main__':
     # --- Configuration ---
+    IMPORT_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'import data'))
     DATA_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'csv'))
     
     # Define the list of new source files to add
     new_source_files = [
-        # 'IDOL 13 - L2 master sheet citywise.xlsx',
-        # 'SINGING DEEWANE COMPILE SHEET - SONALI.xlsx',
-        # 'UPDATED SILENT CITIES COMPILED SHEET DIMPLE.xlsx'
+        'Artiste First Webflow Data.xlsx',
+        'New artist list.xlsx',
+        # 'SINGING DEEWANE COMPILE SHEET - SONALI.xlsx',  # Has complex data format issues
+        # 'UPDATED SILENT CITIES COMPILED SHEET DIMPLE.xlsx'  # Missing email/phone columns
     ]
 
     master_db_file = 'master_db.csv'
     cleaned_db_file = 'master_db_cleaned.csv'
 
     # --- Execution ---
-    new_source_paths = [os.path.join(DATA_FOLDER, f) for f in new_source_files]
+    new_source_paths = [os.path.join(IMPORT_FOLDER, f) for f in new_source_files]
     master_db_path = os.path.join(DATA_FOLDER, master_db_file)
     cleaned_db_path = os.path.join(DATA_FOLDER, cleaned_db_file)
 
