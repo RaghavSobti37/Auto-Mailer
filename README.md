@@ -34,43 +34,44 @@ A professional Python-based toolkit for managing and executing automated email c
 ```
 AutoMailer/
 ├── src/                          # Core application code
-│   ├── __init__.py
-│   ├── core/                     # Core functionality
-│   │   ├── __init__.py
-│   │   ├── database.py          # Database cleaning and validation
-│   │   └── email_service.py     # Email sending and logging
-│   ├── templates/               # Email templates
-│   │   └── __init__.py          # All campaign email templates
-│   └── utils/                   # Utility functions
-│       └── __init__.py          # Data processing utilities
+│   ├── core/
+│   │   ├── database.py
+│   │   └── email_service.py
+│   └── templates/
 ├── scripts/                      # Executable scripts
+│   ├── consolidate_and_clean.py # Consolidates and cleans all raw data
 │   ├── send_campaigns.py        # Main email sending script
-│   ├── prepare_data.py          # Data preparation and cleaning
-│   ├── show_progress.py         # Campaign progress reporting
-│   ├── update_db.py             # Update DB from email logs
-│   └── generate_whatsapp_db.py  # WhatsApp database generation
-│   ├── merge_gmi_data.py        # GMI Data Merging logic
-│   └── extract_clean_csv.py     # Contact Info CSV Cleaner
+│   ├── export_data.py           # Exports subsets of the master database
+│   ├── update_db.py             # Updates campaign flags in the master database
+│   ├── send_to_delhi_contacts.py     # Send Rise Emailer to Delhi contacts
+│   ├── rise_emailer_unified.py       # UNIFIED: Complete Rise Emailer campaign (batch + schedule ready)
+│   ├── test_schedule_1min.py         # Test scheduler with 1-minute delay
+│   └── ...
 ├── config/                       # Configuration files
 │   └── campaigns.py             # Campaign parameters
-├── test.py                      # Main GMI Campaign Orchestrator
 ├── data/                         # Data files
-│   ├── csv/                     # CSV data files
-│   │   ├── master_db.csv               # Raw contact list
-│   │   ├── master_db_cleaned.csv       # Cleaned contact list
-│   │   ├── email_log.csv               # Email send logs
-│   │   ├── whatsapp_db.csv            # WhatsApp contacts (raw)
-│   │   ├── whatsapp_db_cleaned.csv    # WhatsApp contacts (cleaned)
-│   │   └── [other CSV files]
-│   └── imports/                 # Imported data sources
+│   ├── raw/                     # Raw, unprocessed data files
+│   ├── processed/               # Processed data files
+│   ├── master_db/               # Master database files
+│   │   ├── master_db.csv
+│   │   └── master_db_cleaned.csv
+│   └── exports/                 # Exported data files
+│       ├── Delhi_and_New_Delhi_Contacts.csv
+│       ├── Delhi_and_New_Delhi_Contacts_WORKING.csv
+│       └── Delhi_Test_Contacts.csv
+├── logs/                         # Log files
+│   ├── activity.log             # General script activity log
+│   ├── email_log.csv            # Email sending log
+│   └── rise_campaign.csv        # Rise Emailer campaign log
 ├── assets/                       # Media files
-│   ├── banner.jpg               # Main campaign banner
-│   ├── pixel.png                # Tracking pixel
-│   └── [other images]
-├── .env                         # Environment variables (credentials)
+│   ├── rise-emailer/           # Rise Emailer assets
+│   │   └── images/             # Promotional images with MIME embedding
+│   └── ...
+├── .env                         # Environment variables
 ├── requirements.txt             # Python dependencies
 └── README.md                    # This file
 ```
+
 
 ## 🚀 Quick Start
 
@@ -102,48 +103,29 @@ EMAIL_PASSWORD=your_gmail_app_password
 
 ### 3. Prepare Your Data
 
-- **Master Contact List**: Place or update `data/csv/master_db.csv` with columns:
-  - `name`: Contact name
-  - `email`: Email address (required)
-  - `number`: Phone number (optional)
-  - `city`: City/Location
-  - `gender`: Gender information
-  - `havells promo`: Campaign tracking flag (boolean)
+- **Place Raw Data**: Place all your raw data files (CSV, Excel) into the `data/raw/` directory.
 
-- **Banner Images**: Place promotional images in the `assets/` folder
+- **Banner Images**: Place promotional images in the `assets/` folder.
 
 ## 📋 Usage Guide
 
-### 🎵 Running GMI Campaigns (New)
+### 1. Consolidate and Clean Data
 
-The project now includes a specialized orchestrator for Havells GMI campaigns. This is the primary entry point for GMI workflows.
+This is the first step in the new workflow. This script will process all files in `data/raw/`, clean them, and update the master database.
 
 ```bash
-python test.py
+python scripts/consolidate_and_clean.py
 ```
 
-**Key Options:**
+This script will:
+1. Scan the `data/raw/` directory for all `.csv` and `.xlsx` files.
+2. Intelligently map columns and merge all data.
+3. Clean and deduplicate the data.
+4. Update the master database located at `data/master_db/master_db.csv`.
+5. Create a cleaned version of the master database at `data/master_db/master_db_cleaned.csv` for use in campaigns.
+6. Move processed files from `data/raw/` to `data/processed/`.
 
-- **Option 5: Havells GMI Confirmation (Auto-Merge)**
-  - Automatically scans `data/` for all CSV/Excel files.
-  - Merges them using intelligent column mapping.
-  - Deduplicates records (prioritizing rows with more data).
-  - Sends confirmation emails to the merged list.
-
-- **Option 6: Fix Contact Info CSV**
-  - Specifically targets problematic "Contact Information" export files.
-  - Fixes header issues and validates "Name" vs "Phone" columns.
-
-- **Option 7: Test GMI Confirmation**
-  - Sends the GMI confirmation template to contacts in `data/test_leads.csv`.
-  - Uses the configured Google Apps Script for redirect links.
-
-- **Option 8: Merge GMI Data Only**
-  - Runs the merge and deduplication process.
-  - Saves the result to `data/Delhi GMI auditions 22nd Feb.csv` without sending emails.
-
-
-### Running Email Campaigns
+### 2. Running Email Campaigns
 
 ```bash
 # Interactive campaign selection and execution
@@ -151,76 +133,89 @@ python scripts/send_campaigns.py
 ```
 
 The script will:
-1. Display available campaigns (Teaser, Main, IML Promo, etc.)
-2. Load the target contact list
-3. Show a preview of recipients
-4. Request confirmation before sending
-5. Log all send results to `data/csv/email_log.csv`
+1. Display available campaigns.
+2. Load the cleaned master database.
+3. Show a preview of recipients for the selected campaign.
+4. Request confirmation before sending.
+5. Log all send results to `logs/email_log.csv`.
 
-**Available Campaigns:**
-1. **Teaser Mail** - Initial campaign teaser
-2. **Main Campaign Mail** - Full campaign with banner
-3. **IML Promo Mail** - Insta Music League promotion
-4. **IML Submission Reminder** - Deadline reminder
-5. **IML Final Call** - Last chance notice
-6. **Masterclass Ad** - Educational workshop promotion
+### 3. Exporting Data
 
-### Data Preparation
+You can export subsets of your cleaned data for analysis or other purposes.
 
 ```bash
-# Prepare and clean new contact data
-python scripts/prepare_data.py
+python scripts/export_data.py
+```
+
+The script will guide you through:
+1. Choosing a column to filter by (e.g., `city`).
+2. Providing a value to filter on (e.g., `Delhi`).
+3. Saving the filtered data to a new CSV file in the `data/exports/` directory.
+
+### 4. Update Database from Logs
+
+If you need to manually update campaign flags in the master database based on the email log, you can use this script.
+
+```bash
+# Sync database with email logs for a specific campaign
+python scripts/update_db.py --column <campaign_column_name>
+```
+
+### 5. Rise Emailer Campaign (NEW)
+
+The unified Rise Emailer campaign system with integrated batch processing, progress tracking, and optional scheduling.
+
+#### Quick Start (Single Execution)
+
+```bash
+python scripts/rise_emailer_unified.py
 ```
 
 This script:
-1. Reads new Excel/CSV files from `data/csv/` folder
-2. Standardizes column names and data formats
-3. Appends data to `master_db.csv`
-4. Runs full cleaning process on the master database
-5. Creates `master_db_cleaned.csv`
+- ✅ Loads contacts with batch capacity management (50 per batch)
+- ✅ Creates a separate working copy to track progress
+- ✅ Sends emails in optimized batches to reduce SMTP operations
+- ✅ Saves progress after each batch (resumable)
+- ✅ **Default**: Uses TEST database (4 test contacts)
+- ✅ **Switch to Production**: Change `contacts_mode = "PRODUCTION"` in the script
 
-**Edit `scripts/prepare_data.py`** to add source files:
+#### Database Mode Selection
+
+The script includes a **safety mechanism** to prevent accidental mass sending:
+
 ```python
-new_source_files = [
-    'your_file1.xlsx',
-    'your_file2.csv',
-]
+# In scripts/rise_emailer_unified.py
+contacts_mode = "TEST"  # Options: "TEST" (4 contacts) or "PRODUCTION" (429 contacts)
 ```
 
-### Track Campaign Progress
+**To switch to production contacts:**
+1. Open `scripts/rise_emailer_unified.py`
+2. Change line to: `contacts_mode = "PRODUCTION"`
+3. Run script - it will warn before sending
+
+#### Testing with Scheduler (1-Minute Delay)
 
 ```bash
-# View real-time campaign statistics
-python scripts/show_progress.py
+python scripts/test_schedule_1min.py
 ```
 
-Output includes:
-- Total contacts in list
-- Emails successfully sent
-- Failed send attempts
-- Remaining to send
-- Daily send breakdown
-- Campaign completion percentage
+This test scheduler:
+- Waits 1 minute from execution time
+- Automatically runs the full campaign
+- Logs all output to `logs/test_schedule.log`
+- Useful for verifying scheduler functionality before production scheduling
 
-### Update Database from Logs
+**Features:**
+- 📊 Real-time batch status updates
+- 💾 Working copy protection (original DB untouched)
+- 📋 Progress tracking with email_sent and sent_timestamp columns
+- ⏸️ Resumable - skips already-sent contacts
+- 🔄 Rate limiting between batches (1 second delay)
 
-```bash
-# Sync database with email logs
-python scripts/update_db.py
-```
+#### Production Scheduling (9 AM Daily)
 
-Marks emails as sent in the master database based on `email_log.csv`.
+For 24/7 automated sending at a fixed time, see `SCHEDULING_GUIDE.md` for setting up Windows Task Scheduler or APScheduler.
 
-### Generate WhatsApp Contact List
-
-```bash
-# Create WhatsApp-compatible contact database
-python scripts/generate_whatsapp_db.py
-```
-
-Creates:
-- `data/csv/whatsapp_db.csv` - Raw WhatsApp contacts
-- `data/csv/whatsapp_db_cleaned.csv` - Cleaned with formatted phone numbers
 
 ## ⚙️ Configuration
 
@@ -230,7 +225,7 @@ Edit `config/campaigns.py` to customize campaigns:
 
 ```python
 class MyCustomParams:
-    CSV_PATH = 'data/csv/master_db.csv'
+    CSV_PATH = 'data/master_db/master_db_cleaned.csv'
     SUBJECT = "My Campaign Subject"
     FORM_LINK = 'https://your-form-link.com'
     INCLUDE_BANNER = True
@@ -239,93 +234,51 @@ class MyCustomParams:
 
 ### Email Templates
 
-Edit `src/templates/__init__.py` to customize email templates:
-
-```python
-def get_custom_template(name, FORM_LINK):
-    """Your custom email template"""
-    return f"""
-    <html>
-        <body>
-            <p>Hello {name},</p>
-            <!-- Your content here -->
-        </body>
-    </html>
-    """
-```
+Edit `src/templates/__init__.py` to customize email templates.
 
 ## 📊 Data Processing Pipeline
 
-### Input Data Handling
+The new data processing pipeline is designed to be simple and robust.
 
-The system handles various input formats:
-- **Excel Files** (`.xlsx`): Multi-sheet support, automatic merging
-- **CSV Files** (`.csv`): Standard comma-separated values
-- **Email Files** (`.eml`): Parse form submissions from emails
-
-### Column Name Mapping
-
-The system automatically maps common column variations:
-- **Name**: name, full name, participant name, student name
-- **Email**: email, email id, email address, e-mail
-- **Phone**: number, contact no, phone, mobile, phone number, etc.
-- **City**: city, hometown, location
-
-### Cleaning Process
-
-1. **Email Validation**: Validates email format
-2. **Name Standardization**: Title case, removes special characters
-3. **Phone Formatting**: Extracts 10-digit numbers
-4. **Gender Normalization**: Standardizes to Male/Female/Other
-5. **Deduplication**: Removes duplicate emails (keeps first)
-6. **Data Type Conversion**: Ensures correct types
+1.  **Ingestion**: All raw data files are placed in the `data/raw/` directory.
+2.  **Processing**: The `consolidate_and_clean.py` script is run to process the raw data. This includes:
+    *   **Intelligent Merging**: Automatically handles different file types and column names.
+    *   **Cleaning**: Validates emails, standardizes names and numbers, and cleans other data fields.
+    *   **Deduplication**: Removes duplicate contacts based on email address, keeping the most complete record.
+3.  **Storage**: The clean, consolidated data is stored in `data/master_db/master_db_cleaned.csv`. Processed raw files are moved to `data/processed/`.
+4.  **Campaigning**: The `send_campaigns.py` script uses the cleaned master database to send emails.
+5.  **Exporting**: The `export_data.py` script allows for easy extraction of data subsets.
 
 ## 🔐 Security & Best Practices
 
-- **Credentials**: Use `.env` file for sensitive data (not version controlled)
-- **Gmail Setup**: Enable 2-Factor Authentication and use App Passwords
-- **Data Backup**: Keep backups of cleaned databases before major operations
-- **Logging**: All send attempts are logged for audit trails
-- **Testing**: Test with small sample before full campaign
+- **Credentials**: Use `.env` file for sensitive data.
+- **Data Backup**: Regularly back up the `data/master_db/` directory.
+- **Logging**: All script activities and email sending attempts are logged in the `logs/` directory.
 
 ## 📈 Typical Workflow
 
 ```
-1. New Contacts Arrive
+1. Place new raw data files in `data/raw/`
         ↓
-2. Place in data/csv/
+2. Run `python scripts/consolidate_and_clean.py`
         ↓
-3. Run prepare_data.py
+3. Run `python scripts/send_campaigns.py` to send emails
         ↓
-4. Review master_db_cleaned.csv
+4. (Optional) Run `python scripts/export_data.py` to get data subsets
         ↓
-5. Run send_campaigns.py
-        ↓
-6. Monitor with show_progress.py
-        ↓
-7. Analyze email_log.csv
-        ↓
-8. Update database with update_db.py
-        ↓
-9. Generate WhatsApp lists (if needed)
+5. Review logs in the `logs/` directory
 ```
 
 ## 🛠️ Troubleshooting
 
 ### Issue: "EMAIL_ADDRESS or EMAIL_PASSWORD not found"
-- **Solution**: Create `.env` file with credentials in project root
+- **Solution**: Create `.env` file in the project root.
 
 ### Issue: "File not found" errors
-- **Solution**: Ensure CSV files are in `data/csv/` directory with correct names
+- **Solution**: Ensure your raw data files are in the `data/raw/` directory. If the master database is not found, run `consolidate_and_clean.py`.
 
 ### Issue: No contacts to email
-- **Solution**: Check if all contacts already have promo flag set to True in the database
-
-### Issue: Email send failures
-- **Solution**: Check internet connection, verify credentials, review error messages in `email_log.csv`
-
-### Issue: Phone number formatting issues
-- **Solution**: Ensure phone numbers are 10 digits; Indian numbers should not include country code
+- **Solution**: Check if all contacts already have the relevant campaign flag set to `True` in the master database.
 
 ## 📚 Dependencies
 
@@ -333,12 +286,14 @@ The system automatically maps common column variations:
 - **python-dotenv**: Environment variable management
 - **Pillow (PIL)**: Image processing for banners
 - **numpy**: Numerical operations
+- **apscheduler**: Advanced Python Scheduler (for Rise Emailer scheduling)
 
 See `requirements.txt` for specific versions.
 
 ## 📝 Logging
 
-All email send attempts are logged in `data/csv/email_log.csv`:
+-   **Activity Log**: All general script activity, errors, and processing information are logged in `logs/activity.log`.
+-   **Email Log**: All email send attempts are logged in `logs/email_log.csv`:
 
 ```csv
 Timestamp,EmailID,Name,Status,Error

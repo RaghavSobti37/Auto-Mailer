@@ -1,243 +1,139 @@
 # AutoMailer - Quick Reference Guide
 
-## Running Scripts
+## 🚀 New Workflow at a Glance
 
-All scripts should be run from the project root directory.
-
-### 📧 Send Email Campaigns
-```bash
-python scripts/send_campaigns.py
-```
-Interactive script to:
-- Choose campaign type (Teaser, Main, IML, etc.)
-- Preview recipients
-- Confirm before sending
-- Logs all activity to `data/csv/email_log.csv`
-
-### 📊 Prepare New Data
-```bash
-python scripts/prepare_data.py
-```
-Process new contact data:
-1. Reads Excel/CSV files
-2. Standardizes column names
-3. Appends to master database
-4. Runs full cleaning
-5. Creates `master_db_cleaned.csv`
-
-**Setup**: Edit `scripts/prepare_data.py` to add source files:
-```python
-new_source_files = [
-    'your_file1.xlsx',
-    'your_file2.csv',
-]
-```
-
-### 📈 View Campaign Progress
-```bash
-python scripts/show_progress.py
-```
-Displays:
-- Total contacts
-- Emails sent ✅
-- Failed sends ❌
-- Remaining to send ⏳
-- Daily breakdown
-- Progress percentage
-
-### 🔄 Update Database from Logs
-```bash
-python scripts/update_db.py
-```
-Syncs the database with email logs to mark all previously sent emails.
-
-### 📱 Generate WhatsApp Contacts
-```bash
-python scripts/generate_whatsapp_db.py
-```
-Creates:
-- `whatsapp_db.csv` - Raw phone numbers
-- `whatsapp_db_cleaned.csv` - Formatted phone numbers
-
-## Project Structure
-
-```
-scripts/                    # Run these scripts
-├── send_campaigns.py      # Main email sending
-├── prepare_data.py        # Add new contacts
-├── show_progress.py       # View stats
-├── update_db.py           # Sync with logs
-└── generate_whatsapp_db.py # WhatsApp contacts
-
-src/                       # Application code (don't run directly)
-├── core/                  # Core business logic
-│   ├── database.py       # Data cleaning
-│   └── email_service.py  # Email sending
-├── templates/            # Email templates
-└── utils/                # Helper functions
-
-config/                    # Settings
-└── campaigns.py          # Campaign parameters
-
-data/csv/                  # All data files
-├── master_db.csv
-├── master_db_cleaned.csv
-├── email_log.csv
-└── whatsapp_db.csv
-
-assets/                    # Images and media
-└── banner.jpg
-```
-
-## Key Files
-
-| File | Purpose | Edit? |
-|------|---------|-------|
-| `.env` | Email credentials | ✅ Yes |
-| `config/campaigns.py` | Campaign settings | ✅ Yes |
-| `src/templates/__init__.py` | Email designs | ✅ Yes |
-| `scripts/prepare_data.py` | Data source list | ✅ Yes |
-| `data/csv/master_db.csv` | Contact list | ✅ Yes |
-| `src/core/database.py` | Cleaning logic | ⚠️ Experts only |
-| `src/core/email_service.py` | Email logic | ⚠️ Experts only |
-
-## Essential Setup
-
-### 1. Create .env File
-```env
-EMAIL_ADDRESS=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-```
-
-### 2. Add Banner Images
-- Save to `assets/banner.jpg`
-- Update path in `config/campaigns.py` if needed
-
-### 3. Prepare Master Database
-- Create `data/csv/master_db.csv` with columns:
-  ```
-  name, email, number, city, gender, havells promo
-  ```
-
-### 4. Add Source Data
-- Place Excel/CSV files in `data/csv/`
-- Edit `scripts/prepare_data.py` to list them
-- Run `python scripts/prepare_data.py`
-
-## Common Tasks
-
-### Add a New Campaign
-
-1. Add template in `src/templates/__init__.py`:
-```python
-def get_mycampaign_template(name):
-    return f"""
-    <html><body>Hello {name}!</body></html>
-    """
-```
-
-2. Add params in `config/campaigns.py`:
-```python
-class MyCampaignParams:
-    CSV_PATH = 'data/csv/master_db.csv'
-    SUBJECT = "My Subject"
-```
-
-3. Add option in `scripts/send_campaigns.py` (choose_campaign function)
-
-### Customize Email Template
-
-Edit in `src/templates/__init__.py` - find the template function and modify HTML.
-
-### Change Campaign Parameters
-
-Edit `config/campaigns.py` to modify:
-- CSV file path
-- Subject line
-- Form link
-- Banner path
-- Include/exclude banner
-
-### Check Email Sending Status
-
-Open `data/csv/email_log.csv` to see:
-- Timestamp
-- Email address
-- Contact name
-- Status (SENT or FAILED)
-- Error message (if failed)
-
-## Data Cleaning Details
-
-The `clean_master_db()` function:
-- ✅ Validates email format
-- ✅ Standardizes names (Title Case)
-- ✅ Extracts 10-digit phone numbers
-- ✅ Normalizes gender (Male/Female/Other)
-- ✅ Removes duplicates (keeps first)
-- ✅ Removes invalid entries
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| "EMAIL_ADDRESS not found" | Create `.env` file with credentials |
-| "File not found" | Check file is in `data/csv/` with correct name |
-| No contacts to email | Check if all have promo flag set to True |
-| Emails not sending | Verify credentials, check `email_log.csv` for errors |
-| Phone format wrong | Use 10-digit numbers without country code |
-
-## Column Name Auto-Mapping
-
-The system recognizes these column names automatically:
-- **Name**: name, full name, participant name
-- **Email**: email, email id, email address, e-mail
-- **Phone**: number, contact no, phone, mobile, phone number
-- **City**: city, hometown, location
-- **Gender**: gender, sex
-
-## Data File Locations
-
-```
-data/csv/
-├── master_db.csv                # Raw data (edit carefully)
-├── master_db_cleaned.csv        # Clean version (use for campaigns)
-├── master_db_updated.csv        # After log sync
-├── email_log.csv                # Send history (auto-generated)
-├── whatsapp_db.csv             # Raw WhatsApp contacts
-└── whatsapp_db_cleaned.csv     # Formatted WhatsApp contacts
-```
-
-## Tips & Best Practices
-
-1. **Always test with small sample first** before full campaign
-2. **Keep backups** of cleaned databases
-3. **Review `email_log.csv`** to find delivery issues
-4. **Use campaign tracking flags** to prevent duplicate sends
-5. **Update templates** for better engagement
-6. **Monitor progress** with `show_progress.py`
-7. **Keep credentials secure** - never commit `.env` file
-
-## Important Notes
-
-⚠️ **Data Loss Prevention**
-- Always keep backups of `master_db_cleaned.csv`
-- Don't directly edit `email_log.csv`
-- Use `update_db.py` to sync data
-
-⚠️ **Email Limits**
-- Gmail: ~500 emails/day limit
-- Test with small batches first
-- Monitor sending speed
-
-⚠️ **Credential Safety**
-- `.env` file is in `.gitignore`
-- Use App Passwords for Gmail
-- Never share credentials
+1.  **Drop Files**: Place all your raw CSV and Excel files into the `data/raw/` directory.
+2.  **Clean & Merge**: Run the consolidation script. This will clean your data and merge it into the master database.
+3.  **Send Emails**: Run the campaign script to send emails using the cleaned data.
+4.  **Export (Optional)**: Run the export script to get subsets of your data.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: December 2024
+## 📋 Commands
 
-For detailed information, see README.md and RESTRUCTURING_GUIDE.md
+### 1. Consolidate and Clean Data
+*This is the most important script. Run it whenever you add new data.*
+
+```bash
+python scripts/consolidate_and_clean.py
+```
+- **What it does**:
+    - Scans `data/raw/` for new files.
+    - Intelligently merges and cleans the data.
+    - Updates the master database in `data/master_db/`.
+    - Moves processed files to `data/processed/`.
+- **Run this**: Whenever you add new files to `data/raw/`.
+
+### 2. Send Email Campaigns
+```bash
+python scripts/send_campaigns.py
+```
+- **What it does**:
+    - Lets you choose a campaign to send.
+    - Uses the cleaned data from `data/master_db/master_db_cleaned.csv`.
+    - Logs all sending activity to `logs/email_log.csv`.
+- **Run this**: When you want to send an email campaign.
+
+### 3. Export Data Subsets
+```bash
+python scripts/export_data.py
+```
+- **What it does**:
+    - Creates a CSV file from a filtered subset of your master database.
+    - You can filter by any column (e.g., `city`, `role in music`).
+    - Saves the exported file to `data/exports/`.
+- **Run this**: When you need a specific part of your data for analysis or other uses.
+
+### 4. Manually Update Campaign Flags
+```bash
+python scripts/update_db.py --column <campaign_column_name>
+```
+- **What it does**:
+    - Manually syncs the `email_log.csv` with the master database to update campaign flags.
+    - This is useful if a campaign was interrupted or if you need to manually mark contacts as "sent".
+- **Run this**: For manual data correction or synchronization.
+
+### 5. Rise Emailer Campaign (NEW - Unified with Batch & Scheduler)
+```bash
+python scripts/rise_emailer_unified.py
+```
+- **What it does**:
+    - Sends emails in optimized batches (50 recipients per batch)
+    - Creates a working copy for progress tracking
+    - Saves progress after each batch (resumable)
+    - **Default**: Uses TEST database (4 test contacts) - SAFE MODE
+    - **Switch to Production**: Edit `contacts_mode = "PRODUCTION"` in script
+    - Real-time batch status with completion summary
+- **Run this**: When you want to send Rise Emailer campaign with full progress tracking
+
+### 6. Test Scheduler (1-Minute Delay)
+```bash
+python scripts/test_schedule_1min.py
+```
+- **What it does**:
+    - Tests scheduler functionality with 1-minute delay
+    - Automatically executes Rise Emailer campaign after 1 minute
+    - Logs all output to `logs/test_schedule.log`
+    - Uses TEST database by default (change `contacts_mode` to test with production data)
+- **Run this**: To verify scheduler works before setting up production scheduling
+
+---
+
+## 📁 New Project Structure
+
+```
+AutoMailer/
+├── data/
+│   ├── raw/          # 1. Place your raw CSV/Excel files here
+│   ├── processed/    # Old raw files are moved here after processing
+│   ├── master_db/    # Your main database lives here
+│   └── exports/      # Your exported data subsets are saved here
+├── logs/
+│   ├── activity.log  # Log of all script activities
+│   └── email_log.csv # Log of all emails sent
+├── scripts/
+│   ├── consolidate_and_clean.py
+│   ├── send_campaigns.py
+│   └── export_data.py
+├── config/
+│   └── campaigns.py  # Campaign settings (subject, etc.)
+└── src/              # Core application code
+```
+
+---
+
+## 🔑 Key Files & Directories
+
+| Path                                 | Purpose                                       | Edit?      |
+| ------------------------------------ | --------------------------------------------- | ---------- |
+| `.env`                               | Your email credentials                        | ✅ **Yes** |
+| `data/raw/`                          | **Drop your new data files here**             | ✅ **Yes** |
+| `config/campaigns.py`                | Campaign settings (subject, etc.)             | ✅ Yes     |
+| `src/templates/__init__.py`          | Email HTML designs                            | ✅ Yes     |
+| `data/master_db/master_db_cleaned.csv` | The main, clean database for campaigns      | -          |
+| `data/exports/Delhi_Test_Contacts.csv` | Test contacts (4 users) - for safe testing | -          |
+| `data/exports/Delhi_and_New_Delhi_Contacts.csv` | Production contacts (429 Delhi users) | -          |
+| `data/exports/Delhi_and_New_Delhi_Contacts_WORKING.csv` | Production working copy with progress tracking | -  |
+| `logs/activity.log`                  | Check this file for errors or progress        | -          |
+| `logs/email_log.csv`                 | See who has been sent an email                | -          |
+| `logs/rise_campaign.csv`             | Rise Emailer campaign logs                    | -          |
+
+---
+
+## 🛠️ Common Tasks
+
+### How to Add New Contacts
+1.  Drop your new `.csv` or `.xlsx` files into the `data/raw/` directory.
+2.  Run the command:
+    ```bash
+    python scripts/consolidate_and_clean.py
+    ```
+That's it! The script will automatically clean, deduplicate, and merge your new contacts into the master database.
+
+### How to Add a New Email Campaign
+1.  **Add a template** in `src/templates/__init__.py`.
+2.  **Add a parameter class** in `config/campaigns.py`.
+3.  **Add the option** to the `choose_campaign` function in `scripts/send_campaigns.py`.
+
+### How to Check for Errors
+If something goes wrong, check the `logs/activity.log` file. It will contain detailed information about the script's execution and any errors that occurred. For email delivery issues, check `logs/email_log.csv`.
