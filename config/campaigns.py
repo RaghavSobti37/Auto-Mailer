@@ -3,7 +3,7 @@
 
 class TeaserParams:
     """Configuration for Teaser email campaign."""
-    CSV_PATH = 'data/csv/master_db.csv'
+    CSV_PATH = 'data/master_db/master_db_cleaned.csv'
     SUBJECT = "We have something for artists!"
     FORM_LINK = 'https://forms.gle/eFyhEW3ifTdtByvm7'
     TEMPLATE_FUNC = 'get_teaser_template'
@@ -12,7 +12,7 @@ class TeaserParams:
 
 class MainParams:
     """Configuration for Main campaign."""
-    CSV_PATH = 'data/csv/master_db.csv'
+    CSV_PATH = 'data/master_db/master_db_cleaned.csv'
     SUBJECT = "Turn Up the Volume on Your Dreams – mYOUsic is Here!"
     FORM_LINK = 'https://forms.gle/teaser_form_link'
     TEMPLATE_MODULE = 'src.templates'
@@ -23,14 +23,14 @@ class MainParams:
 
 class MasterclassParams:
     """Configuration for Masterclass campaign."""
-    CSV_PATH = 'data/csv/master_db_cleaned.csv'
+    CSV_PATH = 'data/master_db/master_db_cleaned.csv'
     INCLUDE_BANNER = False
     BANNER_PATH = 'assets/banner.jpg'
 
 
 class HavellsMyousicParams:
     """Configuration for Havells mYOUsic campaign."""
-    CSV_PATH = 'csv/master_db_cleaned.csv'
+    CSV_PATH = 'data/master_db/master_db_cleaned.csv'
     SUBJECT = "Amplify Your Music on Havells mYOUsic 🎵"
     FORM_LINK = 'https://forms.gle/eFyhEW3ifTdtByvm7'
     TEMPLATE_FUNC = 'get_havells_myousic_template'

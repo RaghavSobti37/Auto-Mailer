@@ -33,8 +33,20 @@ from config.campaigns import (
 )
 
 # --- Setup folders ---
+# Define project structure paths
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+log_dir = os.path.join(base_dir, 'logs')
+os.makedirs(log_dir, exist_ok=True)
 os.makedirs('assets', exist_ok=True)
-os.makedirs('data/csv', exist_ok=True)
+
+# --- Logging setup ---
+log_file_path = os.path.join(log_dir, 'email_log.csv')
+activity_log_path = os.path.join(log_dir, 'activity.log')
+
+def log_message(message):
+    with open(activity_log_path, 'a') as f:
+        f.write(f"{pd.Timestamp.now()}: {message}\n")
+    print(message)
 
 # --- Create pixel.png if not exists (optional) ---
 pixel_path = os.path.join('assets', 'pixel.png')
@@ -48,22 +60,22 @@ EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
-    print("ERROR: EMAIL_ADDRESS or EMAIL_PASSWORD not found in .env file.")
-    print("Please create a .env file in the Auto-Mailer directory with the following content:")
-    print("EMAIL_ADDRESS=your_email@example.com")
-    print("EMAIL_PASSWORD=your_password")
+    log_message("ERROR: EMAIL_ADDRESS or EMAIL_PASSWORD not found in .env file.")
+    log_message("Please create a .env file in the Auto-Mailer directory with the following content:")
+    log_message("EMAIL_ADDRESS=your_email@example.com")
+    log_message("EMAIL_PASSWORD=your_password")
     exit(1)
 
 
 def choose_campaign():
     """Let user choose which email campaign to run."""
-    print("\n--- Select Email Campaign ---")
-    print("1. Teaser Mail")
-    print("2. Main Campaign Mail")
-    print("3. IML Promo Mail")
-    print("4. IML Submission Reminder")
-    print("5. IML Final Call")
-    print("6. Masterclass Ad")
+    log_message("\n--- Select Email Campaign ---")
+    log_message("1. Teaser Mail")
+    log_message("2. Main Campaign Mail")
+    log_message("3. IML Promo Mail")
+    log_message("4. IML Submission Reminder")
+    log_message("5. IML Final Call")
+    log_message("6. Masterclass Ad")
     
     choice = input("\nEnter 1, 2, 3, 4, 5, or 6: ").strip()
     
@@ -77,7 +89,7 @@ def choose_campaign():
     }
     
     if choice not in campaigns:
-        print("Invalid choice. Exiting.")
+        log_message("Invalid choice. Exiting.")
         exit(1)
     
     return campaigns[choice]
@@ -88,14 +100,24 @@ def confirm_dataset(csv_path, promo_column):
     Load dataset, filter non-promo contacts, and request confirmation.
     """
     try:
-        print(f"\nLoading dataset from: {csv_path}")
-        full_df = pd.read_csv(csv_path)
+        log_message(f"\nLoading dataset from: {csv_path}")
+        # Use index_col=False to prevent index inference issues
+        try:
+            full_df = pd.read_csv(csv_path, index_col=False)
+        except pd.errors.ParserError:
+            log_message("⚠️ CSV Parsing Error: The file contains rows with extra fields (likely unquoted commas).")
+            log_message("   Attempting to read with more lenient settings (engine='python')...")
+            full_df = pd.read_csv(csv_path, index_col=False, engine='python', on_bad_lines='warn')
+        
+        if 'Unnamed: 0' in full_df.columns:
+            full_df.drop(columns=['Unnamed: 0'], inplace=True)
+            
         # Standardize column names
         full_df.rename(columns={'Email': 'email', 'Name': 'name'}, inplace=True)
-        print(f"Total records found in the source file: {len(full_df)}")
+        log_message(f"Total records found in the source file: {len(full_df)}")
     except FileNotFoundError:
-        print(f"ERROR: The file '{csv_path}' was not found.")
-        print("Please ensure the CSV file exists.")
+        log_message(f"ERROR: The file '{csv_path}' was not found.")
+        log_message("Please ensure the CSV file exists.")
         exit(1)
 
     # Filter for non-promo contacts
@@ -105,16 +127,16 @@ def confirm_dataset(csv_path, promo_column):
     df = full_df[full_df[promo_column].fillna(False) == False].copy()
 
     if df.empty:
-        print("\nNo contacts to email after filtering. All contacts were already emailed.")
+        log_message("\nNo contacts to email after filtering. All contacts were already emailed.")
         exit(0)
 
-    print(f"\nTotal emails to be sent (non-promo only): {len(df)}")
-    print("Sample of contacts to be emailed:")
-    print(df.head())
+    log_message(f"\nTotal emails to be sent (non-promo only): {len(df)}")
+    log_message("Sample of contacts to be emailed:")
+    log_message(df.head())
     
     confirm = input("\nProceed with this dataset? (y/n): ").strip().lower()
     if confirm != "y":
-        print("Aborted by user.")
+        log_message("Aborted by user.")
         exit(0)
     
     df.attrs['full_df'] = full_df
@@ -127,7 +149,7 @@ def update_db_from_log(df, log_path, promo_column):
     """
     try:
         if not os.path.exists(log_path):
-            print(f"\nLog file '{log_path}' not found. Skipping log-based update.")
+            log_message(f"\nLog file '{log_path}' not found. Skipping log-based update.")
             return df
 
         log_df = pd.read_csv(log_path)
@@ -140,10 +162,10 @@ def update_db_from_log(df, log_path, promo_column):
         df.loc[df['email'].isin(sent_emails), promo_column] = True
         final_true_count = df[promo_column].sum()
 
-        print(f"\nUpdated {final_true_count - initial_true_count} additional records based on log.")
+        log_message(f"\nUpdated {final_true_count - initial_true_count} additional records based on log.")
         return df
     except Exception as e:
-        print(f"Could not update from log file: {e}")
+        log_message(f"Could not update from log file: {e}")
         return df
 
 
@@ -153,13 +175,12 @@ if __name__ == '__main__':
     df_to_send = confirm_dataset(params.CSV_PATH, promo_column)
     full_df = df_to_send.attrs['full_df']
     
-    updated_df = send_emails(EMAIL_ADDRESS, EMAIL_PASSWORD, params, template_func, df_to_send, full_df, promo_column)
+    updated_df = send_emails(EMAIL_ADDRESS, EMAIL_PASSWORD, params, template_func, df_to_send, full_df, promo_column, log_file=log_file_path)
     
     # Update from log as final check
-    log_file_path = 'data/csv/email_log.csv'
     final_df = update_db_from_log(updated_df, log_file_path, promo_column)
     
     # Save updated database
     final_df.to_csv(params.CSV_PATH, index=False)
-    print(f"\nSuccessfully updated '{params.CSV_PATH}' with new email statuses.")
-    print("All emails processed.")
+    log_message(f"\nSuccessfully updated '{params.CSV_PATH}' with new email statuses.")
+    log_message("All emails processed.")

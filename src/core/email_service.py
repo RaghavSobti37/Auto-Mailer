@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
 
-def log_email_status(recipient, name, status, error_message='', log_file='csv/email_log.csv'):
+def log_email_status(recipient, name, status, error_message='', log_file='logs/email_log.csv'):
     """Log the status of an email send attempt."""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # Create file with headers if it doesn't exist
@@ -25,7 +25,7 @@ def log_email_status(recipient, name, status, error_message='', log_file='csv/em
         writer.writerow([timestamp, recipient, name, status, error_message])
 
 
-def send_emails(email_address, email_password, params, template_func, df_to_send, full_df, promo_column):
+def send_emails(email_address, email_password, params, template_func, df_to_send, full_df, promo_column, log_file='logs/email_log.csv'):
     """
     Send emails to a list of recipients.
     
@@ -37,6 +37,7 @@ def send_emails(email_address, email_password, params, template_func, df_to_send
         df_to_send: DataFrame with recipients to send to
         full_df: Full DataFrame for updating promo status
         promo_column: Name of the promo column to update
+        log_file: Path to the email log file
     
     Returns:
         Updated DataFrame with promo status marked as True for sent emails
@@ -89,12 +90,12 @@ def send_emails(email_address, email_password, params, template_func, df_to_send
         try:
             server.sendmail(email_address, recipient, msg.as_string())
             print(f"Email sent to {recipient} ({name})")
-            log_email_status(recipient, name, 'SENT')
+            log_email_status(recipient, name, 'SENT', log_file=log_file)
             # --- Update the promo status in the main DataFrame ---
             full_df.loc[idx, promo_column] = True
         except Exception as e:
             print(f"Failed to send email to {recipient}: {e}")
-            log_email_status(recipient, name, 'FAILED', str(e))
+            log_email_status(recipient, name, 'FAILED', str(e), log_file=log_file)
     
     server.quit()
     return full_df

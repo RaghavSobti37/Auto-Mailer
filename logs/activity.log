@@ -1,0 +1,646 @@
+2026-03-04 16:45:34.691949: Scanning for new files...
+2026-03-04 16:45:40.853516: Scanning for new files...
+2026-03-04 16:45:40.854992: 📄 Processing: af-curation-form-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.863584:    -> Staged 18 records.
+2026-03-04 16:45:40.864783:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.865506: 📄 Processing: amikah-contest-form-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.871183:    -> Staged 25 records.
+2026-03-04 16:45:40.872096:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.872343: 📄 Processing: Artist Contacts for Havells Myousic - Artist Bank.csv
+2026-03-04 16:45:40.875799:    -> Staged 131 records.
+2026-03-04 16:45:40.876700:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.877198: 📄 Processing: artiste-first-finds-form-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.883465:    -> Staged 395 records.
+2026-03-04 16:45:40.884529:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.885137: 📄 Processing: b2b-form-curation-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.888321:    -> Staged 9 records.
+2026-03-04 16:45:40.888931:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.889161: 📄 Processing: Contact Information (Responses) _ Havells mYOUsic (2).csv
+2026-03-04 16:45:40.893678:    -> Staged 438 records.
+2026-03-04 16:45:40.894341:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.894725: 📄 Processing: contact-us-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.902120:    -> Staged 449 records.
+2026-03-04 16:45:40.903067:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.903752: 📄 Processing: Delhi GMI auditions 22nd Feb.csv
+2026-03-04 16:45:40.910786:    -> Staged 1072 records.
+2026-03-04 16:45:40.911408:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.911799: 📄 Processing: email-form-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:40.914615:    -> Staged 69 records.
+2026-03-04 16:45:40.915167:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.915527: 📄 Processing: email_campaign_report.csv
+2026-03-04 16:45:40.935030:    -> Staged 13300 records.
+2026-03-04 16:45:40.935889:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.936347: 📄 Processing: email_log.csv
+2026-03-04 16:45:40.959156:    -> Staged 18317 records.
+2026-03-04 16:45:40.960236:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.960669: 📄 Processing: failed complete data.csv
+2026-03-04 16:45:40.967779:    -> Staged 293 records.
+2026-03-04 16:45:40.969061:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.969522: 📄 Processing: footer-subscribe-to-newsletter-2025-04-09_20260121_145546.csv
+2026-03-04 16:45:40.972645:    -> Staged 105 records.
+2026-03-04 16:45:40.973673:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.974059: 📄 Processing: Havells mYOUsic confirmation2 FAILED AUDIENCE FAILED AUDIENCE.csv
+2026-03-04 16:45:40.979479:    -> Staged 292 records.
+2026-03-04 16:45:40.980610:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.981110: 📄 Processing: join-our-community-form-2025-04-09_20260121_144814.csv
+2026-03-04 16:45:40.984386:    -> Staged 33 records.
+2026-03-04 16:45:40.985169:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.985508: 📄 Processing: Listing Customers (1)_20260121_144332.csv
+2026-03-04 16:45:40.997284:    -> Staged 1781 records.
+2026-03-04 16:45:40.998164:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:40.998496: 📄 Processing: Listing Customers (10)_20260121_144332.csv
+2026-03-04 16:45:41.003671:    -> Staged 197 records.
+2026-03-04 16:45:41.004523:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.004953: 📄 Processing: Listing Customers (11)_20260121_145328.csv
+2026-03-04 16:45:41.019096:    -> Staged 3386 records.
+2026-03-04 16:45:41.020004:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.020275: 📄 Processing: Listing Customers (12)_20260121_145546.csv
+2026-03-04 16:45:41.036216:    -> Staged 2803 records.
+2026-03-04 16:45:41.037503:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.037954: 📄 Processing: Listing Customers (18).csv
+2026-03-04 16:45:41.042395:    -> Staged 76 records.
+2026-03-04 16:45:41.043593:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.043905: 📄 Processing: Listing Customers (19).csv
+2026-03-04 16:45:41.048580:    -> Staged 208 records.
+2026-03-04 16:45:41.049686:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.050099: 📄 Processing: Listing Customers (5)_20260121_144332.csv
+2026-03-04 16:45:41.063628:    -> Staged 2803 records.
+2026-03-04 16:45:41.064700:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.065116: 📄 Processing: Listing Customers (6)_20260121_144332.csv
+2026-03-04 16:45:41.076467:    -> Staged 3384 records.
+2026-03-04 16:45:41.077186:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.077571: 📄 Processing: Listing Customers (7)_20260121_144332.csv
+2026-03-04 16:45:41.081861:    -> Staged 111 records.
+2026-03-04 16:45:41.082540:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.083028: 📄 Processing: Listing Customers (9)_20260121_144332.csv
+2026-03-04 16:45:41.096129:    -> Staged 2803 records.
+2026-03-04 16:45:41.096821:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.097155: 📄 Processing: Listing Customers_20260121_144332.csv
+2026-03-04 16:45:41.103825:    -> Staged 511 records.
+2026-03-04 16:45:41.104549:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.104871: 📄 Processing: master_db_cleaned.csv
+2026-03-04 16:45:41.131259:    -> Staged 14006 records.
+2026-03-04 16:45:41.132158:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.132426: 📄 Processing: master_db_updated.csv
+2026-03-04 16:45:41.149968:    -> Staged 7160 records.
+2026-03-04 16:45:41.150632:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.151046: 📄 Processing: Participant_List_2026-02-20 (1).csv
+2026-03-04 16:45:41.154824:    -> Staged 466 records.
+2026-03-04 16:45:41.155411:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.155597: 📄 Processing: pending_email_db_20260121_144332.csv
+2026-03-04 16:45:41.160185:    -> Staged 1323 records.
+2026-03-04 16:45:41.161316:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.161597: 📄 Processing: pending_whatsapp_db_20260121_144332.csv
+2026-03-04 16:45:41.165072:    -> Staged 1323 records.
+2026-03-04 16:45:41.165636:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.165911: 📄 Processing: share-your-craft-aff-page-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:41.169106:    -> Staged 4 records.
+2026-03-04 16:45:41.169725:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.170204: 📄 Processing: share-your-voice-audio-only-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:41.173355:    -> Staged 38 records.
+2026-03-04 16:45:41.173885:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.174179: 📄 Processing: share-your-voice-form-2025-04-09_20260121_144332.csv
+2026-03-04 16:45:41.177819:    -> Staged 53 records.
+2026-03-04 16:45:41.178367:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.178716: 📄 Processing: SS webinar db_20260121_144332.csv
+2026-03-04 16:45:41.181398:    -> Staged 269 records.
+2026-03-04 16:45:41.181895:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.182135: 📄 Processing: submission_data_processed_20260121_144332.csv
+2026-03-04 16:45:41.191865:    -> Staged 4743 records.
+2026-03-04 16:45:41.192951:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.193181: 📄 Processing: test_leads.csv
+2026-03-04 16:45:41.196007:    -> Staged 2 records.
+2026-03-04 16:45:41.197386:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.197661: 📄 Processing: TSC webinar audience  - 18 Dec Webinar_20260121_144332.csv
+2026-03-04 16:45:41.202031:    -> Staged 160 records.
+2026-03-04 16:45:41.202632:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.202944: 📄 Processing: TSC webinar audience  - 7 Dec Webinar_20260121_144332.csv
+2026-03-04 16:45:41.206840:    -> Staged 109 records.
+2026-03-04 16:45:41.207524:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.207734: 📄 Processing: whatsapp_db_20260121_144332.csv
+2026-03-04 16:45:41.219191:    -> Staged 6621 records.
+2026-03-04 16:45:41.220481:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.220743: 📄 Processing: whatsapp_db_cleaned.csv
+2026-03-04 16:45:41.230882:    -> Staged 6747 records.
+2026-03-04 16:45:41.233211:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.233623: 📄 Processing: Artiste First Webflow Data.xlsx
+2026-03-04 16:45:41.592364:    -> Staged 51 records.
+2026-03-04 16:45:41.593141:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.593626: 📄 Processing: IDOL 13 - L2 master sheet citywise_20260121_144332.xlsx
+2026-03-04 16:45:41.629721:    -> Staged 2 records.
+2026-03-04 16:45:41.630932:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.631158: 📄 Processing: New artist list.xlsx
+2026-03-04 16:45:41.654959:    -> Staged 129 records.
+2026-03-04 16:45:41.656072:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.656453: 📄 Processing: SINGING DEEWANE COMPILE SHEET - SONALI.xlsx
+2026-03-04 16:45:41.733410:    -> Staged 23 records.
+2026-03-04 16:45:41.736002:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.736475: 📄 Processing: UPDATED SILENT CITIES COMPILED SHEET DIMPLE.xlsx
+2026-03-04 16:45:41.773833:    -> Staged 20 records.
+2026-03-04 16:45:41.776941:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:45:41.777647: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-04 16:45:41.824463: Total new records staged: 96258
+2026-03-04 16:45:41.927446: New records after deduplication: 29454
+2026-03-04 16:45:41.927943: Applying data cleaning rules to new records...
+2026-03-04 16:45:41.949630: Kept 14268 records with valid emails.
+2026-03-04 16:45:42.071300: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-04 16:45:42.071976: Master DB not found. Creating a new one.
+2026-03-04 16:45:42.072327: Total records before final deduplication: 14268
+2026-03-04 16:45:42.081585: Total records after final deduplication: 14268
+2026-03-04 16:45:42.111475: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-04 16:45:42.132632: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-04 16:45:42.133037: 
+============================================================
+2026-03-04 16:45:42.133387: PROCESS COMPLETED SUCCESSFULLY
+2026-03-04 16:45:42.133612: ============================================================
+
+2026-03-04 16:45:56.521333: Scanning for new files...
+2026-03-04 16:45:56.521828: No new files found in 'data/raw'. Exiting.
+2026-03-04 16:51:07.321825: Scanning for new files...
+2026-03-04 16:51:07.322416: No new files found in 'data/raw'. Exiting.
+2026-03-04 16:51:15.410170: Scanning for new files...
+2026-03-04 16:51:15.411177: 📄 Processing: test_cleanup.csv
+2026-03-04 16:51:15.415584:    -> Staged 18 records.
+2026-03-04 16:51:15.416372:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 16:51:15.416753: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-04 16:51:15.417452: Total new records staged: 18
+2026-03-04 16:51:15.420007: New records after deduplication: 17
+2026-03-04 16:51:15.420440: Applying data cleaning rules to new records...
+2026-03-04 16:51:15.422269: Kept 17 records with valid emails.
+2026-03-04 16:51:15.425198: Detecting country codes from phone numbers...
+2026-03-04 16:51:15.425896: Filtering out spam/garbage entries...
+2026-03-04 16:51:15.427338: Removed 0 spam entries. Remaining: 17
+2026-03-04 16:51:15.427767: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-04 16:51:15.428101: Master DB found. Merging new data.
+2026-03-04 16:51:15.447363: Total records before final deduplication: 14285
+2026-03-04 16:51:15.452575: Total records after final deduplication: 14268
+2026-03-04 16:51:15.473263: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-04 16:51:15.494931: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-04 16:51:15.495309: 
+============================================================
+2026-03-04 16:51:15.495596: DATABASE SUMMARY DETAILS
+2026-03-04 16:51:15.495935: ============================================================
+2026-03-04 16:51:15.496230: 
+📊 FINAL DATABASE STATISTICS:
+2026-03-04 16:51:15.496638:   • Total Records: 14268
+2026-03-04 16:51:15.497612:   • Records with Valid Email: 14268
+2026-03-04 16:51:15.498456:   • Records with Phone: 14268
+2026-03-04 16:51:15.499333:   • Records with City: 14251
+2026-03-04 16:51:15.500002:   • Records with Role Info: 14251
+2026-03-04 16:51:15.500433: 
+🌍 COUNTRY CODE DISTRIBUTION:
+2026-03-04 16:51:15.501543:   • +91: 17 records
+2026-03-04 16:51:15.501868: 
+🏙️  TOP 15 CITIES:
+2026-03-04 16:51:15.503406:   • Mumbai: 380 records
+2026-03-04 16:51:15.503835:   • Kolkata: 368 records
+2026-03-04 16:51:15.504047:   • Delhi: 248 records
+2026-03-04 16:51:15.504235:   • Pune: 187 records
+2026-03-04 16:51:15.504412:   • New Delhi: 142 records
+2026-03-04 16:51:15.504754:   • Indore: 108 records
+2026-03-04 16:51:15.504986:   • Ahmedabad: 103 records
+2026-03-04 16:51:15.505322:   • Jaipur: 99 records
+2026-03-04 16:51:15.505635:   • Guwahati: 83 records
+2026-03-04 16:51:15.505885:   • Noida: 81 records
+2026-03-04 16:51:15.506284:   • Patna: 79 records
+2026-03-04 16:51:15.506500:   • Lucknow: 76 records
+2026-03-04 16:51:15.506671:   • Bangalore: 69 records
+2026-03-04 16:51:15.506873:   • Hyderabad: 66 records
+2026-03-04 16:51:15.507032:   • Surat: 54 records
+2026-03-04 16:51:15.507279: 
+🎵 MUSIC ROLES FOUND:
+2026-03-04 16:51:15.508577:   • Singer/ Songwriter: 1888 records
+2026-03-04 16:51:15.508882:   • Singer: 190 records
+2026-03-04 16:51:15.509064:   • Writer: 143 records
+2026-03-04 16:51:15.509258:   • Music producers: 133 records
+2026-03-04 16:51:15.509402:   • Composer: 93 records
+2026-03-04 16:51:15.509533:   • ⁠⁠Other ( Friend, Manager … ): 80 records
+2026-03-04 16:51:15.509772:   • Singer,Lyricist,Composer: 71 records
+2026-03-04 16:51:15.510021:   • Singer, Lyricist, Composer, Songwriter: 67 records
+2026-03-04 16:51:15.510251:   • Composer, Lyricist, Producer, Singer, Songwriter: 51 records
+2026-03-04 16:51:15.510557:   • Band member: 51 records
+2026-03-04 16:51:15.511013: 
+📧 EMAIL DOMAINS (Top 10):
+2026-03-04 16:51:15.519514:   • gmail.com: 13183 records
+2026-03-04 16:51:15.519948:   • yahoo.com: 102 records
+2026-03-04 16:51:15.520150:   • outlook.com: 60 records
+2026-03-04 16:51:15.520383:   • hotmail.com: 54 records
+2026-03-04 16:51:15.520551:   • yahoo.co.in: 28 records
+2026-03-04 16:51:15.520693:   • gamil.com: 27 records
+2026-03-04 16:51:15.520847:   • icloud.com: 24 records
+2026-03-04 16:51:15.521163:   • starmail.net: 23 records
+2026-03-04 16:51:15.521616:   • msn.com: 19 records
+2026-03-04 16:51:15.521904:   • rediffmail.com: 18 records
+2026-03-04 16:51:15.522308: 
+============================================================
+2026-03-04 16:51:15.522610: PROCESS COMPLETED SUCCESSFULLY
+2026-03-04 16:51:15.522912: ============================================================
+
+2026-03-04 17:04:32.445405: Scanning for new files...
+2026-03-04 17:04:32.446040: No new files found in 'data/raw'. Exiting.
+2026-03-04 17:05:49.456906: Scanning for new files...
+2026-03-04 17:05:49.457465: No new files found in 'data/raw'. Exiting.
+2026-03-04 17:06:18.348878: Scanning for new files...
+2026-03-04 17:06:18.349317: No new files found in 'data/raw'. Exiting.
+2026-03-04 17:07:06.911430: Scanning for new files...
+2026-03-04 17:07:06.912070: 📄 Processing: test_final.csv
+2026-03-04 17:07:17.262849: Scanning for new files...
+2026-03-04 17:07:17.263573: 📄 Processing: test_final.csv
+2026-03-04 17:07:17.268178:    -> Staged 18 records.
+2026-03-04 17:07:17.271380:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 17:07:17.271630: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-04 17:07:17.272305: Total new records staged: 18
+2026-03-04 17:07:17.275504: New records after deduplication: 17
+2026-03-04 17:07:17.275833: Applying data cleaning rules to new records...
+2026-03-04 17:07:17.277542: Kept 17 records with valid emails.
+2026-03-04 17:07:17.279957: Detecting country codes from phone numbers...
+2026-03-04 17:07:17.280605: Filtering out spam/garbage entries...
+2026-03-04 17:07:17.281921: Removed 0 spam entries. Remaining: 17
+2026-03-04 17:07:17.282155: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-04 17:07:17.282485: Master DB found. Merging new data.
+2026-03-04 17:07:17.310008: Total records before final deduplication: 14285
+2026-03-04 17:07:17.315004: Total records after final deduplication: 14268
+2026-03-04 17:07:17.340698: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-04 17:07:17.360616: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-04 17:07:17.361089: 
+============================================================
+2026-03-04 17:07:17.361440: DATABASE SUMMARY DETAILS
+2026-03-04 17:07:17.361899: ============================================================
+2026-03-04 17:07:17.362214: 
+📊 FINAL DATABASE STATISTICS:
+2026-03-04 17:07:17.362518:   • Total Records: 14268
+2026-03-04 17:07:17.363658:   • Records with Valid Email: 14268
+2026-03-04 17:07:17.364709:   • Records with Phone: 13692
+2026-03-04 17:07:17.365350:   • Records with City: 14251
+2026-03-04 17:07:17.366053:   • Records with Role Info: 14251
+2026-03-04 17:07:17.366387: 
+🌍 COUNTRY CODE DISTRIBUTION:
+2026-03-04 17:07:17.367071:   • +91: 17 records
+2026-03-04 17:07:17.367284: 
+🏙️  TOP 15 CITIES:
+2026-03-04 17:07:17.368359:   • Mumbai: 380 records
+2026-03-04 17:07:17.368525:   • Kolkata: 368 records
+2026-03-04 17:07:17.368670:   • Delhi: 248 records
+2026-03-04 17:07:17.368795:   • Pune: 187 records
+2026-03-04 17:07:17.368912:   • New Delhi: 142 records
+2026-03-04 17:07:17.369051:   • Indore: 108 records
+2026-03-04 17:07:17.369172:   • Ahmedabad: 103 records
+2026-03-04 17:07:17.369285:   • Jaipur: 99 records
+2026-03-04 17:07:17.369473:   • Guwahati: 83 records
+2026-03-04 17:07:17.369725:   • Noida: 81 records
+2026-03-04 17:07:17.369911:   • Patna: 79 records
+2026-03-04 17:07:17.370072:   • Lucknow: 76 records
+2026-03-04 17:07:17.370270:   • Bangalore: 69 records
+2026-03-04 17:07:17.370524:   • Hyderabad: 66 records
+2026-03-04 17:07:17.370872:   • Surat: 54 records
+2026-03-04 17:07:17.371180: 
+🎵 MUSIC ROLES FOUND:
+2026-03-04 17:07:17.372091:   • Singer/ Songwriter: 1888 records
+2026-03-04 17:07:17.372320:   • Singer: 190 records
+2026-03-04 17:07:17.372662:   • Writer: 143 records
+2026-03-04 17:07:17.372876:   • Music producers: 133 records
+2026-03-04 17:07:17.373179:   • Composer: 93 records
+2026-03-04 17:07:17.373568:   • ⁠⁠Other ( Friend, Manager … ): 80 records
+2026-03-04 17:07:17.373907:   • Singer,Lyricist,Composer: 71 records
+2026-03-04 17:07:17.374160:   • Singer, Lyricist, Composer, Songwriter: 67 records
+2026-03-04 17:07:17.374403:   • Composer, Lyricist, Producer, Singer, Songwriter: 51 records
+2026-03-04 17:07:17.374638:   • Band member: 51 records
+2026-03-04 17:07:17.374994: 
+📧 EMAIL DOMAINS (Top 10):
+2026-03-04 17:07:17.383640:   • gmail.com: 13183 records
+2026-03-04 17:07:17.384175:   • yahoo.com: 102 records
+2026-03-04 17:07:17.384457:   • outlook.com: 60 records
+2026-03-04 17:07:17.384706:   • hotmail.com: 54 records
+2026-03-04 17:07:17.385061:   • yahoo.co.in: 28 records
+2026-03-04 17:07:17.385442:   • gamil.com: 27 records
+2026-03-04 17:07:17.385640:   • icloud.com: 24 records
+2026-03-04 17:07:17.386060:   • starmail.net: 23 records
+2026-03-04 17:07:17.386379:   • msn.com: 19 records
+2026-03-04 17:07:17.386604:   • rediffmail.com: 18 records
+2026-03-04 17:07:17.386829: 
+============================================================
+2026-03-04 17:07:17.387001: PROCESS COMPLETED SUCCESSFULLY
+2026-03-04 17:07:17.387142: ============================================================
+
+2026-03-04 17:13:20.305395: Scanning for new files...
+2026-03-04 17:13:20.305830: 📄 Processing: test_clean2.csv
+2026-03-04 17:13:23.350588: Scanning for new files...
+2026-03-04 17:13:23.351116: 📄 Processing: test_clean2.csv
+2026-03-04 17:13:23.355088:    -> Staged 18 records.
+2026-03-04 17:13:23.355906:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-04 17:13:23.356177: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-04 17:13:23.356862: Total new records staged: 18
+2026-03-04 17:13:23.359754: New records after deduplication: 17
+2026-03-04 17:13:23.360175: Applying data cleaning rules to new records...
+2026-03-04 17:13:23.361813: Kept 17 records with valid emails.
+2026-03-04 17:13:23.364067: Detecting country codes from phone numbers...
+2026-03-04 17:13:23.364649: Filtering out spam/garbage entries...
+2026-03-04 17:13:23.366180: Removed 0 spam entries. Remaining: 17
+2026-03-04 17:13:23.366567: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-04 17:13:23.367045: Master DB found. Merging new data.
+2026-03-04 17:13:23.392929: Total records before final deduplication: 14285
+2026-03-04 17:13:23.398968: Total records after final deduplication: 14268
+2026-03-04 17:13:23.434088: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-04 17:13:23.452524: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-04 17:13:23.452886: 
+============================================================
+2026-03-04 17:13:23.453444: DATABASE SUMMARY DETAILS
+2026-03-04 17:13:23.453828: ============================================================
+2026-03-04 17:13:23.454166: 
+📊 FINAL DATABASE STATISTICS:
+2026-03-04 17:13:23.454608:   • Total Records: 14268
+2026-03-04 17:13:23.455581:   • Records with Valid Email: 14268
+2026-03-04 17:13:23.456427:   • Records with Phone: 13692
+2026-03-04 17:13:23.457379:   • Records with City: 14251
+2026-03-04 17:13:23.458160:   • Records with Role Info: 14251
+2026-03-04 17:13:23.458352: 
+🌍 COUNTRY CODE DISTRIBUTION:
+2026-03-04 17:13:23.459103:   • +91: 17 records
+2026-03-04 17:13:23.459334: 
+🏙️  TOP 15 CITIES:
+2026-03-04 17:13:23.460652:   • Mumbai: 380 records
+2026-03-04 17:13:23.460840:   • Kolkata: 368 records
+2026-03-04 17:13:23.461113:   • Delhi: 248 records
+2026-03-04 17:13:23.461483:   • Pune: 187 records
+2026-03-04 17:13:23.461753:   • New Delhi: 142 records
+2026-03-04 17:13:23.461914:   • Indore: 108 records
+2026-03-04 17:13:23.462068:   • Ahmedabad: 103 records
+2026-03-04 17:13:23.462199:   • Jaipur: 99 records
+2026-03-04 17:13:23.462398:   • Guwahati: 83 records
+2026-03-04 17:13:23.462562:   • Noida: 81 records
+2026-03-04 17:13:23.462733:   • Patna: 79 records
+2026-03-04 17:13:23.462864:   • Lucknow: 76 records
+2026-03-04 17:13:23.462977:   • Bangalore: 69 records
+2026-03-04 17:13:23.463127:   • Hyderabad: 66 records
+2026-03-04 17:13:23.463269:   • Surat: 54 records
+2026-03-04 17:13:23.463409: 
+🎵 MUSIC ROLES FOUND:
+2026-03-04 17:13:23.464361:   • Singer/ Songwriter: 1888 records
+2026-03-04 17:13:23.465515:   • Singer: 190 records
+2026-03-04 17:13:23.466083:   • Writer: 143 records
+2026-03-04 17:13:23.466464:   • Music producers: 133 records
+2026-03-04 17:13:23.466787:   • Composer: 93 records
+2026-03-04 17:13:23.467557:   • ⁠⁠Other ( Friend, Manager … ): 80 records
+2026-03-04 17:13:23.467967:   • Singer,Lyricist,Composer: 71 records
+2026-03-04 17:13:23.468209:   • Singer, Lyricist, Composer, Songwriter: 67 records
+2026-03-04 17:13:23.468425:   • Composer, Lyricist, Producer, Singer, Songwriter: 51 records
+2026-03-04 17:13:23.468660:   • Band member: 51 records
+2026-03-04 17:13:23.468955: 
+📧 EMAIL DOMAINS (Top 10):
+2026-03-04 17:13:23.479131:   • gmail.com: 13183 records
+2026-03-04 17:13:23.479551:   • yahoo.com: 102 records
+2026-03-04 17:13:23.480068:   • outlook.com: 60 records
+2026-03-04 17:13:23.480517:   • hotmail.com: 54 records
+2026-03-04 17:13:23.480923:   • yahoo.co.in: 28 records
+2026-03-04 17:13:23.481202:   • gamil.com: 27 records
+2026-03-04 17:13:23.481635:   • icloud.com: 24 records
+2026-03-04 17:13:23.481813:   • starmail.net: 23 records
+2026-03-04 17:13:23.482151:   • msn.com: 19 records
+2026-03-04 17:13:23.482875:   • rediffmail.com: 18 records
+2026-03-04 17:13:23.483169: 
+============================================================
+2026-03-04 17:13:23.483769: PROCESS COMPLETED SUCCESSFULLY
+2026-03-04 17:13:23.484052: ============================================================
+
+2026-03-04 17:24:44.211899: Scanning for new files...
+2026-03-04 17:24:44.212487: No new files found in 'data/raw'. Exiting.
+2026-03-05 01:48:58.861097: Scanning for new files...
+2026-03-05 01:48:58.863424: 📄 Processing: af-curation-form-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.874936:    -> Staged 18 records.
+2026-03-05 01:48:58.875371:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.875563: 📄 Processing: amikah-contest-form-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.877939:    -> Staged 25 records.
+2026-03-05 01:48:58.878419:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.878577: 📄 Processing: Artist Contacts for Havells Myousic - Artist Bank.csv
+2026-03-05 01:48:58.881324:    -> Staged 131 records.
+2026-03-05 01:48:58.881805:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.882173: 📄 Processing: artiste-first-finds-form-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.886603:    -> Staged 395 records.
+2026-03-05 01:48:58.887482:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.887739: 📄 Processing: b2b-form-curation-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.891687:    -> Staged 9 records.
+2026-03-05 01:48:58.892718:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.893135: 📄 Processing: Contact Information (Responses) _ Havells mYOUsic (2).csv
+2026-03-05 01:48:58.897811:    -> Staged 438 records.
+2026-03-05 01:48:58.898583:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.898860: 📄 Processing: contact-us-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.904728:    -> Staged 449 records.
+2026-03-05 01:48:58.905324:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.905669: 📄 Processing: Delhi GMI auditions 22nd Feb.csv
+2026-03-05 01:48:58.910639:    -> Staged 1072 records.
+2026-03-05 01:48:58.911258:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.911521: 📄 Processing: email-form-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:58.915118:    -> Staged 69 records.
+2026-03-05 01:48:58.915768:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.916093: 📄 Processing: email_campaign_report.csv
+2026-03-05 01:48:58.934743:    -> Staged 13300 records.
+2026-03-05 01:48:58.935596:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.935913: 📄 Processing: email_log.csv
+2026-03-05 01:48:58.959319:    -> Staged 18317 records.
+2026-03-05 01:48:58.959917:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.960179: 📄 Processing: failed complete data.csv
+2026-03-05 01:48:58.963952:    -> Staged 293 records.
+2026-03-05 01:48:58.964588:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.964822: 📄 Processing: footer-subscribe-to-newsletter-2025-04-09_20260121_145546.csv
+2026-03-05 01:48:58.968251:    -> Staged 105 records.
+2026-03-05 01:48:58.969129:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.969458: 📄 Processing: Havells mYOUsic confirmation2 FAILED AUDIENCE FAILED AUDIENCE.csv
+2026-03-05 01:48:58.972594:    -> Staged 292 records.
+2026-03-05 01:48:58.973184:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.973423: 📄 Processing: join-our-community-form-2025-04-09_20260121_144814.csv
+2026-03-05 01:48:58.976738:    -> Staged 33 records.
+2026-03-05 01:48:58.977438:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.977650: 📄 Processing: Listing Customers (1)_20260121_144332.csv
+2026-03-05 01:48:58.990644:    -> Staged 1781 records.
+2026-03-05 01:48:58.991816:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:58.992396: 📄 Processing: Listing Customers (10)_20260121_144332.csv
+2026-03-05 01:48:58.998659:    -> Staged 197 records.
+2026-03-05 01:48:58.999613:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.000212: 📄 Processing: Listing Customers (11)_20260121_145328.csv
+2026-03-05 01:48:59.016452:    -> Staged 3386 records.
+2026-03-05 01:48:59.017031:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.017274: 📄 Processing: Listing Customers (12)_20260121_145546.csv
+2026-03-05 01:48:59.035260:    -> Staged 2803 records.
+2026-03-05 01:48:59.035919:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.036164: 📄 Processing: Listing Customers (18).csv
+2026-03-05 01:48:59.039352:    -> Staged 76 records.
+2026-03-05 01:48:59.039862:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.040081: 📄 Processing: Listing Customers (19).csv
+2026-03-05 01:48:59.042899:    -> Staged 208 records.
+2026-03-05 01:48:59.043446:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.043677: 📄 Processing: Listing Customers (5)_20260121_144332.csv
+2026-03-05 01:48:59.056838:    -> Staged 2803 records.
+2026-03-05 01:48:59.059151:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.059572: 📄 Processing: Listing Customers (6)_20260121_144332.csv
+2026-03-05 01:48:59.071263:    -> Staged 3384 records.
+2026-03-05 01:48:59.071983:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.072352: 📄 Processing: Listing Customers (7)_20260121_144332.csv
+2026-03-05 01:48:59.076230:    -> Staged 111 records.
+2026-03-05 01:48:59.076731:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.076959: 📄 Processing: Listing Customers (9)_20260121_144332.csv
+2026-03-05 01:48:59.089918:    -> Staged 2803 records.
+2026-03-05 01:48:59.090591:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.090972: 📄 Processing: Listing Customers_20260121_144332.csv
+2026-03-05 01:48:59.096779:    -> Staged 511 records.
+2026-03-05 01:48:59.097253:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.097541: 📄 Processing: master_db_cleaned.csv
+2026-03-05 01:48:59.124336:    -> Staged 14006 records.
+2026-03-05 01:48:59.124886:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.125151: 📄 Processing: master_db_updated.csv
+2026-03-05 01:48:59.139422:    -> Staged 7160 records.
+2026-03-05 01:48:59.139946:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.140447: 📄 Processing: Participant_List_2026-02-20 (1).csv
+2026-03-05 01:48:59.144158:    -> Staged 466 records.
+2026-03-05 01:48:59.144663:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.144903: 📄 Processing: pending_email_db_20260121_144332.csv
+2026-03-05 01:48:59.148721:    -> Staged 1323 records.
+2026-03-05 01:48:59.149495:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.149862: 📄 Processing: pending_whatsapp_db_20260121_144332.csv
+2026-03-05 01:48:59.154370:    -> Staged 1323 records.
+2026-03-05 01:48:59.154956:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.155177: 📄 Processing: share-your-craft-aff-page-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:59.160101:    -> Staged 4 records.
+2026-03-05 01:48:59.160668:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.161084: 📄 Processing: share-your-voice-audio-only-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:59.166202:    -> Staged 38 records.
+2026-03-05 01:48:59.167124:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.167527: 📄 Processing: share-your-voice-form-2025-04-09_20260121_144332.csv
+2026-03-05 01:48:59.171429:    -> Staged 53 records.
+2026-03-05 01:48:59.172036:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.172283: 📄 Processing: SS webinar db_20260121_144332.csv
+2026-03-05 01:48:59.175168:    -> Staged 269 records.
+2026-03-05 01:48:59.175744:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.175956: 📄 Processing: submission_data_processed_20260121_144332.csv
+2026-03-05 01:48:59.184743:    -> Staged 4743 records.
+2026-03-05 01:48:59.185781:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.186003: 📄 Processing: test_clean2.csv
+2026-03-05 01:48:59.188436:    -> Staged 18 records.
+2026-03-05 01:48:59.188952:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.189159: 📄 Processing: test_cleanup.csv
+2026-03-05 01:48:59.191926:    -> Staged 18 records.
+2026-03-05 01:48:59.192442:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.192772: 📄 Processing: test_final.csv
+2026-03-05 01:48:59.195022:    -> Staged 18 records.
+2026-03-05 01:48:59.195568:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.195772: 📄 Processing: test_leads.csv
+2026-03-05 01:48:59.197844:    -> Staged 2 records.
+2026-03-05 01:48:59.198224:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.198434: 📄 Processing: TSC webinar audience  - 18 Dec Webinar_20260121_144332.csv
+2026-03-05 01:48:59.202313:    -> Staged 160 records.
+2026-03-05 01:48:59.202861:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.203107: 📄 Processing: TSC webinar audience  - 7 Dec Webinar_20260121_144332.csv
+2026-03-05 01:48:59.207250:    -> Staged 109 records.
+2026-03-05 01:48:59.207733:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.207965: 📄 Processing: whatsapp_db_20260121_144332.csv
+2026-03-05 01:48:59.217047:    -> Staged 6621 records.
+2026-03-05 01:48:59.217990:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.218218: 📄 Processing: whatsapp_db_cleaned.csv
+2026-03-05 01:48:59.227015:    -> Staged 6747 records.
+2026-03-05 01:48:59.228025:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.228232: 📄 Processing: Artiste First Webflow Data.xlsx
+2026-03-05 01:48:59.468577:    -> Staged 51 records.
+2026-03-05 01:48:59.469256:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.469518: 📄 Processing: IDOL 13 - L2 master sheet citywise_20260121_144332.xlsx
+2026-03-05 01:48:59.498664:    -> Staged 2 records.
+2026-03-05 01:48:59.499955:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.500200: 📄 Processing: New artist list.xlsx
+2026-03-05 01:48:59.518662:    -> Staged 129 records.
+2026-03-05 01:48:59.519241:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.519540: 📄 Processing: SINGING DEEWANE COMPILE SHEET - SONALI.xlsx
+2026-03-05 01:48:59.575831:    -> Staged 23 records.
+2026-03-05 01:48:59.577009:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.577445: 📄 Processing: UPDATED SILENT CITIES COMPILED SHEET DIMPLE.xlsx
+2026-03-05 01:48:59.598708:    -> Staged 20 records.
+2026-03-05 01:48:59.604228:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-05 01:48:59.604677: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-05 01:48:59.627681: Total new records staged: 96312
+2026-03-05 01:48:59.698685: New records after deduplication: 29454
+2026-03-05 01:48:59.699079: Applying data cleaning rules to new records...
+2026-03-05 01:48:59.790025: Kept 14268 records with valid emails.
+2026-03-05 01:48:59.907585: Detecting country codes from phone numbers...
+2026-03-05 01:48:59.920568: Filtering out spam/garbage entries...
+2026-03-05 01:49:00.084706: Removed 207 spam entries. Remaining: 14061
+2026-03-05 01:49:00.085182: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-05 01:49:00.085645: Master DB found. Merging new data.
+2026-03-05 01:49:00.120631: Total records before final deduplication: 28329
+2026-03-05 01:49:00.131201: Total records after final deduplication: 14268
+2026-03-05 01:49:00.166377: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-05 01:49:00.185391: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-05 01:49:00.185850: 
+============================================================
+2026-03-05 01:49:00.186166: DATABASE SUMMARY DETAILS
+2026-03-05 01:49:00.186608: ============================================================
+2026-03-05 01:49:00.186837: 
+📊 FINAL DATABASE STATISTICS:
+2026-03-05 01:49:00.187221:   • Total Records: 14268
+2026-03-05 01:49:00.188424:   • Records with Valid Email: 14268
+2026-03-05 01:49:00.189334:   • Records with Phone: 13691
+2026-03-05 01:49:00.190266:   • Records with City: 8045
+2026-03-05 01:49:00.191258:   • Records with Role Info: 3701
+2026-03-05 01:49:00.191536: 
+🌍 COUNTRY CODE DISTRIBUTION:
+2026-03-05 01:49:00.194135:   • +91: 13502 records
+2026-03-05 01:49:00.194517: 
+🏙️  TOP 15 CITIES:
+2026-03-05 01:49:00.196226:   • Mumbai: 393 records
+2026-03-05 01:49:00.196546:   • Kolkata: 368 records
+2026-03-05 01:49:00.196780:   • Delhi: 253 records
+2026-03-05 01:49:00.197002:   • Pune: 187 records
+2026-03-05 01:49:00.197269:   • New Delhi: 145 records
+2026-03-05 01:49:00.197500:   • Indore: 108 records
+2026-03-05 01:49:00.197744:   • Ahmedabad: 103 records
+2026-03-05 01:49:00.197925:   • Jaipur: 99 records
+2026-03-05 01:49:00.198145:   • Guwahati: 84 records
+2026-03-05 01:49:00.198441:   • Noida: 81 records
+2026-03-05 01:49:00.198929:   • Patna: 79 records
+2026-03-05 01:49:00.199206:   • Lucknow: 77 records
+2026-03-05 01:49:00.199524:   • Bangalore: 70 records
+2026-03-05 01:49:00.199786:   • Hyderabad: 67 records
+2026-03-05 01:49:00.200217: 
+🎵 MUSIC ROLES FOUND:
+2026-03-05 01:49:00.201779:   • Singer/ Songwriter: 1889 records
+2026-03-05 01:49:00.202155:   • Singer: 190 records
+2026-03-05 01:49:00.202562:   • Writer: 143 records
+2026-03-05 01:49:00.202907:   • Music producers: 133 records
+2026-03-05 01:49:00.203382:   • Composer: 93 records
+2026-03-05 01:49:00.203702:   • ⁠⁠Other ( Friend, Manager … ): 80 records
+2026-03-05 01:49:00.203964:   • Singer,Lyricist,Composer: 71 records
+2026-03-05 01:49:00.204177:   • Singer, Lyricist, Composer, Songwriter: 67 records
+2026-03-05 01:49:00.204388:   • Composer, Lyricist, Producer, Singer, Songwriter: 51 records
+2026-03-05 01:49:00.204626: 
+📧 EMAIL DOMAINS (Top 10):
+2026-03-05 01:49:00.213469:   • gmail.com: 13183 records
+2026-03-05 01:49:00.213896:   • yahoo.com: 102 records
+2026-03-05 01:49:00.214128:   • outlook.com: 60 records
+2026-03-05 01:49:00.214511:   • hotmail.com: 54 records
+2026-03-05 01:49:00.214861:   • yahoo.co.in: 28 records
+2026-03-05 01:49:00.215339:   • gamil.com: 27 records
+2026-03-05 01:49:00.215823:   • icloud.com: 24 records
+2026-03-05 01:49:00.216259:   • starmail.net: 23 records
+2026-03-05 01:49:00.216548:   • msn.com: 19 records
+2026-03-05 01:49:00.216835:   • rediffmail.com: 18 records
+2026-03-05 01:49:00.217108: 
+============================================================
+2026-03-05 01:49:00.217501: PROCESS COMPLETED SUCCESSFULLY
+2026-03-05 01:49:00.217803: ============================================================
+

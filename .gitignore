@@ -1,23 +1,12 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-
-# Environment & Credentials - DO NOT COMMIT THESE
-*.env
 venv/
-consolidated_eml_files/
+.env
 
-# Data and email files - Exclude all CSV and EML files
+# Large Data Archives
+import data/archive/
 
-# Log files
-*.log
+# Logs and Generated Files
+data/csv/email_log.csv
+assets/pixel.png

@@ -298,3 +298,42 @@ def get_gmi_confirmation_template(name):
 </html>
 """
     return subject, html_body
+
+
+def get_gmi_final_template(name):
+    """Havells mYOUsic Final Event Details email template."""
+    subject = "🎤 Final Details: Havells mYOUsic Auditions Tomorrow!"
+    
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 0; margin: 0;'>
+    <div style='max-width:600px; margin:auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);'>
+        <img src='cid:bannerimage' alt='Havells mYOUsic Banner' style='width:100%; display:block;'>
+        <div style='padding:32px;'>
+            <p>Hi <b>{name}</b>! 🎤</p>
+            
+            <p>The stage is set and we are thrilled to have you join the Havells mYOUsic movement. This is more than an audition; it’s the first step in building a new ecosystem for independent artists like you.</p>
+            
+            <h3 style='color:#ff0000; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;'>Your Audition & Knowledge Session Details:</h3>
+            <ul style='list-style: none; padding: 0;'>
+                <li>📅 <b>Date:</b> Sunday, 22nd February</li>
+                <li>📍 <b>Venue:</b> Global Music Institute (GMI), Noida</li>
+                <li>⏱️ <b>Gate Timings:</b> 08:30 AM – 10:30 AM</li>
+            </ul>
+
+            <p><b>Why you should be here early</b> - to witness knowledge sharing sessions from industry leaders and see artists unfold their raw talent.</p>
+
+            <h3 style='color:#ff0000; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;'>📑 Essential Prep:</h3>
+            <p>Please find the attached PDF Guide for the full event flow, rules, and audition requirements.</p>
+
+            <p><b>Remember:</b> We value authenticity over perfection. Mistakes are welcome!</p>
+
+            <p>See you super soon!<br>
+            <b>Team Havells mYOUsic ⚡</b></p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+    return subject, html_body
