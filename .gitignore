@@ -10,3 +10,7 @@ import data/archive/
 # Logs and Generated Files
 data/csv/email_log.csv
 assets/pixel.png
+
+data/processed/
+```data/processed/*
+```data/processed/
