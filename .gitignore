@@ -11,8 +11,5 @@ import data/archive/
 data/csv/email_log.csv
 assets/pixel.png
 
+# Generated/processed data
 data/processed/
-```data/processed/*
-```data/processed/
-
-C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed\UPDATED SILENT CITIES COMPILED SHEET DIMPLE.xlsx
