@@ -56,10 +56,9 @@ Welcome to the restructured AutoMailer project! This document helps you navigate
 3. Reference: **README.md** → "Running Email Campaigns"
 
 #### ...Add New Contacts
-1. Read: **QUICK_REFERENCE.md** → "Running Scripts" → "Prepare New Data"
-2. Edit: `scripts/prepare_data.py` (add your files)
-3. Run: `python scripts/prepare_data.py`
-4. Reference: **README.md** → "Data Preparation"
+1. Copy/move CSV or Excel files into `data/raw/` (e.g. from `data/search/`)
+2. Run: `python scripts/consolidate_and_clean.py`
+3. Reference: **README.md** → "Data Preparation"
 
 #### ...Track Progress
 1. Run: `python scripts/show_progress.py`
@@ -98,17 +97,45 @@ AutoMailer/
 │   └── utils/                     # Helper functions
 │
 ├── scripts/                        # Run these!
-│   ├── send_campaigns.py          # Main email script
-│   ├── prepare_data.py            # Prepare data
-│   ├── show_progress.py           # View stats
-│   ├── update_db.py               # Update from logs
-│   └── generate_whatsapp_db.py    # WhatsApp contacts
+│   ├── -- Data Import --
+│   ├── consolidate_and_clean.py   # Import contacts from data/raw → master DB
+│   ├── clean_master_db.py         # Clean and deduplicate master DB
+│   ├── add_manual_participants.py # Add manually entered participants
+│   ├── fill_missing_data.py       # Fill missing fields in DB
+│   ├── sort_locations.py          # Sort contacts by location
+│   ├── -- Email Campaigns --
+│   ├── send_campaigns.py          # Main email sending script
+│   ├── send_delhi_campaign.py     # Send to Delhi contacts
+│   ├── send_indore_campaign.py    # Send to Indore contacts
+│   ├── send_optimized_batch.py    # Send in optimized batches
+│   ├── rise_emailer_unified.py    # Unified Rise program emailer
+│   ├── rise_emailer_with_approval.py  # Rise emailer with approval step
+│   ├── schedule_campaign.py       # Schedule campaigns for later
+│   ├── -- Exports & Reports --
+│   ├── export_data.py             # Export filtered contacts
+│   ├── export_delhi.py            # Export Delhi contacts
+│   ├── export_indore_final.py     # Export final Indore contacts
+│   ├── show_progress.py           # View campaign statistics
+│   ├── email_report_simple.py     # Simple email send report
+│   ├── indore_report.py           # Indore campaign report
+│   ├── -- Database Utilities --
+│   ├── update_db.py               # Update DB from email log
+│   ├── update_email_logs.py       # Update email logs
+│   ├── update_havells_myousic.py  # Update Havells mYOUsic data
+│   ├── crosscheck_logs.py         # Cross-check sent logs
+│   ├── verify_cleanup.py          # Verify cleanup operations
+│   ├── generate_whatsapp_db.py    # Generate WhatsApp contacts DB
+│   └── cleanup_summary.py         # Summarize cleanup results
 │
 ├── config/
 │   └── campaigns.py               # Campaign settings
 │
 ├── data/
-│   └── csv/                       # All CSV files
+│   ├── raw/                       # Drop new CSV/XLSX files here
+│   ├── search/                    # Exported search/form responses
+│   ├── processed/                 # Files processed by consolidate_and_clean
+│   ├── master_db/                 # master_db.csv + master_db_cleaned.csv
+│   └── exports/                   # City/region-specific export files
 │
 └── assets/                         # Images and media
 ```
@@ -122,11 +149,31 @@ These are the main programs you run:
 
 | Script | Purpose | When to Use |
 |--------|---------|------------|
-| `send_campaigns.py` | Send emails | Running a campaign |
-| `prepare_data.py` | Add new contacts | Adding new data |
-| `show_progress.py` | View statistics | Checking campaign status |
-| `update_db.py` | Sync with logs | After campaign complete |
-| `generate_whatsapp_db.py` | Create WhatsApp list | Building WhatsApp contacts |
+| `consolidate_and_clean.py` | Import contacts from `data/raw` into master DB | Adding new data from forms/exports |
+| `clean_master_db.py` | Clean and deduplicate master DB | After manual edits to the DB |
+| `add_manual_participants.py` | Parse and add manually entered participants | Adding raw text/dump participants |
+| `fill_missing_data.py` | Fill missing fields in existing records | Data enrichment pass |
+| `sort_locations.py` | Sort/normalize contacts by location | Before location-based campaigns |
+| `send_campaigns.py` | Send emails | Running a general campaign |
+| `send_delhi_campaign.py` | Send to Delhi contacts | Delhi-targeted campaign |
+| `send_indore_campaign.py` | Send to Indore contacts | Indore-targeted campaign |
+| `send_optimized_batch.py` | Send in rate-limited batches | Large-volume campaigns |
+| `rise_emailer_unified.py` | Unified Rise program emailer | Rise program outreach |
+| `rise_emailer_with_approval.py` | Rise emailer with approval step | Rise emails needing sign-off |
+| `schedule_campaign.py` | Schedule a campaign for later | Delayed/timed campaigns |
+| `export_data.py` | Export filtered contacts to CSV | Preparing targeted lists |
+| `export_delhi.py` | Export Delhi contacts | Delhi campaign prep |
+| `export_indore_final.py` | Export final Indore contacts | Indore campaign prep |
+| `show_progress.py` | View campaign statistics | Checking campaign status |
+| `email_report_simple.py` | Simple email send report | Post-campaign review |
+| `indore_report.py` | Indore campaign report | Indore-specific review |
+| `update_db.py` | Sync master DB with email log | After campaign completes |
+| `update_email_logs.py` | Update/reconcile email logs | Log maintenance |
+| `update_havells_myousic.py` | Update Havells mYOUsic data | Havells campaign data refresh |
+| `crosscheck_logs.py` | Cross-check sent logs vs DB | Verifying send accuracy |
+| `verify_cleanup.py` | Verify cleanup operations | Post-cleanup validation |
+| `generate_whatsapp_db.py` | Create WhatsApp contacts list | Building WhatsApp outreach DB |
+| `cleanup_summary.py` | Summarize cleanup results | Reviewing what was cleaned |
 
 ### Core Modules
 These contain the application logic:
@@ -143,10 +190,13 @@ These contain the application logic:
 
 | Type | Location | Purpose |
 |------|----------|---------|
-| Raw data | `data/csv/master_db.csv` | New/raw contacts |
-| Cleaned data | `data/csv/master_db_cleaned.csv` | Ready to use |
-| Send logs | `data/csv/email_log.csv` | Send history |
-| WhatsApp list | `data/csv/whatsapp_db_cleaned.csv` | WhatsApp contacts |
+| Drop new files here | `data/raw/` | Input for `consolidate_and_clean.py` |
+| Form/search exports | `data/search/` | Source exports before moving to raw |
+| Processed input files | `data/processed/` | Files already ingested |
+| Raw master DB | `data/master_db/master_db.csv` | Full contact history |
+| Cleaned master DB | `data/master_db/master_db_cleaned.csv` | Ready for campaigns |
+| City exports | `data/exports/` | Region-specific contact CSVs |
+| Send logs | `logs/email_log.csv` | Send history |
 | Credentials | `.env` | Email authentication |
 
 ---
@@ -301,11 +351,11 @@ A: See **README.md** → "Security & Best Practices"
 
 ### Workflow 2: Add New Contacts
 ```
-1. Place Excel/CSV in data/csv/
-2. Edit scripts/prepare_data.py (add filename)
-3. Run: python scripts/prepare_data.py
-4. Wait for cleaning to complete
-5. Check: data/csv/master_db_cleaned.csv
+1. Copy/move CSV or Excel files into data/raw/
+   (or move from data/search/ if coming from form exports)
+2. Run: python scripts/consolidate_and_clean.py
+3. Processed files are moved to data/processed/ automatically
+4. Check: data/master_db/master_db_cleaned.csv
 ```
 
 ### Workflow 3: Customize Email

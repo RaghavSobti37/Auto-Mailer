@@ -644,3 +644,90 @@ Updating Master Database...
 2026-03-05 01:49:00.217501: PROCESS COMPLETED SUCCESSFULLY
 2026-03-05 01:49:00.217803: ============================================================
 
+2026-03-23 16:57:06.979328: ERROR: Could not find a required file.
+[Errno 2] No such file or directory: 'C:\\Users\\ragha\\OneDrive\\Desktop\\AutoMailer\\Auto-Mailer\\logs\\email_log.csv'
+2026-03-23 17:01:09.778466: Scanning for new files...
+2026-03-23 17:01:09.779550: 📄 Processing: Contact Information (Responses) _ Havells mYOUsic - Form responses 1.csv
+2026-03-23 17:01:09.849732:    -> Staged 443 records.
+2026-03-23 17:01:09.850642:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-23 17:01:09.851296: 📄 Processing: TSC Academy - SS lead tracker - Attendee Master.csv
+2026-03-23 17:01:09.856160:    -> Staged 907 records.
+2026-03-23 17:01:09.856886:    -> Moved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\processed'
+2026-03-23 17:01:09.857207: 
+------------------------------------------------------------
+Merging and cleaning new data...
+2026-03-23 17:01:09.859321: Total new records staged: 1350
+2026-03-23 17:01:09.874283: New records after deduplication: 1348
+2026-03-23 17:01:09.874805: Applying data cleaning rules to new records...
+2026-03-23 17:01:09.884121: Kept 438 records with valid emails.
+2026-03-23 17:01:09.903979: Detecting country codes from phone numbers...
+2026-03-23 17:01:09.905515: Filtering out spam/garbage entries...
+2026-03-23 17:01:09.914816: Removed 8 spam entries. Remaining: 430
+2026-03-23 17:01:09.915420: 
+------------------------------------------------------------
+Updating Master Database...
+2026-03-23 17:01:09.916066: Master DB found. Merging new data.
+2026-03-23 17:01:09.953287: Total records before final deduplication: 14698
+2026-03-23 17:01:09.961651: Total records after final deduplication: 14273
+2026-03-23 17:01:10.008968: ✅ Master DB saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db.csv'
+2026-03-23 17:01:10.036718: ✅ Cleaned Master DB for campaigns saved to 'C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\data\master_db\master_db_cleaned.csv'
+2026-03-23 17:01:10.053049: 
+============================================================
+2026-03-23 17:01:10.073451: DATABASE SUMMARY DETAILS
+2026-03-23 17:01:10.074198: ============================================================
+2026-03-23 17:01:10.074665: 
+📊 FINAL DATABASE STATISTICS:
+2026-03-23 17:01:10.075068:   • Total Records: 14273
+2026-03-23 17:01:10.079551:   • Records with Valid Email: 14273
+2026-03-23 17:01:10.081235:   • Records with Phone: 13694
+2026-03-23 17:01:10.082482:   • Records with City: 14272
+2026-03-23 17:01:10.093068:   • Records with Role Info: 14270
+2026-03-23 17:01:10.093535: 
+🌍 COUNTRY CODE DISTRIBUTION:
+2026-03-23 17:01:10.096750:   • +91: 13505 records
+2026-03-23 17:01:10.097356: 
+🏙️  TOP 15 CITIES:
+2026-03-23 17:01:10.099622:   • Mumbai: 393 records
+2026-03-23 17:01:10.100145:   • Kolkata: 368 records
+2026-03-23 17:01:10.100662:   • Delhi: 253 records
+2026-03-23 17:01:10.101330:   • Pune: 187 records
+2026-03-23 17:01:10.101775:   • New Delhi: 145 records
+2026-03-23 17:01:10.102714:   • Indore: 108 records
+2026-03-23 17:01:10.103257:   • Ahmedabad: 103 records
+2026-03-23 17:01:10.104414:   • Jaipur: 99 records
+2026-03-23 17:01:10.104946:   • Guwahati: 84 records
+2026-03-23 17:01:10.105489:   • Noida: 81 records
+2026-03-23 17:01:10.106187:   • Patna: 79 records
+2026-03-23 17:01:10.106775:   • Lucknow: 77 records
+2026-03-23 17:01:10.107311:   • Bangalore: 70 records
+2026-03-23 17:01:10.107925:   • Hyderabad: 67 records
+2026-03-23 17:01:10.108340:   • Surat: 54 records
+2026-03-23 17:01:10.108789: 
+🎵 MUSIC ROLES FOUND:
+2026-03-23 17:01:10.110338:   • Singer/ Songwriter: 1888 records
+2026-03-23 17:01:10.110906:   • Singer: 193 records
+2026-03-23 17:01:10.111455:   • Writer: 143 records
+2026-03-23 17:01:10.111893:   • Music producers: 133 records
+2026-03-23 17:01:10.112326:   • Composer: 92 records
+2026-03-23 17:01:10.112693:   • ⁠⁠Other ( Friend, Manager … ): 80 records
+2026-03-23 17:01:10.113112:   • Singer,Lyricist,Composer: 71 records
+2026-03-23 17:01:10.113444:   • Singer, Lyricist, Composer, Songwriter: 69 records
+2026-03-23 17:01:10.113895:   • Composer, Lyricist, Producer, Singer, Songwriter: 52 records
+2026-03-23 17:01:10.114393:   • Band member: 51 records
+2026-03-23 17:01:10.114874: 
+📧 EMAIL DOMAINS (Top 10):
+2026-03-23 17:01:10.128472:   • gmail.com: 13187 records
+2026-03-23 17:01:10.129134:   • yahoo.com: 102 records
+2026-03-23 17:01:10.129772:   • outlook.com: 60 records
+2026-03-23 17:01:10.130291:   • hotmail.com: 54 records
+2026-03-23 17:01:10.130789:   • yahoo.co.in: 28 records
+2026-03-23 17:01:10.131478:   • gamil.com: 27 records
+2026-03-23 17:01:10.132101:   • icloud.com: 24 records
+2026-03-23 17:01:10.133214:   • starmail.net: 23 records
+2026-03-23 17:01:10.133629:   • msn.com: 19 records
+2026-03-23 17:01:10.134169:   • rediffmail.com: 18 records
+2026-03-23 17:01:10.134686: 
+============================================================
+2026-03-23 17:01:10.135287: PROCESS COMPLETED SUCCESSFULLY
+2026-03-23 17:01:10.135830: ============================================================
+
