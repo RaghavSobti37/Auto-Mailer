@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    .email-container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+    .header { background: #ed1c24; color: white; padding: 30px; text-align: center; }
+    .content { padding: 30px; color: #333; line-height: 1.6; }
+    .qr-box { text-align: center; background: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px dashed #ed1c24; }
+    .steps { background: #fff3f3; padding: 15px; border-left: 4px solid #ed1c24; margin: 20px 0; }
+    .map-section { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; margin-top: 25px; }
+    .footer { background: #f4f4f4; color: #888; font-size: 12px; padding: 20px; text-align: center; }
+    .btn { background: #ed1c24; color: white !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 10px; }
+  </style>
+</head>
+<body style="background:#f8f8f8; margin:0; padding:20px;">
+  <div class="email-container">
+    <div class="header">
+      <h1 style="margin:0 0 10px 0;">Havells mYOUsic</h1>
+      <p style="margin:0;">Sing. Write. Compose. The stage is yours!</p>
+    </div>
+    <div class="content">
+      <p>Dear <strong>{{name}}</strong>,</p>
+      <p>We invite you to be a part of the Havells mYOUsic movement.</p>
+      <p>
+       This is an exciting, once-in-a-lifetime opportunity for singer-songwriters, lyricists, composers, producers, and bands creating original music to join our journey.
+      </p>
+      <p>
+        Participants will get access to insightful sessions with industry mentors (also open for all), an immersive learning experience, and a platform to showcase their original work (limited slots).
+      </p>
+
+      <h3>How to Participate:</h3>
+      <div class="steps">
+        <ol>
+          <li><strong>Register Online:</strong> Complete your details through the official registration form.</li>
+          <li><strong>Submit Original Work:</strong> Share your best original song/demo with your entry.</li>
+          <li><strong>Stay Updated:</strong> Keep checking your email for the next updates from our team.</li>
+        </ol>
+      </div>
+
+      <div class="map-section">
+        <strong style="display:block; margin-bottom: 5px;">Register Here:</strong>
+        <p style="font-size: 14px; margin: 5px 0;">Join the Havells mYOUsic journey now.</p>
+        <a href="https://havellsmyousic.com/participate" class="btn">Register Now</a>
+        <p style="font-size: 12px; color: #666; margin-top: 12px;">
+          For more details: <a href="https://havellsmyousic.com" style="color:#ed1c24; text-decoration:none; font-weight:bold;">havellsmyousic.com</a>
+        </p>
+      </div>
+
+      <p style="margin-top: 25px;">If you have any urgent queries, please reply to this email or contact our helpdesk.</p>
+      <p>
+        Helpdesk: {{helpdesk_1}} <br />
+        Helpdesk: {{helpdesk_2}}
+      </p>
+      <p>We look forward to hearing your music.</p>
+      <p>Best Regards,<br /><strong>Team Havells mYOUsic</strong></p>
+    </div>
+    <div class="footer">
+      This is an automated communication from Havells mYOUsic. <br />
+      Team Havells mYOUsic
+    </div>
+  </div>
+</body>
+</html>

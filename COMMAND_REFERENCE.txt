@@ -1,0 +1,378 @@
+================================================================================
+HAVELLS MYOUSIC - AUTO MAILER | COMMAND QUICK REFERENCE
+================================================================================
+
+## PYTHON EXECUTABLE PATH
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe
+
+## WORKING DIRECTORY
+cd "C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer"
+
+================================================================================
+📧 EMAIL CAMPAIGN SENDER - HAVELLS (PRIMARY SCRIPT)
+================================================================================
+
+### TEST MODE (Send to 6 test emails only)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test
+
+
+### TEST MODE WITH DRY-RUN (Preview without actually sending)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test --dry-run
+
+
+### PRODUCTION MODE (Send to all eligible contacts, excluding already-registered)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod
+
+
+### PRODUCTION MODE WITH DRY-RUN (Preview production recipients without sending)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod --dry-run
+
+
+### PRODUCTION WITH CUSTOM BATCH SIZE (50 is default)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod --batch-size 100
+
+
+### PRODUCTION WITH DELAY BETWEEN BATCHES (1 second is default)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod --delay-seconds 2
+
+
+### PRODUCTION WITH CUSTOM TEMPLATE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod --html-template "path/to/custom.html" --text-template "path/to/custom.txt"
+
+
+### TEST WITH CUSTOM TEST EMAILS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test --test-emails "email1@example.com,email2@example.com"
+
+
+### PRODUCTION RESUME (Skip already-sent emails, continue from where you left off)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod
+
+
+================================================================================
+📊 REPORTING AND ANALYTICS
+================================================================================
+
+### GENERATE CAMPAIGN REPORT (Creates HTML + TXT reports)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py
+
+
+### GENERATE CAMPAIGN REPORT - HTML ONLY
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py --format html
+
+
+### GENERATE CAMPAIGN REPORT - TXT ONLY
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py --format txt
+
+
+### GENERATE CAMPAIGN REPORT - CUSTOM PATHS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py --log-file "logs/havells_batch_send_log.csv" --html-report "reports/custom_report.html" --txt-report "reports/custom_report.txt"
+
+
+### VIEW TEXT REPORT
+type "reports\campaign_report.txt"
+
+
+### OPEN HTML REPORT IN BROWSER
+start "reports\campaign_report.html"
+
+
+================================================================================
+🔧 DATA MANAGEMENT & CLEANUP
+================================================================================
+
+### CLEAN MASTER DATABASE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/clean_master_db.py
+
+
+### CONSOLIDATE AND CLEAN DATA
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/consolidate_and_clean.py
+
+
+### UPDATE MASTER DATABASE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/update_db.py
+
+
+### EXPORT DATA
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/export_data.py
+
+
+### EXPORT DELHI CONTACTS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/export_delhi.py
+
+
+### EXPORT INDORE CONTACTS (FINAL)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/export_indore_final.py
+
+
+### EXPORT INDORE CONTACTS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/export_indore.py
+
+
+### FILL MISSING DATA
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/fill_missing_data.py
+
+
+### SORT LOCATIONS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/sort_locations.py
+
+
+### VERIFY CLEANUP
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/verify_cleanup.py
+
+
+### VERIFY UPDATE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/verify_update.py
+
+
+================================================================================
+🚀 OTHER EMAIL CAMPAIGNS
+================================================================================
+
+### SEND TEST HAVELLS CALL
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_test_havells_call.py
+
+
+### RESEND TEST HAVELLS CALL
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/resend_test_havells_call.py
+
+
+### SEND DELHI CAMPAIGN
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_delhi_campaign.py
+
+
+### SEND INDORE CAMPAIGN
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_indore_campaign.py
+
+
+### SEND TO DELHI CONTACTS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_to_delhi_contacts.py
+
+
+### SEND CAMPAIGNS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_campaigns.py
+
+
+### SEND OPTIMIZED BATCH
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_optimized_batch.py
+
+
+================================================================================
+📱 WHATSAPP & ADVANCED FEATURES
+================================================================================
+
+### GENERATE WHATSAPP DATABASE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_whatsapp_db.py
+
+
+### SCHEDULE CAMPAIGN
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/schedule_campaign.py
+
+
+### SETUP WINDOWS SCHEDULER
+scripts/setup_windows_scheduler.bat
+
+
+### EMBED IMAGES IN EMAIL
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/embed_images.py
+
+
+================================================================================
+🔍 VERIFICATION & TESTING
+================================================================================
+
+### CROSSCHECK LOGS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/crosscheck_logs.py
+
+
+### VERIFY CROSSCHECK
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/verify_crosscheck.py
+
+
+### TEST NEW FEATURES
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/test_new_features.py
+
+
+### TEST RISE EMAILER
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/test_rise_emailer.py
+
+
+### TEST SCHEDULE 1 MIN
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/test_schedule_1min.py
+
+
+### SHOW PROGRESS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/show_progress.py
+
+
+================================================================================
+📈 REPORTS & ANALYSIS
+================================================================================
+
+### INDORE REPORT
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/indore_report.py
+
+
+### EMAIL REPORT SIMPLE
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/email_report_simple.py
+
+
+### CLEANUP SUMMARY
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/cleanup_summary.py
+
+
+### UPDATE EMAIL LOGS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/update_email_logs.py
+
+
+### UPDATE HAVELLS MYOUSIC
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/update_havells_myousic.py
+
+
+================================================================================
+🆘 TROUBLESHOOTING & UTILITIES
+================================================================================
+
+### ADD MANUAL PARTICIPANTS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/add_manual_participants.py
+
+
+### PROCESS NEW ENTRIES (19 FEB)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/process_new_entries_19feb.py
+
+
+### TEMP MATCH FAILED
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/temp_match_failed.py
+
+
+### RISE EMAILER UNIFIED
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/rise_emailer_unified.py
+
+
+### RISE EMAILER WITH APPROVAL
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/rise_emailer_with_approval.py
+
+
+================================================================================
+📂 FILE LOCATIONS AND DATA FILES
+================================================================================
+
+### MASTER DATABASE
+data/master_db/master_db_final.csv
+
+### REGISTERED/ALREADY SENT
+data/search/auto - auto.csv
+
+### ELIGIBLE CONTACTS (OUTPUT)
+data/exports/havells_eligible_contacts.csv
+
+### BATCH SEND LOG (TRACKING)
+logs/havells_batch_send_log.csv
+
+### CAMPAIGN REPORT (TEXT)
+reports/campaign_report.txt
+
+### CAMPAIGN REPORT (HTML)
+reports/campaign_report.html
+
+### HTML EMAIL TEMPLATE
+assets/email_templates/havells_indore_audition_template.html
+
+### TEXT EMAIL TEMPLATE
+assets/email_templates/havells_indore_audition_template.txt
+
+### ENVIRONMENT VARIABLES
+.env
+
+================================================================================
+⚡ COMMON WORKFLOW SCENARIOS
+================================================================================
+
+### SCENARIO 1: TEST THE CAMPAIGN (5 mins)
+Step 1: Preview without sending
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test --dry-run
+
+Step 2: Actually send to test emails
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test
+
+Step 3: Check results
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py
+
+
+### SCENARIO 2: SEND PRODUCTION CAMPAIGN (30+ mins)
+Step 1: Dry-run first to verify
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod --dry-run
+
+Step 2: Start production send
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod
+
+Step 3: Generate report when done
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py
+
+Step 4: View HTML report
+start "reports\campaign_report.html"
+
+
+### SCENARIO 3: RESUME INTERRUPTED CAMPAIGN
+(The script automatically skips already-sent emails from the batch log)
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode prod
+
+
+### SCENARIO 4: ANALYZE CAMPAIGN RESULTS
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/generate_campaign_report.py
+start "reports\campaign_report.html"
+
+
+### SCENARIO 5: CLEAN AND UPDATE DATA
+Step 1: Clean master database
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/clean_master_db.py
+
+Step 2: Consolidate and clean
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/consolidate_and_clean.py
+
+Step 3: Verify
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/verify_cleanup.py
+
+
+================================================================================
+🎯 IMPORTANT NOTES
+================================================================================
+
+1. ALWAYS run with --dry-run first before production sends
+   Example: --mode prod --dry-run
+
+2. Environment variables (.env) must have:
+   - EMAIL_ADDRESS=your_gmail@gmail.com
+   - EMAIL_PASSWORD=your_app_password
+
+3. The batch send log tracks all sends automatically
+   Location: logs/havells_batch_send_log.csv
+
+4. Production mode automatically skips already-sent emails
+   This enables safe resumable campaigns
+
+5. Reports are generated in: reports/ directory
+   - campaign_report.html (visual dashboard)
+   - campaign_report.txt (detailed text report)
+
+6. Test mode uses fixed test emails (6 by default, can override with --test-emails)
+
+7. Batch size: Default is 50, adjust with --batch-size N
+
+8. Delay between batches: Default is 1 second, adjust with --delay-seconds N
+
+================================================================================
+📋 COPY-PASTE TEMPLATE FOR NEW COMMANDS
+================================================================================
+
+To run any script from this file:
+1. Copy the entire command
+2. Open PowerShell in the project directory
+3. Paste and press Enter
+
+Example:
+cd "C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer"
+C:/Users/ragha/AppData/Local/Programs/Python/Python313/python.exe scripts/send_havells_excluding_registered.py --mode test --dry-run
+
+================================================================================
+Last Updated: 2026-03-25
+================================================================================

@@ -1,0 +1,81 @@
+================================================================================
+HAVELLS MYOUSIC CAMPAIGN - SEND REPORT
+================================================================================
+
+OVERALL SUMMARY
+--------------------------------------------------------------------------------
+Total Log Records:           10484
+Total Emails Sent:           2419
+Total Emails Failed:         6350
+Total Dry-Run Records:       1715
+Success Rate:                27.6%
+
+UNIQUE EMAIL COUNT
+--------------------------------------------------------------------------------
+Unique Emails Successfully Sent:  2056
+Unique Emails Failed:            6100
+
+SEND TIMELINE
+--------------------------------------------------------------------------------
+First Send:                  2026-03-24 18:02:00
+Last Send:                   2026-03-24 22:15:15
+Total Batches:               99
+
+STATISTICS BY MODE
+--------------------------------------------------------------------------------
+
+Mode: PROD
+  Total Records:    10450
+  Sent:             2400
+  Failed:           6350
+  Dry-Run:          1700
+  Success Rate:     27.4%
+
+Mode: TEST
+  Total Records:    34
+  Sent:             19
+  Failed:           0
+  Dry-Run:          15
+  Success Rate:     100.0%
+
+FAILED EMAILS WITH ERROR REASONS
+--------------------------------------------------------------------------------
+Total Failed: 6350
+
+
+Error: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-82b03bbebbfsm15875193b3a.18 - gsmtp')
+Count: 6100
+  - garisri07@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - feroz99492456@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - fk0093848@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - meranaamfarhan11@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - 1210faheensheikh02@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - pfahim305@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - faiazzahin058@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - faizaalam466@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - faizali222010@gmail.com (2026-03-24 21:22:06, Batch 42)
+  - fkhan873510@gmail.com (2026-03-24 21:22:06, Batch 42)
+  ... and 6090 more
+
+Error: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-82b04222f42sm17773208b3a.61 - gsmtp')
+Count: 250
+  - fkhan873510@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - faizali222010@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - faizaalam466@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - faiazzahin058@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - feroz99492456@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - 1210faheensheikh02@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - meranaamfarhan11@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - fk0093848@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - faizshaikh8494@gmail.com (2026-03-25 12:59:08, Batch 1)
+  - pfahim305@gmail.com (2026-03-25 12:59:08, Batch 1)
+  ... and 240 more
+
+ERROR SUMMARY
+--------------------------------------------------------------------------------
+(550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-82b03bbebbfsm15875193b3a.18 - gsmtp'): 6100 occurrences
+(550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-82b04222f42sm17773208b3a.61 - gsmtp'): 250 occurrences
+
+================================================================================
+Report Generated: 2026-03-25 13:05:01
+================================================================================
