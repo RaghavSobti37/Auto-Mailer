@@ -97,6 +97,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--helpdesk-2", default=DEFAULT_HELPDESK_2, help="Template token value for second helpdesk")
     parser.add_argument("--delay-seconds", type=float, default=1.0, help="Delay between batches")
     parser.add_argument("--dry-run", action="store_true", help="Do not send, only prepare and print summary")
+    parser.add_argument("--yes", action="store_true", help="Skip pre-send confirmation prompt")
     parser.add_argument(
         "--eligible-export",
         default=DEFAULT_ELIGIBLE_EXPORT,
@@ -169,6 +170,38 @@ def build_template(html_template_path: str, text_template_path: str, context: Di
         text_body = render_tokens(text_template, context)
         html_body = render_tokens(html_template, context)
         return text_body, html_body
+
+
+def print_send_preview(
+    sender_email: str,
+    subject: str,
+    mode: str,
+    recipients: List[Tuple[int, str]],
+    batch_size: int,
+    text_template_path: str,
+    html_template_path: str,
+    text_body: str,
+) -> None:
+    print("-" * 72)
+    print("PRE-SEND PREVIEW")
+    print(f"From email: {sender_email}")
+    print(f"Mode: {mode}")
+    print(f"Subject: {subject}")
+    print(f"Recipients total: {len(recipients)}")
+    print(f"Batch size: {batch_size}")
+    print(f"Text template: {text_template_path}")
+    print(f"HTML template: {html_template_path}")
+
+    sample_size = min(10, len(recipients))
+    print(f"Sample recipients (first {sample_size}):")
+    for _, email in recipients[:sample_size]:
+        print(f"  - {email}")
+    if len(recipients) > sample_size:
+        print(f"  ... and {len(recipients) - sample_size} more")
+
+    preview = " ".join(text_body.split())[:300]
+    print(f"Text body preview: {preview}")
+    print("-" * 72)
 
 
 def load_data(master_csv: str, registered_csv: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -343,7 +376,13 @@ def write_log_rows(log_file: str, rows: List[List[str]]) -> None:
         writer.writerows(rows)
 
 
-def build_message(sender: str, to_email: str, subject: str, text_body: str, html_body: str) -> MIMEMultipart:
+def build_message(
+    sender: str,
+    to_email: str,
+    subject: str,
+    text_body: str,
+    html_body: str,
+) -> MIMEMultipart:
     msg = MIMEMultipart("alternative")
     msg["From"] = sender
     msg["To"] = to_email
@@ -351,6 +390,7 @@ def build_message(sender: str, to_email: str, subject: str, text_body: str, html
 
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
+
     return msg
 
 
@@ -434,7 +474,7 @@ def send_batches(
                     failed += len(batch)
                     print(f"  Status: FAILED ({err})")
 
-            if idx < len(batches) and delay_seconds > 0:
+            if (not dry_run) and idx < len(batches) and delay_seconds > 0:
                 time.sleep(delay_seconds)
             
             # Save tracking after each batch for resumability
@@ -529,6 +569,28 @@ def main() -> None:
         "helpdesk_1": args.helpdesk_1,
         "helpdesk_2": args.helpdesk_2,
     }
+
+    preview_text_body, _preview_html_body = build_template(
+        html_template_path=args.html_template,
+        text_template_path=args.text_template,
+        context=context,
+    )
+    print_send_preview(
+        sender_email=sender_email,
+        subject=args.subject,
+        mode=args.mode,
+        recipients=recipients,
+        batch_size=args.batch_size,
+        text_template_path=args.text_template,
+        html_template_path=args.html_template,
+        text_body=preview_text_body,
+    )
+
+    if not args.dry_run and not args.yes:
+        confirm = input("Proceed with send? (y/n): ").strip().lower()
+        if confirm not in {"y", "yes"}:
+            print("Send cancelled by user.")
+            return
 
     summary = send_batches(
         sender_email=sender_email,
