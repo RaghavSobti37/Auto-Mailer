@@ -28,10 +28,24 @@ from markdown import markdown
 
 
 BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_DIR = BASE_DIR / "data" / "ui_uploads"
-LOG_PATH = BASE_DIR / "logs" / "web_email_log.csv"
-SENDER_PROFILE_PATH = BASE_DIR / "params" / "sender_profile.enc"
-SENDER_PROFILE_KEY_PATH = BASE_DIR / "params" / "sender_profile.key"
+
+
+def runtime_data_root() -> Path:
+    """Return a writable directory for runtime artifacts.
+
+    Vercel serverless functions run on a read-only code filesystem.
+    Only /tmp is writable during invocation lifetime.
+    """
+    if os.getenv("VERCEL"):
+        return Path("/tmp") / "auto_mailer"
+    return BASE_DIR
+
+
+RUNTIME_ROOT = runtime_data_root()
+UPLOAD_DIR = RUNTIME_ROOT / "data" / "ui_uploads"
+LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
+SENDER_PROFILE_PATH = RUNTIME_ROOT / "params" / "sender_profile.enc"
+SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "params" / "sender_profile.key"
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 ALLOWED_EXTENSIONS = {"csv", "xlsx", "xls"}
 VALID_EMAIL_TYPES = {"marketing", "plain"}
