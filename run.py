@@ -1,123 +1,127 @@
 #!/usr/bin/env python3
-"""Interactive runner for Auto-Mailer workflows.
+"""🚀 AUTO-MAILER - UNIFIED EMAIL SENDING SYSTEM
 
-Run this file to choose a task by description.
+This is the main entry point for the Auto-Mailer system.
+Run this file to access the unified email campaign manager.
+
+Features:
+- Smart dataset detection and column mapping
+- Interactive dataset & template selection
+- Batch processing with resume capability
+- Email sending & tracking
 """
 
 import os
-import shlex
-import subprocess
 import sys
-from typing import List, Tuple
+import subprocess
 
-
-HERE = os.path.dirname(os.path.abspath(__file__))
-if os.path.isdir(os.path.join(HERE, "scripts")):
-    BASE_DIR = HERE
-else:
-    # Fallback for running this file from nested locations.
-    BASE_DIR = os.path.dirname(HERE)
+# Get the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON_EXE = sys.executable
 
 
-def run_command(command: List[str]) -> int:
-    printable = " ".join(shlex.quote(part) for part in command)
-    print("\n" + "=" * 72)
-    print(f"Running: {printable}")
-    print("=" * 72)
-    completed = subprocess.run(command, cwd=BASE_DIR)
-    print("-" * 72)
-    print(f"Exit code: {completed.returncode}")
-    print("-" * 72)
-    return completed.returncode
+def run_email_campaign():
+    """Run the unified email campaign manager."""
+    print("=" * 80)
+    print("🚀 AUTO-MAILER - UNIFIED EMAIL CAMPAIGN SYSTEM")
+    print("=" * 80)
+    
+    # Try to run email_master.py
+    email_master = os.path.join(BASE_DIR, 'email_master.py')
+    
+    if not os.path.exists(email_master):
+        print("❌ ERROR: email_master.py not found!")
+        print(f"   Expected location: {email_master}")
+        sys.exit(1)
+    
+    # Run the master script
+    subprocess.run([PYTHON_EXE, email_master], cwd=BASE_DIR)
 
 
-def get_menu() -> List[Tuple[str, List[str]]]:
-    return [
-        (
-            "Preview production audience only (dry-run; no emails sent)",
-            [PYTHON_EXE, "scripts/send_havells_excluding_registered.py", "--mode", "prod", "--dry-run"],
-        ),
-        (
-            "Send test campaign (shows sender + recipients preview first)",
-            [PYTHON_EXE, "scripts/send_havells_excluding_registered.py", "--mode", "test"],
-        ),
-        (
-            "Send production campaign (shows sender + recipients preview first)",
-            [PYTHON_EXE, "scripts/send_havells_excluding_registered.py", "--mode", "prod"],
-        ),
-        (
-            "Generate campaign report (HTML + TXT)",
-            [PYTHON_EXE, "scripts/generate_campaign_report.py"],
-        ),
-        (
-            "Generate campaign report (HTML only)",
-            [PYTHON_EXE, "scripts/generate_campaign_report.py", "--format", "html"],
-        ),
-        (
-            "Generate campaign report (TXT only)",
-            [PYTHON_EXE, "scripts/generate_campaign_report.py", "--format", "txt"],
-        ),
-    ]
+def run_utility_script() -> None:
+    """Let user run any utility script."""
+    print("\n📂 Utility Scripts Menu")
+    print("=" * 80)
+    
+    scripts_dir = os.path.join(BASE_DIR, 'scripts')
+    scripts = sorted([f for f in os.listdir(scripts_dir) if f.endswith('.py')])
+    
+    if not scripts:
+        print("No utility scripts found.")
+        return
+    
+    for idx, script in enumerate(scripts, 1):
+        print(f"   {idx}. {script}")
+    
+    try:
+        choice = input(f"\nSelect script (1-{len(scripts)}) or [q] to quit: ").strip().lower()
+        
+        if choice == 'q':
+            return
+        
+        choice_idx = int(choice) - 1
+        if 0 <= choice_idx < len(scripts):
+            script_path = os.path.join(scripts_dir, scripts[choice_idx])
+            
+            # Get optional arguments
+            args = input("Enter optional arguments (or press Enter for none): ").strip()
+            
+            # Run the script
+            cmd = [PYTHON_EXE, script_path]
+            if args:
+                import shlex
+                cmd.extend(shlex.split(args))
+            
+            subprocess.run(cmd, cwd=BASE_DIR)
+    except ValueError:
+        print("Invalid choice")
 
 
-def run_custom_script() -> None:
-    script_rel = input("Enter script path (for example: scripts/export_data.py): ").strip()
-    if not script_rel:
-        print("No script entered.")
+def run_web_frontend() -> None:
+    """Launch web frontend for sheet upload and campaign sending."""
+    web_launcher = os.path.join(BASE_DIR, 'run_web.py')
+
+    if not os.path.exists(web_launcher):
+        print("❌ ERROR: run_web.py not found!")
+        print(f"   Expected location: {web_launcher}")
         return
 
-    extra_args = input("Enter optional arguments (or press Enter for none): ").strip()
-    cmd = [PYTHON_EXE, script_rel]
-    if extra_args:
-        cmd.extend(shlex.split(extra_args))
+    mode = input("Run web app in dev mode? (y/n, default n): ").strip().lower()
+    cmd = [PYTHON_EXE, web_launcher]
+    if mode == 'y':
+        cmd.append('--dev')
 
-    run_command(cmd)
+    print("\n🌐 Starting web frontend at http://localhost:5000")
+    subprocess.run(cmd, cwd=BASE_DIR)
 
 
 def main() -> None:
-    print("Auto-Mailer Interactive Runner")
-    print(f"Project directory: {BASE_DIR}")
-
-    menu = get_menu()
-
+    """Main menu."""
     while True:
-        print("\nChoose what you want to do:")
-        for idx, (label, _cmd) in enumerate(menu, start=1):
-            print(f"  {idx}. {label}")
-        print(f"  {len(menu) + 1}. Run a custom script")
+        print("\n" + "=" * 80)
+        print("AUTO-MAILER - MAIN MENU")
+        print("=" * 80)
+        print("  1. 📧 Send Email Campaign (Unified System)")
+        print("  2. 🛠️  Run Utility Scripts")
+        print("  3. 🌐 Launch Web Frontend")
         print("  q. Quit")
-
+        print("=" * 80)
+        
         choice = input("\nEnter choice: ").strip().lower()
-
+        
         if choice == "q":
-            print("Exiting runner.")
+            print("\n✅ Goodbye!")
             return
-
-        if choice == str(len(menu) + 1):
-            run_custom_script()
-            continue
-
-        if not choice.isdigit():
-            print("Invalid choice. Please enter a number or q.")
-            continue
-
-        selected = int(choice)
-        if selected < 1 or selected > len(menu):
-            print("Invalid choice number.")
-            continue
-
-        label, command = menu[selected - 1]
-        print(f"\nSelected: {label}")
-
-        if "production campaign" in label.lower() and "dry-run" not in label.lower():
-            confirm = input("This can send real emails. Type YES to continue: ").strip()
-            if confirm != "YES":
-                print("Cancelled.")
-                continue
-
-        run_command(command)
+        
+        if choice == "1":
+            run_email_campaign()
+        elif choice == "2":
+            run_utility_script()
+        elif choice == "3":
+            run_web_frontend()
+        else:
+            print("❌ Invalid choice")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

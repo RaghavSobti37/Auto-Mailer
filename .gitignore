@@ -13,3 +13,9 @@ assets/pixel.png
 
 # Generated/processed data
 data/processed/
+
+# Web frontend generated state
+data/ui_uploads/
+params/sender_profile.enc
+params/sender_profile.key
+logs/web_email_log.csv

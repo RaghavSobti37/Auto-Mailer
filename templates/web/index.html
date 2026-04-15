@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto-Mailer Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/web/styles.css">
+</head>
+<body>
+  <div class="bg-orb bg-orb-a"></div>
+  <div class="bg-orb bg-orb-b"></div>
+
+  <main class="shell">
+    <section class="pane controls-pane">
+      <header class="hero">
+        <p class="eyebrow">Production Mail Console</p>
+        <h1>Auto-Mailer Studio</h1>
+        <p class="subhead">Upload contact sheets, map fields, draft personalized emails, and send from your Gmail identity.</p>
+      </header>
+
+      <div class="card">
+        <h2>1. Upload Sheet</h2>
+        <input id="sheetInput" type="file" accept=".csv,.xlsx,.xls">
+        <p class="hint">Supported formats: CSV, XLSX, XLS. Max 10 MB.</p>
+        <button id="uploadBtn" class="btn">Upload</button>
+      </div>
+
+      <div class="card">
+        <h2>2. Map Columns</h2>
+        <div class="field-grid">
+          <label>
+            Name Column
+            <select id="nameColumn"></select>
+          </label>
+          <label>
+            Email Column
+            <select id="emailColumn"></select>
+          </label>
+        </div>
+        <p id="datasetSummary" class="hint"></p>
+      </div>
+
+      <div class="card">
+        <h2>3. Sender Identity</h2>
+        <div class="field-grid">
+          <label>
+            Gmail ID
+            <input id="senderEmail" type="email" placeholder="you@gmail.com" autocomplete="email">
+          </label>
+          <label>
+            App Key
+            <input id="appKey" type="password" placeholder="16-char Google App Password" autocomplete="off">
+          </label>
+        </div>
+        <p class="hint">Leave App Key blank only if you have already saved credentials for this same Gmail ID.</p>
+        <p class="hint helper-note">
+          Need an app password? Use
+          <a href="https://support.google.com/accounts/answer/185833?hl=en" target="_blank" rel="noopener noreferrer">Google's official app password guide</a>.
+          Steps: turn on 2-Step Verification, open App Passwords, create a custom app password, then paste the generated 16-character key here. App passwords may be unavailable for work or school accounts, Advanced Protection accounts, or accounts set up with security keys only.
+        </p>
+        <label class="checkbox-row">
+          <input id="rememberSender" type="checkbox" checked>
+          Save sender identity for future use
+        </label>
+      </div>
+
+      <div class="card">
+        <h2>4. Compose Email</h2>
+        <label>
+          Email Style
+          <select id="emailType">
+            <option value="marketing" selected>Marketing Email (card with border)</option>
+            <option value="plain">Plain Text Style (no bordered card)</option>
+          </select>
+        </label>
+        <label>
+          Subject
+          <input id="subject" type="text" placeholder="Hi {{name}}, quick update for you">
+        </label>
+        <label>
+          Message Body
+          <textarea id="message" rows="10" placeholder="Hello {{name}},\n\nThanks for being part of our community."></textarea>
+        </label>
+        <label>
+          Attach Documents
+          <input id="attachments" type="file" multiple>
+        </label>
+        <p id="attachmentSummary" class="hint">No attachments selected. Gmail allows up to 25 MB total attachments per email.</p>
+        <p class="hint">Use tokens like {{name}}, {{email}} or any exact column title wrapped in braces. Markdown and inline HTML are supported for preview and sending.</p>
+
+        <div class="action-row">
+          <button id="previewBtn" class="btn ghost">Update Preview</button>
+          <button id="sendBtn" class="btn danger">Send Campaign</button>
+        </div>
+      </div>
+
+      <p id="status" class="status"></p>
+    </section>
+
+    <section class="pane preview-pane">
+      <div class="preview-wrap">
+        <h2>Email Preview</h2>
+        <p class="hint">Preview uses the first row from your uploaded sheet.</p>
+        <div class="mail-head">
+          <p><strong>To:</strong> <span id="previewTo">-</span></p>
+          <p><strong>Subject:</strong> <span id="previewSubject">-</span></p>
+        </div>
+        <iframe
+          id="previewFrame"
+          class="mail-frame"
+          title="Email preview"
+          sandbox="allow-same-origin"
+        >
+        </iframe>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/web/app.js"></script>
+</body>
+</html>

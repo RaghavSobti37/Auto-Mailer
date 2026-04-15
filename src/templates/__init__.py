@@ -337,3 +337,89 @@ def get_gmi_final_template(name):
 </html>
 """
     return subject, html_body
+
+
+def get_tsc_academy_template(name):
+    """TSC Academy 'The heART of Music Composition' email template."""
+    subject = "UNFOLD Your Music Composition Potential with TSC Academy!"
+    
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style='margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f4f4;'>
+    <div style='max-width:650px; margin:auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-top:30px; margin-bottom:30px;'>
+        
+        <!-- Banner Image Placeholder -->
+        <div style='overflow:hidden; background-color: #1a1a2e; text-align: center;'>
+            <img src='cid:bannerimage' alt='TSC Academy - The heART of Music Composition' style='width:100%; display:block; max-height:300px; object-fit:cover; color: #ffffff; line-height: 200px; font-size: 18px;'>
+        </div>
+        
+        <!-- Main Content -->
+        <div style='padding:40px 50px; background:#ffffff;'>
+            
+            <h2 style='color:#1a1a2e; text-align:center; font-size: 24px; margin-top: 0; margin-bottom: 25px;'>
+                UNFOLD Your Music Composition Potential!
+            </h2>
+            
+            <p style='font-size:16px; line-height:1.6; color:#333333; margin:0 0 20px 0;'>
+                Dear <b>{name}</b>,
+            </p>
+            
+            <p style='font-size:16px; line-height:1.6; color:#333333; margin:0 0 30px 0;'>
+                Imagine transforming your compositions from good to industry-ready masterpieces under the direct guidance of Bollywood legend <strong>Sandesh Shandilya</strong>.
+            </p>
+            
+            <!-- Features Section -->
+            <div style='background:#f9f9fa; border-left:4px solid #d4af37; padding:25px; margin:0 0 30px 0; border-radius:0 4px 4px 0;'>
+                <h3 style='margin: 0 0 15px 0; color: #1a1a2e; font-size: 18px;'>What's Inside</h3>
+                <ul style='margin: 0; padding-left: 20px; color: #333333; line-height: 1.8; font-size: 15px;'>
+                    <li style='margin-bottom: 10px;'><strong>Mentorship:</strong> 12+ Live Interactive Sessions with personalized feedback.</li>
+                    <li style='margin-bottom: 10px;'><strong>Content:</strong> 200+ minutes of recorded masterclasses.</li>
+                    <li style='margin-bottom: 10px;'><strong>Access:</strong> 1-year material access + Lifetime community support.</li>
+                    <li style='margin-bottom: 10px;'><strong>The Pitch:</strong> A chance to pitch your music on "The Young Gunns Demo Day."</li>
+                    <li><strong>Hands-On Growth:</strong> 14 chapters with assignments, from creative processes and bhaav (emotions) to nature patterns, samarpan, lyrics integration, collaborations, and how to get into your subconscious self.</li>
+                </ul>
+            </div>
+            
+            <p style='font-size:17px; line-height:1.6; color:#1a1a2e; margin:0 0 30px 0; text-align:center; font-style: italic; font-weight: bold;'>
+                "This isn't just a course—it's a launchpad to unlock your artist force!"
+            </p>
+            
+            <!-- Accelerator Highlight -->
+            <div style='background:#1a1a2e; color:#ffffff; padding:25px; border-radius:6px; margin:0 0 35px 0; text-align:center;'>
+                <h4 style='color:#d4af37; margin:0 0 12px 0; font-size:18px; text-transform:uppercase; letter-spacing: 1px;'>Exclusive Accelerator Feature</h4>
+                <p style='margin:0; font-size:15px; line-height:1.6;'>
+                    <strong>At least One Song Composition:</strong> To be looked over by Sandesh Shandilya himself (Accelerator program) and the opportunity to release a track with community support.
+                </p>
+            </div>
+            
+            <!-- CTAs -->
+            <div style='text-align:center; margin:0 0 40px 0;'>
+                <a href='https://tscacademy.exlyapp.com/checkout/1d0a602b-3c35-401c-8c43-1b88780520f2?dynamic_link=8f97793a-18dd-471f-9b2b-3bc046936957' style='background:#f4f4f4; color:#1a1a2e; padding:16px 25px; text-decoration:none; border-radius:4px; font-size:15px; font-weight:bold; display:inline-block; margin: 10px 5px; border: 2px solid #1a1a2e;'>Join Foundation Program</a>
+                <a href='https://tscacademy.exlyapp.com/checkout/55bdc656-c92d-4812-a775-944d5becf544?dynamic_link=733fcf13-0d2f-4524-b595-52b096b483a6' style='background:#d4af37; color:#1a1a2e; padding:16px 25px; text-decoration:none; border-radius:4px; font-size:15px; font-weight:bold; display:inline-block; margin: 10px 5px; border: 2px solid #d4af37;'>Join Accelerator Program</a>
+            </div>
+            
+            <hr style='border:none; border-top:1px solid #eeeeee; margin:0 0 25px 0;'>
+            
+            <p style='font-size:14px; line-height:1.6; color:#666666; margin:0; text-align:center;'>
+                Have questions? We're here to help.<br>
+                Contact us: <a href="tel:+919168665455" style="color: #1a1a2e; font-weight: bold; text-decoration: none;">+91 9168665455</a>
+            </p>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div style='padding:25px; text-align:center; background:#1a1a2e; color:#ffffff; font-size:12px; line-height:1.6; border-top: 3px solid #d4af37;'>
+            <p style='margin:0 0 8px 0;'>Warm regards,</p>
+            <p style='margin:0; color:#cccccc;'>Team TSC Academy<br>© 2026 TSC Academy. All rights reserved.</p>
+        </div>
+        
+    </div>
+</body>
+</html>
+"""
+    return subject, html_body

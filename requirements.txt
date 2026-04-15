@@ -3,3 +3,8 @@ pandas
 python-dotenv
 Pillow
 numpy
+cryptography
+openpyxl
+waitress
+Markdown
+bleach

@@ -109,6 +109,33 @@ EMAIL_PASSWORD=your_gmail_app_password
 
 ## 📋 Usage Guide
 
+### Web Frontend (Upload, Map, Preview, Send)
+
+The project now includes a production-focused web interface that supports:
+- Uploading CSV/XLSX sheets
+- Selecting Name and Email columns via dropdown
+- Writing subject/body with token support (`{{name}}`, `{{email}}`, `{{Column Title}}`)
+- Live email preview on the right panel
+- Sending through the user's Gmail ID + App Key
+- Remembering sender identity for future sessions (encrypted local storage)
+
+Run the web UI:
+
+```bash
+# Production mode (Waitress server)
+python run_web.py
+
+# Development mode (Flask debug server)
+python run_web.py --dev
+```
+
+Open: `http://localhost:5000`
+
+Security notes:
+- Sender profile is stored at `params/sender_profile.enc` and encrypted via `params/sender_profile.key`.
+- Keep the `params/` folder protected and do not commit encrypted profile/key files if you do not want local credential persistence.
+- For Gmail, generate an App Password and use that as App Key.
+
 ### 1. Consolidate and Clean Data
 
 This is the first step in the new workflow. This script will process all files in `data/raw/`, clean them, and update the master database.

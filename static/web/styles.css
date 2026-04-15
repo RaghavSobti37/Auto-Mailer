@@ -1,0 +1,288 @@
+:root {
+  --bg: #f9f4ea;
+  --ink: #18242c;
+  --ink-soft: #4e5b62;
+  --line: #dcccb4;
+  --card: rgba(255, 252, 246, 0.9);
+  --accent: #c85b2c;
+  --accent-deep: #9e3f15;
+  --mint: #1f8576;
+  --danger: #a32727;
+  --shadow: 0 20px 40px rgba(32, 25, 17, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 10% 10%, #fef7ed 0%, #f9f4ea 40%, #f4ecde 100%);
+  color: var(--ink);
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bg-orb {
+  position: fixed;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(6px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.bg-orb-a {
+  width: 420px;
+  height: 420px;
+  background: #f3b971;
+  top: -120px;
+  right: -80px;
+}
+
+.bg-orb-b {
+  width: 320px;
+  height: 320px;
+  background: #74c8b6;
+  left: -90px;
+  bottom: -80px;
+}
+
+.shell {
+  position: relative;
+  z-index: 2;
+  width: min(1320px, 95vw);
+  margin: 28px auto;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: start;
+}
+
+.pane {
+  animation: rise 500ms ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.controls-pane {
+  display: grid;
+  gap: 18px;
+}
+
+.hero h1 {
+  margin: 8px 0;
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.subhead {
+  margin: 0;
+  color: var(--ink-soft);
+  max-width: 70ch;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.06rem;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.92rem;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #cbb89b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fffdf9;
+  color: var(--ink);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 180px;
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: #647178;
+}
+
+.helper-note a {
+  color: #0d6a8a;
+}
+
+.helper-note a:hover {
+  color: #094f67;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 0.88rem;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(100deg, var(--accent), #e1853d);
+  color: white;
+  font-weight: 700;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(200, 91, 44, 0.34);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn.ghost {
+  background: #e9f2f0;
+  color: #0f584e;
+}
+
+.btn.danger {
+  background: linear-gradient(100deg, var(--danger), #cc3f3f);
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+#attachmentSummary {
+  margin-top: 4px;
+}
+
+.status {
+  min-height: 20px;
+  margin: 0;
+  color: var(--accent-deep);
+  font-size: 0.9rem;
+}
+
+.preview-pane {
+  position: sticky;
+  top: 16px;
+}
+
+.preview-wrap {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.preview-wrap h2,
+.preview-wrap .hint,
+.mail-head {
+  padding: 14px 18px;
+  margin: 0;
+}
+
+.preview-wrap .hint {
+  padding-top: 0;
+}
+
+.mail-head {
+  background: #fff6e8;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 6px;
+}
+
+.mail-head p {
+  margin: 0;
+  color: #394850;
+}
+
+.mail-frame {
+  display: block;
+  width: 100%;
+  min-height: 520px;
+  border: 0;
+  background: #f7f7f7;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-pane {
+    position: static;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mail-frame {
+    min-height: 360px;
+  }
+}
