@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — AutoMailer Studio</title>
+  <link rel="icon" type="image/svg+xml" href="/static/web/favicon.svg">
+  <link rel="stylesheet" href="/static/web/styles.css">
+</head>
+<body class="glass-body">
+
+  <nav class="navbar glass-nav">
+    <a href="/" class="nav-brand">
+      <img src="/static/web/favicon.svg" alt="Logo" style="height:22px;filter:invert(1);"> Auto-Mailer
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Studio</a>
+      <a href="/dashboard" class="nav-link active">Analytics</a>
+      <a href="/docs" class="nav-link">Docs</a>
+    </div>
+    <div style="flex:1;"></div>
+  </nav>
+
+  <div class="dashboard-shell">
+    <div class="dash-header">
+      <p>Analytics Matrix</p>
+      <h1>Campaign Dashboard</h1>
+    </div>
+
+    <!-- Summary Bar (static totals across all campaigns) -->
+    <div class="summary-bar" id="summaryBar">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Per-campaign cards -->
+    <div class="campaigns-grid" id="campaignsContainer">
+      <div class="no-campaigns-msg">Loading campaign data…</div>
+    </div>
+  </div>
+
+  <script src="/static/web/dashboard.js"></script>
+</body>
+</html>

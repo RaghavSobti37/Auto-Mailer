@@ -4,121 +4,242 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto-Mailer Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/static/web/favicon.svg">
+  <link rel="shortcut icon" href="/static/web/favicon.svg">
   <link rel="stylesheet" href="/static/web/styles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 </head>
-<body>
-  <div class="bg-orb bg-orb-a"></div>
-  <div class="bg-orb bg-orb-b"></div>
+<body class="glass-body">
 
-  <main class="shell">
-    <section class="pane controls-pane">
-      <header class="hero">
-        <p class="eyebrow">Production Mail Console</p>
-        <h1>Auto-Mailer Studio</h1>
-        <p class="subhead">Upload contact sheets, map fields, draft personalized emails, and send from your Gmail identity.</p>
-      </header>
+  <nav class="navbar glass-nav">
+    <a href="/" class="nav-brand">
+      <img src="/static/web/favicon.svg" alt="Logo" style="height: 22px; filter: invert(1);"> 
+      Auto-Mailer
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">Studio</a>
+      <a href="/dashboard" class="nav-link">Analytics</a>
+      <a href="/docs" class="nav-link">Docs</a>
+    </div>
+    <div style="width:140px;"></div><!-- Spacer to keep links centered -->
+  </nav>
 
-      <div class="card">
-        <h2>1. Upload Sheet</h2>
-        <input id="sheetInput" type="file" accept=".csv,.xlsx,.xls">
-        <p class="hint">Supported formats: CSV, XLSX, XLS. Max 10 MB.</p>
-        <button id="uploadBtn" class="btn">Upload</button>
-      </div>
-
-      <div class="card">
-        <h2>2. Map Columns</h2>
-        <div class="field-grid">
-          <label>
-            Name Column
-            <select id="nameColumn"></select>
-          </label>
-          <label>
-            Email Column
-            <select id="emailColumn"></select>
-          </label>
+  <main class="workspace">
+    <!-- LEFT PANE: BUILDER -->
+    <section class="builder-pane controls-pane">
+      
+      <!-- Section 1: Setup -->
+      <div class="builder-section">
+        <div class="builder-header" onclick="toggleSection('setupSection')">
+          <h2>1. Audience &amp; Identity</h2>
+          <span class="chevron">▾</span>
         </div>
-        <p id="datasetSummary" class="hint"></p>
-      </div>
+        <div id="setupSection" class="builder-content open">
+          <input id="sheetInput" type="file" accept=".csv,.xlsx,.xls">
+          <p class="hint">Supported: CSV, XLSX, XLS — max 10 MB.</p>
+          <button id="uploadBtn" class="btn ghost">Scan &amp; Upload Dataset</button>
+          
+          <div class="field-grid">
+            <label>Name Column <select id="nameColumn"></select></label>
+            <label>Email Column <select id="emailColumn"></select></label>
+          </div>
+          <p id="datasetSummary" class="hint success-hint"></p>
 
-      <div class="card">
-        <h2>3. Sender Identity</h2>
-        <div class="field-grid">
-          <label>
-            Gmail ID
-            <input id="senderEmail" type="email" placeholder="you@gmail.com" autocomplete="email">
+          <div class="divider"></div>
+
+          <div class="field-grid">
+            <label>SMTP Host <input id="smtpHost" type="text" placeholder="smtp.gmail.com"></label>
+            <label>SMTP Port <input id="smtpPort" type="number" placeholder="587"></label>
+          </div>
+          <div class="field-grid">
+            <label>Sender Email <input id="senderEmail" type="email" placeholder="you@example.com"></label>
+            <label>App Key / Password <input id="appKey" type="password" placeholder="••••••••••••••••"></label>
+          </div>
+          <label class="check-row">
+            <input id="rememberSender" type="checkbox" checked> Save identity locally
           </label>
-          <label>
-            App Key
-            <input id="appKey" type="password" placeholder="16-char Google App Password" autocomplete="off">
-          </label>
-        </div>
-        <p class="hint">Leave App Key blank only if you have already saved credentials for this same Gmail ID.</p>
-        <p class="hint helper-note">
-          Need an app password? Use
-          <a href="https://support.google.com/accounts/answer/185833?hl=en" target="_blank" rel="noopener noreferrer">Google's official app password guide</a>.
-          Steps: turn on 2-Step Verification, open App Passwords, create a custom app password, then paste the generated 16-character key here. App passwords may be unavailable for work or school accounts, Advanced Protection accounts, or accounts set up with security keys only.
-        </p>
-        <label class="checkbox-row">
-          <input id="rememberSender" type="checkbox" checked>
-          Save sender identity for future use
-        </label>
-      </div>
-
-      <div class="card">
-        <h2>4. Compose Email</h2>
-        <label>
-          Email Style
-          <select id="emailType">
-            <option value="marketing" selected>Marketing Email (card with border)</option>
-            <option value="plain">Plain Text Style (no bordered card)</option>
-          </select>
-        </label>
-        <label>
-          Subject
-          <input id="subject" type="text" placeholder="Hi {{name}}, quick update for you">
-        </label>
-        <label>
-          Message Body
-          <textarea id="message" rows="10" placeholder="Hello {{name}},\n\nThanks for being part of our community."></textarea>
-        </label>
-        <label>
-          Attach Documents
-          <input id="attachments" type="file" multiple>
-        </label>
-        <p id="attachmentSummary" class="hint">No attachments selected. Gmail allows up to 25 MB total attachments per email.</p>
-        <p class="hint">Use tokens like {{name}}, {{email}} or any exact column title wrapped in braces. Markdown and inline HTML are supported for preview and sending.</p>
-
-        <div class="action-row">
-          <button id="previewBtn" class="btn ghost">Update Preview</button>
-          <button id="sendBtn" class="btn danger">Send Campaign</button>
         </div>
       </div>
 
-      <p id="status" class="status"></p>
+      <!-- Section 2: Banner -->
+      <div class="builder-section">
+        <div class="builder-header" onclick="toggleSection('bannerSection')">
+          <h2>2. Hero Banner</h2>
+          <span class="badge-green">CID Embed</span>
+        </div>
+        <div id="bannerSection" class="builder-content">
+          <p class="hint">Upload an image to auto-embed it inline inside every email — no external hosting needed.</p>
+          
+          <div id="bannerPreviewBox" class="banner-preview-box" style="display:none;">
+            <img id="bannerThumb" src="" alt="Banner preview" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+            <button id="removeBannerBtn" class="banner-remove-btn" title="Remove banner">✕</button>
+          </div>
+
+          <input id="rawBannerInput" type="file" accept="image/*" style="display:none;">
+          <button id="summonCropperBtn" class="btn ghost">Select &amp; Crop Banner Image</button>
+          <p id="bannerStatus" class="hint success-hint" style="display:none;">✓ Banner cropped and staged for campaign.</p>
+        </div>
+      </div>
+
+      <!-- Section 3: Templates -->
+      <div class="builder-section">
+        <div class="builder-header" onclick="toggleSection('templateSection')">
+          <h2>3. Template Gallery</h2>
+          <span class="chevron">▾</span>
+        </div>
+        <div id="templateSection" class="builder-content">
+          <p class="hint">Click a template to load it into the editor.</p>
+          <div class="template-grid" id="templateGrid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Composer -->
+      <div class="builder-section" style="border-bottom:none;">
+        <div class="builder-header">
+          <h2>4. Compose</h2>
+          <span class="badge-green">Live</span>
+        </div>
+        <div id="composeSection" class="builder-content open">
+          <div class="field-label">Theme Wrapper</div>
+          <div class="theme-wrapper-grid" id="themeWrapperGrid">
+            <button class="theme-wrapper-btn active" data-type="marketing">
+              <span class="theme-icon">🎴</span>
+              <span class="theme-name">Marketing Card</span>
+            </button>
+            <button class="theme-wrapper-btn" data-type="plain">
+              <span class="theme-icon">📄</span>
+              <span class="theme-name">Clean Text</span>
+            </button>
+          </div>
+          <input type="hidden" id="emailType" value="marketing">
+
+          <!-- CTA Master Designer -->
+          <div class="cta-master-panel">
+            <div class="field-label-row">
+              <span class="field-label">CTA Master Button</span>
+              <span class="badge-mini">Design System</span>
+            </div>
+            
+            <div class="cta-input-group">
+              <div class="cta-row-main">
+                <input id="ctaText" type="text" placeholder="Button Text (e.g. Join Now)" style="flex:1;">
+                <input id="ctaLink" type="text" placeholder="https://..." style="flex:1.5;">
+              </div>
+              
+              <div class="cta-design-controls">
+                <div class="control-group">
+                  <span>Align:</span>
+                  <div class="align-btns" id="ctaAlignGroup">
+                    <button class="align-btn active" data-align="center">≡</button>
+                    <button class="align-btn" data-align="left">⇚</button>
+                    <button class="align-btn" data-align="right">⇛</button>
+                  </div>
+                </div>
+                
+                <div class="control-group">
+                  <span>Bg:</span>
+                  <input id="ctaBgColor" type="color" value="#ef4444">
+                </div>
+
+                <div class="control-group">
+                  <span>Text:</span>
+                  <input id="ctaTextColor" type="color" value="#ffffff">
+                </div>
+
+                <div class="control-group" style="flex:1;">
+                  <span>Padding:</span>
+                  <input id="ctaPadding" type="range" min="8" max="32" value="16">
+                </div>
+              </div>
+            </div>
+          </div>
+          <label>Subject Line <input id="subject" type="text" placeholder="Big news for you, {{name}}"></label>
+          <label style="flex-grow:1;">
+            Markdown Body <span class="hint">(Use {{CTA}} to place the button exactly)</span>
+            <textarea id="message" placeholder="# Hello {{name}}&#10;&#10;Write your campaign here. **Markdown** is supported.&#10;&#10;The button will be added below unless you use {{CTA}}."></textarea>
+          </label>
+          <label>
+            Attachments (optional)
+            <input id="attachments" type="file" multiple>
+          </label>
+          <p id="attachmentSummary" class="hint">No attachments configured.</p>
+        </div>
+      </div>
+
+      <!-- Sticky Action Row -->
+      <div class="action-row">
+        <button id="sendBtn" class="btn">🚀 Deploy Campaign Sequence</button>
+      </div>
+
+      <!-- Progress -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar-wrap">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div class="progress-text">
+          <span id="progressStatusText">Building Queue...</span>
+          <span id="progressCountText">0 / 0</span>
+        </div>
+      </div>
+
+      <p id="status" style="margin:0 24px; padding-bottom:16px; font-size:0.85rem;"></p>
     </section>
 
-    <section class="pane preview-pane">
-      <div class="preview-wrap">
-        <h2>Email Preview</h2>
-        <p class="hint">Preview uses the first row from your uploaded sheet.</p>
-        <div class="mail-head">
-          <p><strong>To:</strong> <span id="previewTo">-</span></p>
-          <p><strong>Subject:</strong> <span id="previewSubject">-</span></p>
+    <!-- RIGHT PANE: CANVAS -->
+    <section class="canvas-pane">
+      <div class="canvas-header">
+        <span class="canvas-title">Live Render Target</span>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <button id="fullScreenBtn" class="btn ghost" style="padding:4px 10px; font-size:0.75rem;">⛶ Full Screen</button>
+          <div class="live-indicator">
+            <div class="live-dot"></div> Live
+          </div>
         </div>
-        <iframe
-          id="previewFrame"
-          class="mail-frame"
-          title="Email preview"
-          sandbox="allow-same-origin"
-        >
-        </iframe>
+      </div>
+      <div class="preview-wrap">
+        <div class="mail-head">
+          <p>To: <strong id="previewTo">recipient@example.com</strong></p>
+          <p>Subject: <strong id="previewSubject">Your Subject Here</strong></p>
+        </div>
+        <iframe id="previewFrame" class="mail-frame" title="Email preview" sandbox="allow-same-origin"></iframe>
       </div>
     </section>
   </main>
 
+  <!-- CROPPER MODAL -->
+  <div id="cropperModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 style="margin:0 0 4px; color:#fff;">Crop Banner</h2>
+      <p class="hint">Adjust to fit your email header (720x250). Click Apply when done.</p>
+      <div class="cropper-container-box">
+        <img id="cropperImage" src="" style="max-width:100%; display:block;">
+      </div>
+      <div class="modal-actions">
+        <button id="cancelCropBtn" class="btn ghost">Cancel</button>
+        <button id="applyCropBtn" class="btn">Apply &amp; Embed</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="fullScreenModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:95%; height:95vh; padding:12px; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0; font-size:1.1rem; color:#fff;">Full Screen Preview</h2>
+        <button id="closeFullScreenBtn" class="btn ghost" style="padding:4px 12px;">Close</button>
+      </div>
+      <iframe id="fullScreenFrame" style="flex:1; border:0; background:#fff; border-radius:8px;"></iframe>
+    </div>
+  </div>
+
   <script src="/static/web/app.js"></script>
+  <script>
+    function toggleSection(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>
