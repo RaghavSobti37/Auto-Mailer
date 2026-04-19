@@ -170,6 +170,19 @@ class SenderProfile:
 def create_app() -> Flask:
     load_dotenv()
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    @app.get("/api/debug-env")
+    def debug_env():
+        return jsonify({
+            "VERCEL": os.getenv("VERCEL"),
+            "RUNTIME_ROOT": str(RUNTIME_ROOT),
+            "BASE_DIR": str(BASE_DIR),
+            "DB_PATH": str(DB_PATH),
+            "UPLOAD_DIR": str(UPLOAD_DIR),
+            "cwd": os.getcwd(),
+            "tmp_writable": os.access("/tmp", os.W_OK),
+            "runtime_writable": os.access(str(RUNTIME_ROOT), os.W_OK) if RUNTIME_ROOT.exists() else "root_not_exists"
+        })
+
     app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_SIZE_BYTES
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 

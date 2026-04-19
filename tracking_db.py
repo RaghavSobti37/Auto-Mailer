@@ -5,7 +5,10 @@ from datetime import datetime
 class TrackingDB:
     def __init__(self, db_path: Path):
         self.db_path = db_path
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass # Vercel might be read-only at target
         self._init_db()
 
     def _get_conn(self):
