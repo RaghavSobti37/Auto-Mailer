@@ -6,7 +6,10 @@
 
 ## 📺 Project Demonstration
 
-![AutoMailer Full Demo](C:\Users\ragha\OneDrive\Desktop\AutoMailer\Auto-Mailer\automailer_demo.mp4)
+<div align="center">
+  <video src="automailer_demo.mp4" width="100%" controls autoplay loop muted></video>
+</div>
+
 *A high-fidelity demonstration showing complete flow: Audience Upload, Hero Banner Cropping, Template Selection, and Analytics Sync.*
 
 ---
