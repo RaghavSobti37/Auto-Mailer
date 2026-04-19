@@ -28,14 +28,24 @@ from urllib.parse import quote_plus
 import logging
 
 # Configure production logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("automailer.log"),
-        logging.StreamHandler()
-    ]
-)
+def setup_logging():
+    is_vercel = os.getenv("VERCEL") == "1"
+    handlers = [logging.StreamHandler()]
+    
+    if not is_vercel:
+        try:
+            # Ensure logs dir exists for local file logging
+            RUNTIME_ROOT.joinpath("logs").mkdir(parents=True, exist_ok=True)
+            handlers.append(logging.FileHandler(RUNTIME_ROOT / "logs" / "automailer.log"))
+        except Exception:
+            pass # Fallback to stream only if root is read-only
+            
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=handlers
+    )
+
 logger = logging.getLogger(__name__)
 
 import pandas as pd
@@ -62,6 +72,15 @@ LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
 SENDER_PROFILE_PATH = RUNTIME_ROOT / "params" / "sender_profile.enc"
 SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "params" / "sender_profile.key"
 DB_PATH = RUNTIME_ROOT / "data" / "tracking.db"
+
+# Lazy-init directories
+def ensure_runtime_dirs():
+    for d in [UPLOAD_DIR, LOG_PATH.parent, SENDER_PROFILE_PATH.parent, DB_PATH.parent]:
+        try:
+            d.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            if not os.getenv("VERCEL"):
+                print(f"Warning: Could not create directory {d}: {e}")
 
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 ALLOWED_EXTENSIONS = {"csv", "xlsx", "xls"}
@@ -143,14 +162,19 @@ def create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_SIZE_BYTES
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    SENDER_PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Initialize Environment
+    ensure_runtime_dirs()
+    setup_logging()
     
+    logger.info(f"Initializing TrackingDB at {DB_PATH}")
     tracking_db = TrackingDB(DB_PATH)
 
     @app.get("/")
     def index() -> str:
+        return render_template("web/index.html")
+
+    @app.errorhandler(404)
+    def not_found(e):
         return render_template("web/index.html")
 
     @app.errorhandler(413)
@@ -900,6 +924,8 @@ def error_response(message: str, status_code: int) -> Any:
     return jsonify({"error": message}), status_code
 
 app = create_app()
+# Global tracking_db for background threads
+tracking_db = TrackingDB(DB_PATH)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
