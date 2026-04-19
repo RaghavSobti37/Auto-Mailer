@@ -356,14 +356,25 @@ def create_app() -> Flask:
     @app.get("/track/click/<campaign_id>/<tracking_id>")
     def track_click(campaign_id: str, tracking_id: str):
         url = request.args.get("url")
+        
+        # Fallback: if user manually concatenated or stripped params
+        if not url and "." in tracking_id:
+            logger.warning(f"Click track missing 'url' param. Using tracking_id fallback: {tracking_id}")
+            url = tracking_id if tracking_id.startswith(("http://", "https://")) else f"http://{tracking_id}"
+            tracking_id = "unknown"
+
         if url:
             # A click implies an open
-            tracking_db.record_open(tracking_id)
-            tracking_db.record_click(tracking_id, url)
+            try:
+                tracking_db.record_open(tracking_id)
+                tracking_db.record_click(tracking_id, url)
+            except: pass
+            
             resp = redirect(url)
             resp.set_cookie('am_tracker', tracking_id, max_age=60*60*24*30)
             return resp
-        return "Invalid URL", 400
+            
+        return "Invalid Tracking URL: Missing 'url' parameter for redirection.", 400
 
     @app.route("/unsubscribe/<campaign_id>/<tracking_id>", methods=["GET", "POST"])
     def unsubscribe_page(campaign_id: str, tracking_id: str):
@@ -576,7 +587,8 @@ def create_app() -> Flask:
             "total": len(valid_targets),
             "sent": 0,
             "failed": 0,
-            "failedRows": []
+            "failedRows": [],
+            "currentRecipient": None
         }
 
         def process_campaign(cid: str, data: pd.DataFrame, attach: list, smhost: str, smport: int, banner_bytes: bytes, cta: dict):
@@ -607,6 +619,7 @@ def create_app() -> Flask:
                 for idx, row in data.iterrows():
                     recipient = str(row[email_column]).strip()
                     logger.info(f"[{idx+1}/{len(data)}] Processing: {recipient}")
+                    ACTIVE_CAMPAIGNS[cid]["currentRecipient"] = recipient
                     
                     recipient_name = str(row.get(name_column, "")).strip() or "there"
                     context = {k: str(v) for k, v in row.to_dict().items()}
@@ -713,10 +726,9 @@ def create_app() -> Flask:
                     if len(failed_rows) <= 10:
                         ACTIVE_CAMPAIGNS[cid]["failedRows"] = failed_rows
             
-            except Exception as loop_exc:
-                err_msg = f"Unexpected loop failure: {loop_exc}"
-                logger.critical(err_msg)
-                ACTIVE_CAMPAIGNS[cid]["status"] = f"CRASH: {loop_exc}"
+            except Exception as e:
+                logger.error(f"Campaign {cid} crashed: {e}")
+                ACTIVE_CAMPAIGNS[cid]["status"] = f"Failed: {e}"
             finally:
                 try: smtp.quit()
                 except: pass

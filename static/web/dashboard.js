@@ -127,15 +127,19 @@ function renderCampaignCard(c) {
   const convRate  = pct(c.stats.registered, c.stats.total);
   const isDemo    = c.id.startsWith("demo-");
 
+  const statusText = c.status === "sending" ? `Sending (${c.stats.sent}/${c.stats.total})` : "Complete";
+  const statusClass = c.status === "sending" ? "status-sending" : "status-complete";
+
   return `
     <div class="campaign-glass-card" id="card-${c.id}">
       <div class="campaign-glass-header">
-        <div>
+        <div style="flex:1;">
           <h3 class="campaign-glass-title">${escapeHtml(c.subject)}</h3>
-          <p class="campaign-glass-meta">${dateStr} &mdash; ID: <code style="opacity:.5; font-size:0.75rem;">${c.id.split("-")[0]}…</code>${isDemo ? ' <span style="color:rgba(255,255,255,.25);font-size:.7rem;">(demo)</span>' : ''}</p>
+          <p class="campaign-glass-meta">${dateStr} &mdash; <code style="opacity:.6; font-size:0.75rem;">${c.id}</code>${isDemo ? ' <span style="color:rgba(255,255,255,.25);font-size:.7rem;">(demo)</span>' : ''}</p>
+          ${c.currentRecipient ? `<p style="font-size:0.7rem; color:var(--mc-yellow); margin-top:4px;">→ Processing: ${escapeHtml(c.currentRecipient)}</p>` : ''}
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-          <span class="status-badge status-complete">Complete</span>
+          <span class="status-badge ${statusClass}">${statusText}</span>
           ${!isDemo ? `<button class="delete-campaign-btn" onclick="deleteCampaign('${c.id}')" title="Delete Campaign">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           </button>` : ''}
@@ -322,6 +326,10 @@ async function refreshDashboard() {
     // 2. Fetch Latest Campaigns
     await fetchCampaigns();
     
+    // Resume auto-refresh if something is sending
+    const anyActive = document.querySelector(".status-sending");
+    if (anyActive) startAutoRefresh();
+    
     if (scanRes.ok && scanData.processed > 0) {
       showToast(`Scan complete: Found ${scanData.processed} new bounces.`, "success");
     }
@@ -360,8 +368,25 @@ async function fetchCampaigns() {
 // ────────────────────────────────────────
 // AUTO-REFRESH (Keep tracking in background)
 // ────────────────────────────────────────
-// Auto-refresh disabled per user request
-// setInterval(fetchCampaigns, 10000);
+let autoRefreshInterval = null;
+function startAutoRefresh() {
+  if (autoRefreshInterval) return;
+  autoRefreshInterval = setInterval(async () => {
+    await fetchCampaigns();
+    const anyActive = document.querySelector(".status-sending");
+    if (!anyActive) {
+      clearInterval(autoRefreshInterval);
+      autoRefreshInterval = null;
+    }
+  }, 2500);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchCampaigns();
