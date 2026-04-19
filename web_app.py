@@ -67,11 +67,22 @@ def runtime_data_root() -> Path:
     return BASE_DIR
 
 RUNTIME_ROOT = runtime_data_root()
-UPLOAD_DIR = RUNTIME_ROOT / "data" / "ui_uploads"
-LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
-SENDER_PROFILE_PATH = RUNTIME_ROOT / "params" / "sender_profile.enc"
-SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "params" / "sender_profile.key"
-DB_PATH = RUNTIME_ROOT / "data" / "tracking.db"
+# On Vercel, keep paths flat in /tmp to avoid directory creation issues
+if os.getenv("VERCEL"):
+    UPLOAD_DIR = RUNTIME_ROOT / "ui_uploads"
+    LOG_PATH = RUNTIME_ROOT / "web_email_log.csv"
+    SENDER_PROFILE_PATH = RUNTIME_ROOT / "sender_profile.enc"
+    SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "sender_profile.key"
+    DB_PATH = RUNTIME_ROOT / "tracking.db"
+    UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "unsubscribes.csv"
+else:
+    UPLOAD_DIR = RUNTIME_ROOT / "data" / "ui_uploads"
+    LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
+    SENDER_PROFILE_PATH = RUNTIME_ROOT / "params" / "sender_profile.enc"
+    SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "params" / "sender_profile.key"
+    DB_PATH = RUNTIME_ROOT / "data" / "tracking.db"
+    UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
+
 
 # Lazy-init directories
 def ensure_runtime_dirs():
@@ -167,7 +178,10 @@ def create_app() -> Flask:
     setup_logging()
     
     logger.info(f"Initializing TrackingDB at {DB_PATH}")
-    tracking_db = TrackingDB(DB_PATH)
+    # Initialize global tracking_db if not already
+    global tracking_db
+    if tracking_db is None:
+        tracking_db = TrackingDB(DB_PATH)
 
     @app.get("/")
     def index() -> str:
@@ -924,10 +938,16 @@ def error_response(message: str, status_code: int) -> Any:
     return jsonify({"error": message}), status_code
 
 app = create_app()
-# Global tracking_db for background threads
-tracking_db = TrackingDB(DB_PATH)
 
-if __name__ == "__main__":
+# Global tracking_db for background threads
+# On regular servers, this initializes here. On Vercel, it might trigger via create_app.
+tracking_db: TrackingDB | None = None
+try:
+    if not os.getenv("VERCEL"):
+        ensure_runtime_dirs()
+        tracking_db = TrackingDB(DB_PATH)
+except:
+    pass
     app.run(host="0.0.0.0", port=5000, debug=False)
 def generate_bulletproof_button(settings: dict, tracking_id: str|None = None, campaign_id: str|None = None, host_url: str|None = None) -> str:
     text = settings.get("text", "Click Here")
