@@ -953,14 +953,16 @@ def error_response(message: str, status_code: int) -> Any:
 app = create_app()
 
 # Global tracking_db for background threads
-# On regular servers, this initializes here. On Vercel, it might trigger via create_app.
+# On regular servers, this initializes here. On Vercel, it triggers via create_app factory.
 tracking_db: TrackingDB | None = None
 try:
     if not os.getenv("VERCEL"):
         ensure_runtime_dirs()
         tracking_db = TrackingDB(DB_PATH)
-except:
+except Exception:
     pass
+
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
 def generate_bulletproof_button(settings: dict, tracking_id: str|None = None, campaign_id: str|None = None, host_url: str|None = None) -> str:
     text = settings.get("text", "Click Here")
