@@ -56,6 +56,19 @@ function renderSummaryBar(campaigns) {
   const clickPct = pct(totals.clicks, totals.sent);
   const convPct  = pct(totals.registered, totals.sent);
 
+  // Global funnel distribution
+  const globalFunnel = campaigns.reduce((acc, c) => {
+    const f = c.stats.funnel || {
+      "Bounced": c.stats.failed,
+      "Delivered": Math.max(0, c.stats.sent - (c.stats.opens || 0)),
+      "Opened": Math.max(0, (c.stats.opens || 0) - (c.stats.clicks || 0)),
+      "Clicked": Math.max(0, (c.stats.clicks || 0) - (c.stats.registered || 0)),
+      "Registered": c.stats.registered || 0
+    };
+    Object.keys(f).forEach(k => acc[k] = (acc[k] || 0) + f[k]);
+    return acc;
+  }, { "Bounced": 0, "Delivered": 0, "Opened": 0, "Clicked": 0, "Registered": 0 });
+
   document.getElementById("summaryBar").innerHTML = `
     <div class="summary-card" style="--accent:var(--mc-yellow);">
       <div class="summary-value">${campaigns.length}</div>
@@ -82,6 +95,46 @@ function renderSummaryBar(campaigns) {
       <div class="summary-label">Conversion Rate</div>
     </div>
   `;
+  
+  setTimeout(() => initGlobalChart(globalFunnel), 50);
+}
+
+let globalChartInstance = null;
+function initGlobalChart(funnel) {
+    const ctx = document.getElementById("globalFunnelChart");
+    if (!ctx) return;
+    if (globalChartInstance) globalChartInstance.destroy();
+
+    globalChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(funnel),
+        datasets: [{
+          data: Object.values(funnel),
+          backgroundColor: [
+            '#f87171', // Bounced
+            'rgba(255,255,255,0.1)', // Delivered (Sent Only)
+            '#facc15', // Opened
+            '#06b6d4', // Clicked
+            '#a855f7'  // Registered
+          ],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        plugins: { 
+            legend: { 
+                display: true, 
+                position: 'bottom',
+                labels: { color: 'rgba(255,255,255,0.5)', usePointStyle: true, font: { size: 10 } }
+            } 
+        },
+        cutout: '70%',
+        responsive: false,
+        maintainAspectRatio: true
+      }
+    });
 }
 
 function renderCampaignCard(c) {
@@ -94,43 +147,184 @@ function renderCampaignCard(c) {
   const isDemo    = c.id.startsWith("demo-");
 
   return `
-    <div class="campaign-glass-card">
+    <div class="campaign-glass-card" id="card-${c.id}">
       <div class="campaign-glass-header">
         <div>
           <h3 class="campaign-glass-title">${escapeHtml(c.subject)}</h3>
           <p class="campaign-glass-meta">${dateStr} &mdash; ID: <code style="opacity:.5; font-size:0.75rem;">${c.id.split("-")[0]}…</code>${isDemo ? ' <span style="color:rgba(255,255,255,.25);font-size:.7rem;">(demo)</span>' : ''}</p>
         </div>
-        <span class="status-badge status-complete">Complete</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="status-badge status-complete">Complete</span>
+          ${!isDemo ? `<button class="delete-campaign-btn" onclick="deleteCampaign('${c.id}')" title="Delete Campaign">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>` : ''}
+        </div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric-tile">
-          <div class="val" style="color:#fff;">${c.stats.total.toLocaleString()}</div>
-          <div class="lbl">Total</div>
+      <div class="campaign-card-layout">
+        <div class="metrics-row">
+          <div class="metric-tile">
+            <div class="val" style="color:#fff;">${c.stats.total.toLocaleString()}</div>
+            <div class="lbl">Total</div>
+          </div>
+          <div class="metric-tile">
+            <div class="val" style="color:var(--mc-green);">${c.stats.sent.toLocaleString()}</div>
+            <div class="lbl">Delivered</div>
+          </div>
+          <div class="metric-tile">
+            <div class="val" style="color:var(--mc-red);">${c.stats.failed.toLocaleString()}</div>
+            <div class="lbl">Bounced</div>
+          </div>
+          <div class="metric-tile">
+            <div class="val" style="color:#facc15;">${c.stats.opens.toLocaleString()}</div>
+            <div class="lbl">Opened (${openRate}%)</div>
+          </div>
+          <div class="metric-tile">
+            <div class="val" style="color:#06b6d4;">${c.stats.clicks.toLocaleString()}</div>
+            <div class="lbl">Clicked (${clickRate}%)</div>
+          </div>
+          <div class="metric-tile">
+            <div class="val" style="color:#a855f7;">${c.stats.registered.toLocaleString()}</div>
+            <div class="lbl">Registered (${convRate}%)</div>
+          </div>
         </div>
-        <div class="metric-tile">
-          <div class="val" style="color:var(--mc-green);">${c.stats.sent.toLocaleString()}</div>
-          <div class="lbl">Delivered</div>
-        </div>
-        <div class="metric-tile">
-          <div class="val" style="color:var(--mc-red);">${c.stats.failed.toLocaleString()}</div>
-          <div class="lbl">Bounced</div>
-        </div>
-        <div class="metric-tile">
-          <div class="val" style="color:#facc15;">${c.stats.opens.toLocaleString()}</div>
-          <div class="lbl">Opened (${openRate}%)</div>
-        </div>
-        <div class="metric-tile">
-          <div class="val" style="color:#06b6d4;">${c.stats.clicks.toLocaleString()}</div>
-          <div class="lbl">Clicked (${clickRate}%)</div>
-        </div>
-        <div class="metric-tile">
-          <div class="val" style="color:#a855f7;">${c.stats.registered.toLocaleString()}</div>
-          <div class="lbl">Registered (${convRate}%)</div>
+        
+        <div class="chart-box">
+           <canvas id="chart-${c.id}" width="200" height="200"></canvas>
+           <div class="lbl" style="font-size:0.65rem;">Engagement Funnel</div>
         </div>
       </div>
     </div>
   `;
+}
+
+async function deleteCampaign(cid) {
+  if (!confirm("Are you sure you want to delete this campaign? All tracking data will be permanently removed.")) return;
+  try {
+    const res = await fetch(`/api/campaign/${cid}`, { method: "DELETE" });
+    if (res.ok) fetchCampaigns();
+    else alert("Failed to delete campaign.");
+  } catch (e) {
+    alert("Error deleting campaign: " + e.message);
+  }
+}
+
+function initCharts(campaigns) {
+  campaigns.forEach(c => {
+    const ctx = document.getElementById(`chart-${c.id}`);
+    if (!ctx) return;
+    
+    // Funnel distribution logic (shared with backend logic)
+    const funnel = c.stats.funnel || {
+      "Bounced": c.stats.failed,
+      "Delivered": Math.max(0, c.stats.sent - (c.stats.opens || 0)),
+      "Opened": Math.max(0, (c.stats.opens || 0) - (c.stats.clicks || 0)),
+      "Clicked": Math.max(0, (c.stats.clicks || 0) - (c.stats.registered || 0)),
+      "Registered": c.stats.registered || 0
+    };
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(funnel),
+        datasets: [{
+          data: Object.values(funnel),
+          backgroundColor: [
+            '#f87171', // Bounced
+            'rgba(255,255,255,0.1)', // Delivered (Sent Only)
+            '#facc15', // Opened
+            '#06b6d4', // Clicked
+            '#a855f7'  // Registered
+          ],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        cutout: '70%',
+        responsive: false,
+        maintainAspectRatio: true
+      }
+    });
+  });
+}
+
+// ────────────────────────────────────────
+// UNSUBSCRIBE MANAGEMENT
+// ────────────────────────────────────────
+async function showUnsubManager() {
+  document.getElementById("unsubModal").classList.add("active");
+  const container = document.getElementById("unsubListContainer");
+  container.innerHTML = `<div style="text-align:center;padding:20px;opacity:0.5;">Loading list…</div>`;
+  
+  try {
+    const res = await fetch("/api/unsubscribes");
+    const data = await res.json();
+    if (!data.length) {
+      container.innerHTML = `<div style="text-align:center;padding:20px;opacity:0.3;">No unsubscribed emails yet.</div>`;
+      return;
+    }
+    
+    container.innerHTML = `
+      <table class="mgmt-table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Reason</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(u => `
+            <tr>
+              <td>${escapeHtml(u.email)}</td>
+              <td style="opacity:0.6;font-size:0.8rem;">${escapeHtml(u.reason || '-')}</td>
+              <td style="text-align:right;">
+                <button class="btn-small btn-danger" onclick="removeUnsubscribe('${u.email}')">Re-enable</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color:var(--mc-red);">Failed to load list.</div>`;
+  }
+}
+
+async function removeUnsubscribe(email) {
+  if (!confirm(`Re-enable ${email}? They will be able to receive emails again.`)) return;
+  try {
+    const res = await fetch(`/api/unsubscribes/${encodeURIComponent(email)}`, { method: "DELETE" });
+    if (res.ok) showUnsubManager();
+    else alert("Failed to remove.");
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
+}
+
+async function scanBounces() {
+  const btn = document.getElementById("scanBouncesBtn");
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span>⏳</span> Scanning Inbox…`;
+  
+  try {
+    const res = await fetch("/api/scan-bounces", { method: "POST" });
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Scan complete!\nFound ${data.processed} bounce notifications.\nMetadata: ${data.bounces.join(', ') || 'None found recently.'}`);
+      fetchCampaigns();
+    } else {
+      alert("Scan failed: " + (data.error || "Unknown error"));
+    }
+  } catch (e) {
+    alert("Network error: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
 }
 
 async function fetchCampaigns() {
@@ -153,6 +347,23 @@ async function fetchCampaigns() {
   }
 
   container.innerHTML = allCampaigns.map(renderCampaignCard).join("");
+  
+  // Paint charts after DOM update
+  setTimeout(() => initCharts(allCampaigns), 50);
 }
 
-document.addEventListener("DOMContentLoaded", fetchCampaigns);
+// ────────────────────────────────────────
+// AUTO-REFRESH (Keep tracking in background)
+// ────────────────────────────────────────
+setInterval(fetchCampaigns, 10000); // Refresh every 10s
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchCampaigns();
+  
+  // Modal listeners
+  const modal = document.getElementById("unsubModal");
+  document.getElementById("manageUnsubsBtn").addEventListener("click", showUnsubManager);
+  document.getElementById("scanBouncesBtn").addEventListener("click", scanBounces);
+  document.getElementById("closeUnsubModal").addEventListener("click", () => modal.classList.remove("active"));
+  modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("active"); });
+});

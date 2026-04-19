@@ -11,6 +11,11 @@ import secrets
 import smtplib
 import threading
 import urllib.parse
+import json
+import requests
+import imaplib
+import email
+from email.message import Message
 from dataclasses import dataclass
 from datetime import datetime
 from email import encoders
@@ -19,6 +24,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 from email.mime.image import MIMEImage
+from urllib.parse import quote_plus
 
 import pandas as pd
 import bleach
@@ -58,6 +64,56 @@ ALLOWED_HTML_ATTRIBUTES = {
 }
 
 ACTIVE_CAMPAIGNS = {}
+UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
+HOLYSHEET_API_KEY = "Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt"
+HOLYSHEET_URL = f"https://holysheet.soneshjain.com/api/v1/{HOLYSHEET_API_KEY}/rows"
+
+
+def fetch_external_unsubscribes() -> set[str]:
+    """Fetch unsubscribed emails from HolySheet API."""
+    try:
+        res = requests.get(HOLYSHEET_URL, timeout=10)
+        if res.ok:
+            data = res.json().get("data", [])
+            unsubs = set()
+            for row in data:
+                email = next((v for k, v in row.items() if "email" in k.lower()), None)
+                if email:
+                    unsubs.add(str(email).strip().lower())
+            return unsubs
+    except Exception as e:
+        print(f"Failed to fetch external unsubscribes: {e}")
+    return set()
+
+def append_external_unsubscribe(email: str, campaign_id: str, reason: str, name: str = ""):
+    """Append unsubscription feedback to HolySheet as a raw array to avoid header duplication."""
+    try:
+        # Using array format: [email, name, campaign_id, reason, unsubscribed_at]
+        # matching the user's sheet header order exactly.
+        row_data = [
+            email,
+            name,
+            campaign_id,
+            reason,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ]
+        requests.post(HOLYSHEET_URL, json={"rows": [row_data]}, timeout=10)
+    except Exception as e:
+        print(f"Failed to append external unsubscribe: {e}")
+
+
+def sync_unsubscribe_csv(db: TrackingDB):
+    """Ensure the universal unsubscribe CSV is up to date."""
+    emails = db.get_all_unsubscribes()
+    UNSUBSCRIBE_LIST_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(UNSUBSCRIBE_LIST_PATH, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["email", "unsubscribed_at"])
+        # Note: get_all_unsubscribes currently only returns emails, 
+        # but the user wanted a "universal unsubscribe data sheet".
+        # I'll update it to handle emails for now.
+        for email in emails:
+            writer.writerow([email, datetime.now().isoformat()])
 
 
 @dataclass
@@ -66,6 +122,7 @@ class SenderProfile:
     app_key: str
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
+    tracking_url: str = ""
 
 
 def create_app() -> Flask:
@@ -92,8 +149,14 @@ def create_app() -> Flask:
     def get_sender_profile() -> Any:
         profile = load_sender_profile()
         if not profile:
-            return jsonify({"saved": False, "email": "", "smtpHost": "smtp.gmail.com", "smtpPort": 587})
-        return jsonify({"saved": True, "email": profile.email, "smtpHost": profile.smtp_host, "smtpPort": profile.smtp_port})
+            return jsonify({"saved": False, "email": "", "smtpHost": "smtp.gmail.com", "smtpPort": 587, "trackingUrl": ""})
+        return jsonify({
+            "saved": True, 
+            "email": profile.email, 
+            "smtpHost": profile.smtp_host, 
+            "smtpPort": profile.smtp_port,
+            "trackingUrl": profile.tracking_url
+        })
 
     @app.post("/api/upload")
     def upload_file() -> Any:
@@ -157,29 +220,35 @@ def create_app() -> Flask:
             return error_response("Please select valid name and email columns.", 400)
 
         row = df.iloc[0].fillna("").to_dict()
-        rendered_subject = render_tokens(subject, row)
+        # Derive firstname from name if possible
+        name_val = str(row.get(name_column, "")).strip()
+        row["firstname"] = name_val.split()[0] if name_val else ""
+        
+        # Construct banner into template slot if present
+        banner_tag = ""
+        if banner_data_url:
+            banner_tag = f'<img src="{banner_data_url}" alt="Banner" style="width:100%; height:auto; display:block; border-bottom:1px solid #eee;">'
+        
+        preview_subject = payload.get("subject") or ""
+        rendered_subject = render_tokens(preview_subject, row)
         rendered_message = render_tokens(message, row)
         
-        # Inject Master CTA if configured
-        if cta_settings.get("text") and cta_settings.get("url"):
-            button_html = generate_bulletproof_button(cta_settings)
-            if "{{CTA}}" in rendered_message:
-                rendered_message = rendered_message.replace("{{CTA}}", button_html)
-            else:
-                rendered_message += "\n\n" + button_html
-
         rendered_fragment = render_rich_email_fragment(rendered_message)
 
-        # Inject banner into preview if present
-        if banner_data_url:
-            banner_html = f'<div style="margin: -32px -32px 24px -32px; text-align:center;"><img src="{banner_data_url}" alt="Banner" style="width:500px; max-width:100%; height:250px; object-fit:cover; display:block; margin:0 auto; border-radius:8px 8px 0 0;"></div>'
-            rendered_fragment = banner_html + rendered_fragment
+        # Inject Master CTA AFTER cleaning
+        if cta_settings.get("text") and cta_settings.get("url"):
+            button_html = generate_bulletproof_button(cta_settings)
+            if "{{CTA}}" in rendered_fragment:
+                rendered_fragment = rendered_fragment.replace("{{CTA}}", button_html)
+            else:
+                rendered_fragment += "<br><br>" + button_html
+        unsub_link = f"{request.host_url.rstrip('/')}/unsubscribe/preview/preview"
 
         return jsonify(
             {
                 "subject": rendered_subject,
                 "html": rendered_fragment,
-                "emailHtml": build_email_html(rendered_fragment, email_type),
+                "emailHtml": build_email_html(rendered_fragment, email_type, unsub_link, banner_tag),
                 "recipient": str(row.get(email_column, "")),
                 "name": str(row.get(name_column, "")),
             }
@@ -204,24 +273,154 @@ def create_app() -> Flask:
         response.headers['Content-Type'] = 'image/gif'
         return response
 
+    @app.delete("/api/campaign/<campaign_id>")
+    def delete_campaign(campaign_id: str):
+        tracking_db.delete_campaign(campaign_id)
+        return jsonify({"success": True})
+
+    @app.get("/api/unsubscribes")
+    def list_unsubscribes():
+        return jsonify(tracking_db.get_unsubscribed_list())
+
+    @app.delete("/api/unsubscribes/<path:email>")
+    def remove_unsubscribe(email: str):
+        tracking_db.remove_unsubscribe(email)
+        return jsonify({"success": True})
+
     @app.get("/track/click/<campaign_id>/<tracking_id>")
     def track_click(campaign_id: str, tracking_id: str):
         url = request.args.get("url")
         if url:
+            # A click implies an open
+            tracking_db.record_open(tracking_id)
             tracking_db.record_click(tracking_id, url)
             resp = redirect(url)
             resp.set_cookie('am_tracker', tracking_id, max_age=60*60*24*30)
             return resp
         return "Invalid URL", 400
 
-    @app.get("/track/register.gif")
-    def track_register():
-        tracking_id = request.cookies.get('am_tracker')
-        if tracking_id:
-            tracking_db.record_registration(tracking_id)
-        response = make_response(b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
-        response.headers['Content-Type'] = 'image/gif'
+    @app.route("/unsubscribe/<campaign_id>/<tracking_id>", methods=["GET", "POST"])
+    def unsubscribe_page(campaign_id: str, tracking_id: str):
+        if request.method == "POST":
+            payload = request.get_json(silent=True) or {}
+            reason = payload.get("reason", "No reason provided")
+            
+            if tracking_id == "preview":
+                # Mock a preview submission to HolySheet so the user can verify the sheet columns and integration
+                append_external_unsubscribe("preview@example.com", "preview_campaign", reason, "Preview Tester")
+                return jsonify({"success": True, "note": "Preview mode: Mock unsubscription recorded in HolySheet."})
+
+            # Find recipient email and name from tracking ID
+            with tracking_db._get_conn() as conn:
+                cursor = conn.execute("SELECT recipient, recipient_name FROM sent_emails WHERE tracking_id = ?", (tracking_id,))
+                row = cursor.fetchone()
+                if row:
+                    email, name = row[0], row[1] or ""
+                    tracking_db.record_unsubscribe(email, campaign_id, tracking_id, reason)
+                    sync_unsubscribe_csv(tracking_db)
+                    
+                    # Append to HolySheet for reference
+                    append_external_unsubscribe(email, campaign_id, reason, name)
+                    return jsonify({"success": True})
+            return jsonify({"error": "Recipient not found"}), 404
+        
+        return render_template("web/unsubscribe.html")
+
+    @app.get("/api/unsubscribes/export")
+    def export_unsubscribes():
+        sync_unsubscribe_csv(tracking_db)
+        if not UNSUBSCRIBE_LIST_PATH.exists():
+            return error_response("No unsubscribes yet.", 404)
+        
+        with open(UNSUBSCRIBE_LIST_PATH, "r") as f:
+            content = f.read()
+        
+        response = make_response(content)
+        response.headers["Content-Disposition"] = "attachment; filename=unsubscribes.csv"
+        response.headers["Content-Type"] = "text/csv"
         return response
+
+    @app.post("/api/scan-bounces")
+    def scan_bounces():
+        """Scans the configured sender's inbox for bounce notifications."""
+        profile = load_sender_profile()
+        if not profile:
+            return error_response("Sender profile not found. Please save your identity first.", 400)
+        
+        # We assume IMAP host is same as SMTP but with imap. prefix if it's gmail
+        imap_host = "imap.gmail.com" if "gmail" in profile.smtp_host else profile.smtp_host.replace("smtp", "imap")
+        
+        try:
+            print(f"[DEBUG] Connecting to IMAP {imap_host}...")
+            mail = imaplib.IMAP4_SSL(imap_host)
+            mail.login(profile.email, profile.app_key)
+            mail.select("inbox")
+            
+            # Search for common bounce notification subjects
+            # Gmail uses: "Delivery Status Notification (Failure)"
+            # Outlook uses: "Undeliverable:"
+            search_query = '(OR SUBJECT "Delivery Status Notification" SUBJECT "Undeliverable")'
+            _, data = mail.search(None, search_query)
+            
+            mail_ids = data[0].split()
+            print(f"[DEBUG] Found {len(mail_ids)} potential bounce emails.")
+            
+            bounced_emails = []
+            
+            # Process last 50 emails to avoid huge overhead
+            for m_id in mail_ids[-50:]:
+                _, msg_data = mail.fetch(m_id, "(RFC822)")
+                raw_email = msg_data[0][1]
+                msg = email.message_from_bytes(raw_email)
+                
+                # Heuristic 1: Look for X-Failed-Recipients header
+                failed_recipient = msg.get("X-Failed-Recipients")
+                if failed_recipient:
+                    bounced_emails.append(failed_recipient.split(",") [0].strip().lower())
+                    continue
+                
+                # Heuristic 2: Look for email in the body
+                body = ""
+                if msg.is_multipart():
+                    for part in msg.walk():
+                        if part.get_content_type() == "text/plain":
+                            body = part.get_payload(decode=True).decode(errors='ignore')
+                            break
+                else:
+                    body = msg.get_payload(decode=True).decode(errors='ignore')
+                
+                # Regex to find email addresses in the body of a bounce report
+                # Often it's like "Final-Recipient: rfc822; user@example.com"
+                match = re.search(r"Final-Recipient: rfc822;\s*([^\s<>]+@[^\s<>]+)", body, re.IGNORECASE)
+                if match:
+                    bounced_emails.append(match.group(1).lower().strip())
+                else:
+                    # Fallback regex for any email in the body
+                    # (This might be noisy, but usually bounce reports contain the recipient email)
+                    matches = re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", body)
+                    for e in matches:
+                        # Skip own email
+                        if e.lower().strip() != profile.email.lower().strip():
+                            bounced_emails.append(e.lower().strip())
+                            break
+            
+            mail.logout()
+            
+            # Deduplicate and update DB
+            unique_bounces = list(set(bounced_emails))
+            for email_addr in unique_bounces:
+                tracking_db.mark_bounce(email_addr)
+            
+            return jsonify({
+                "success": True, 
+                "total_found": len(mail_ids),
+                "processed": len(unique_bounces),
+                "bounces": unique_bounces
+            })
+            
+        except Exception as e:
+            print(f"[ERROR] IMAP Scan Failed: {e}")
+            return error_response(f"IMAP Error: {str(e)}", 500)
 
     @app.get("/api/campaign-status/<campaign_id>")
     def get_campaign_status(campaign_id: str):
@@ -246,6 +445,7 @@ def create_app() -> Flask:
         
         smtp_host = (payload.get("smtpHost") or "smtp.gmail.com").strip()
         smtp_port = int(payload.get("smtpPort") or 587)
+        tracking_url_override = (payload.get("trackingUrl") or "").strip()
         
         cta_settings_raw = payload.get("ctaSettings")
         cta_settings = {}
@@ -258,7 +458,9 @@ def create_app() -> Flask:
         banner_payload = banner_file.read() if banner_file else b""
         
         attachments = request.files.getlist("attachments") if not request.is_json else []
-        host_url = request.host_url.rstrip('/')
+        
+        # Use provided tracking URL or default to current host
+        host_url = tracking_url_override.rstrip('/') if tracking_url_override else request.host_url.rstrip('/')
 
         if not all([dataset_id, name_column, email_column, subject, message, sender_email]):
             return error_response("All fields are required before sending.", 400)
@@ -289,7 +491,13 @@ def create_app() -> Flask:
             return error_response(str(exc), 400)
 
         if remember_sender:
-            save_sender_profile(SenderProfile(email=sender_email, app_key=app_key, smtp_host=smtp_host, smtp_port=smtp_port))
+            save_sender_profile(SenderProfile(
+                email=sender_email, 
+                app_key=app_key, 
+                smtp_host=smtp_host, 
+                smtp_port=smtp_port,
+                tracking_url=tracking_url_override
+            ))
 
         campaign_id = str(uuid4())
         tracking_db.create_campaign(campaign_id, subject)
@@ -303,36 +511,57 @@ def create_app() -> Flask:
         }
 
         def process_campaign(cid: str, data: pd.DataFrame, attach: list, smhost: str, smport: int, banner_bytes: bytes, cta: dict):
+            print(f"[DEBUG] Starting campaign {cid} with {len(data)} rows.")
             sent_count = 0
             failed_count = 0
             failed_rows = []
             
+            # Fetch external unsubs at the start of campaign
+            print(f"[DEBUG] Fetching external unsubscribes from HolySheet...")
+            external_unsubs = fetch_external_unsubscribes() if email_type == "marketing" else set()
+            print(f"[DEBUG] Found {len(external_unsubs)} external unsubscribes.")
+            
             try:
+                print(f"[DEBUG] Connecting to SMTP {smhost}:{smport}...")
                 smtp = smtplib.SMTP(smhost, smport, timeout=30)
                 smtp.starttls()
+                print(f"[DEBUG] Attempting SMTP login for {sender_email}...")
                 smtp.login(sender_email, app_key)
+                print(f"[DEBUG] SMTP Login Successful.")
             except Exception as exc:
-                ACTIVE_CAMPAIGNS[cid]["status"] = f"SMTP login failed: {exc}"
+                err_msg = f"SMTP Connection/Login Failed: {exc}"
+                print(f"[ERROR] {err_msg}")
+                ACTIVE_CAMPAIGNS[cid]["status"] = err_msg
                 return
 
             try:
-                for _, row in data.iterrows():
+                for idx, row in data.iterrows():
                     recipient = str(row[email_column]).strip()
+                    print(f"[DEBUG] [{idx+1}/{len(data)}] Processing recipient: {recipient}")
+                    
                     recipient_name = str(row.get(name_column, "")).strip() or "there"
                     context = {k: str(v) for k, v in row.to_dict().items()}
+                    # Derive firstname
+                    context["firstname"] = recipient_name.split()[0] if recipient_name != "there" else "there"
                     
                     tracking_id = str(uuid4())
-                    tracking_db.record_sent_email(tracking_id, cid, recipient)
+                    
+                    # Check for unsubscription
+                    is_unsub = tracking_db.is_unsubscribed(recipient)
+                    if not is_unsub and email_type == "marketing":
+                        if recipient.lower().strip() in external_unsubs:
+                            is_unsub = True
+                    
+                    if is_unsub:
+                        print(f"[DEBUG] Skipping {recipient} (Unsubscribed)")
+                        tracking_db.record_sent_email(tracking_id, cid, recipient, status="skipped_unsubscribed")
+                        sent_count += 1 # Count as processed
+                        continue
+
+                    tracking_db.record_sent_email(tracking_id, cid, recipient, recipient_name)
 
                     row_subject = render_tokens(subject, context)
                     row_body = render_tokens(message, context)
-                    
-                    if cta.get("text") and cta.get("url"):
-                        button_html = generate_bulletproof_button(cta)
-                        if "{{CTA}}" in row_body:
-                            row_body = row_body.replace("{{CTA}}", button_html)
-                        else:
-                            row_body += "\n\n" + button_html
                     
                     tracking_context = {
                         "campaign_id": cid,
@@ -341,8 +570,28 @@ def create_app() -> Flask:
                     }
                     
                     rendered_fragment = render_rich_email_fragment(row_body, tracking_context)
-                    html_body = build_email_html(rendered_fragment, email_type)
-                    plain_text_body = rich_html_to_plain_text(rendered_fragment)
+                    
+                    # Inject Master CTA AFTER cleaning
+                    if cta.get("text") and cta.get("url"):
+                        button_html = generate_bulletproof_button(cta, tracking_id, cid, host_url)
+                        if "{{CTA}}" in rendered_fragment:
+                            rendered_fragment = rendered_fragment.replace("{{CTA}}", button_html)
+                        else:
+                            rendered_fragment += "<br><br>" + button_html
+                    
+                    banner_tag = ""
+                    if banner_bytes:
+                        banner_tag = '<img src="cid:custom_banner.png" alt="Banner" style="width:100%; height:auto; display:block; border-bottom:1px solid #eee;">'
+                    
+                    unsub_url = f"{host_url}/unsubscribe/{cid}/{tracking_id}"
+                    html_body = build_email_html(rendered_fragment, email_type, unsub_url, banner_tag)
+                    
+                    if email_type == "marketing":
+                        plain_text_indication = f"\n\nUnsubscribe: {unsub_url}"
+                    else:
+                        plain_text_indication = ""
+                        
+                    plain_text_body = rich_html_to_plain_text(rendered_fragment) + plain_text_indication
 
                     msg = MIMEMultipart("mixed")
                     msg["From"] = sender_email
@@ -353,16 +602,14 @@ def create_app() -> Flask:
                     body_part.attach(MIMEText(plain_text_body, "plain", "utf-8"))
                     
                     related_part = MIMEMultipart("related")
+                    # Attach HTML here AFTER banner_tag is included in construction
                     related_part.attach(MIMEText(html_body, "html", "utf-8"))
                     
                     if banner_bytes:
                         banner_img = MIMEImage(banner_bytes, _subtype="png")
                         banner_img.add_header('Content-ID', '<custom_banner.png>')
-                        banner_img.add_header('Content-Disposition', 'inline', filename='banner.png')
+                        # No Content-Disposition: inline to avoid listing in attachment bar
                         related_part.attach(banner_img)
-                        # Prepend the banner to the HTML fragment for the actual email
-                        banner_tag = '<div style="margin: -32px -32px 24px -32px; text-align:center;"><img src="cid:custom_banner.png" alt="Banner" style="width:100%; height:250px; object-fit:cover; display:block; border-radius:8px 8px 0 0;"></div>'
-                        html_body = re.sub(r'(<body[^>]*>)', r'\1' + banner_tag, html_body)
                         
                     body_part.attach(related_part)
                     msg.attach(body_part)
@@ -373,22 +620,41 @@ def create_app() -> Flask:
                     try:
                         smtp.sendmail(sender_email, recipient, msg.as_string())
                         sent_count += 1
+                        print(f"[DEBUG] Email sent to {recipient}")
                         log_send_attempt(recipient, recipient_name, "SENT", "")
+                    except (smtplib.SMTPRecipientsRefused, smtplib.SMTPDataError, smtplib.SMTPResponseException) as smtp_err:
+                        failed_count += 1
+                        err_str = str(smtp_err)
+                        failed_rows.append({"email": recipient, "error": f"Bounced: {err_str}"})
+                        tracking_db.update_status(tracking_id, "failed")
+                        print(f"[ERROR] Bounce to {recipient}: {err_str}")
+                        log_send_attempt(recipient, recipient_name, "BOUNCED", err_str)
                     except Exception as send_exc:
                         failed_count += 1
                         failed_rows.append({"email": recipient, "error": str(send_exc)})
                         tracking_db.update_status(tracking_id, "failed")
+                        print(f"[ERROR] Failed to send to {recipient}: {send_exc}")
                         log_send_attempt(recipient, recipient_name, "FAILED", str(send_exc))
                         
-                    ACTIVE_CAMPAIGNS[cid]["sent"] = sent_count
-                    ACTIVE_CAMPAIGNS[cid]["failed"] = failed_count
+                    ACTIVE_CAMPAIGNS[cid].update({
+                        "sent": sent_count,
+                        "failed": failed_count,
+                        "lastError": str(failed_rows[-1]["error"]) if failed_rows else None
+                    })
                     if len(failed_rows) <= 10:
                         ACTIVE_CAMPAIGNS[cid]["failedRows"] = failed_rows
-                        
+            
+            except Exception as loop_exc:
+                err_msg = f"Unexpected loop failure: {loop_exc}"
+                print(f"[CRITICAL] {err_msg}")
+                ACTIVE_CAMPAIGNS[cid]["status"] = f"CRASH: {loop_exc}"
             finally:
-                smtp.quit()
-                ACTIVE_CAMPAIGNS[cid]["status"] = "complete"
-        threading.Thread(target=process_campaign, args=(campaign_id, valid_targets, attachment_payloads, smtp_host, smtp_port, banner_payload), daemon=True).start()
+                try: smtp.quit()
+                except: pass
+                if ACTIVE_CAMPAIGNS[cid]["status"] == "sending":
+                    ACTIVE_CAMPAIGNS[cid]["status"] = "complete"
+                print(f"[DEBUG] Campaign {cid} finished. Status: {ACTIVE_CAMPAIGNS[cid]['status']}")
+        threading.Thread(target=process_campaign, args=(campaign_id, valid_targets, attachment_payloads, smtp_host, smtp_port, banner_payload, cta_settings), daemon=True).start()
 
         return jsonify({"campaignId": campaign_id, "status": "started"})
 
@@ -465,8 +731,14 @@ def render_rich_email_fragment(message: str, tracking_context: dict|None = None)
         tracking_id = tracking_context.get("tracking_id")
         host_url = tracking_context.get("host_url", "")
         
-        pixel_url = f"{host_url}/track/open/{campaign_id}/{tracking_id}.gif"
-        cleaned_html += f'<img src="{pixel_url}" width="1" height="1" border="0" />'
+        # Cache-busting timestamp
+        from time import time
+        ts = int(time())
+        pixel_url = f"{host_url}/track/open/{campaign_id}/{tracking_id}.gif?t={ts}"
+        pixel_tag = f'<img src="{pixel_url}" width="1" height="1" border="0" style="display:none !important;" />'
+        
+        # Inject pixel at the TOP of the fragment for better reliability
+        cleaned_html = pixel_tag + cleaned_html
         
         def replace_link(match):
             href = match.group(1)
@@ -494,23 +766,35 @@ def normalize_email_type(email_type: str) -> str:
     normalized = str(email_type).strip().lower()
     return normalized if normalized in VALID_EMAIL_TYPES else "marketing"
 
-def build_email_html(fragment: str, email_type: str) -> str:
+def build_email_html(fragment: str, email_type: str, unsubscribe_url: str = "#", banner_tag: str = "") -> str:
     if email_type == "plain":
-        return wrap_plain_email_html(fragment)
-    return wrap_email_html(fragment)
+        return wrap_plain_email_html(fragment, show_unsubscribe=False)
+    return wrap_email_html(fragment, unsubscribe_url, banner_tag)
 
-def wrap_plain_email_html(fragment: str) -> str:
+def wrap_plain_email_html(fragment: str, unsubscribe_url: str = "#", show_unsubscribe: bool = True) -> str:
+    unsub_footer = ""
+    if show_unsubscribe:
+        unsub_footer = f"<div style='margin-top:20px; border-top:1px solid #eee; padding-top:10px; font-size:12px; color:#666;'><a href='{unsubscribe_url}'>Unsubscribe</a></div>"
+        
     return (
         "<html><body style='margin:0; padding:20px; font-family:Arial, Helvetica, sans-serif; color:#1f2937; line-height:1.7;'>"
         f"{fragment}"
+        f"{unsub_footer}"
         "</body></html>"
     )
 
-def wrap_email_html(fragment: str) -> str:
+def wrap_email_html(fragment: str, unsubscribe_url: str = "#", banner_tag: str = "") -> str:
     return (
         "<html><body style='margin:0; padding:24px; background:#f6f6f4;'>"
-        "<div style='max-width:720px; margin:0 auto; background:#ffffff; padding:32px; border:1px solid #000000; border-radius:8px; font-family:\"Arial\", Helvetica, sans-serif; color:#241c15; line-height:1.7;'>"
+        "<div style='max-width:720px; margin:0 auto; background:#ffffff; border:1px solid #000000; border-radius:8px; overflow:hidden; font-family:\"Arial\", Helvetica, sans-serif; color:#241c15; line-height:1.7;'>"
+        f"{banner_tag}"
+        "<div style='padding:32px;'>"
         f"{fragment}"
+        "<div style='margin-top:40px; padding-top:20px; border-top:1px solid #eee; text-align:center; color:#999; font-size:12px;'>"
+        "You are receiving this because you signed up for our updates.<br>"
+        f"<a href='{unsubscribe_url}' style='color:#999; text-decoration:underline;'>Unsubscribe from this list</a>"
+        "</div>"
+        "</div>"
         "</div></body></html>"
     )
 
@@ -577,7 +861,7 @@ def ensure_fernet() -> Fernet:
     return Fernet(key_bytes)
 
 def save_sender_profile(profile: SenderProfile) -> None:
-    token = ensure_fernet().encrypt(f"{profile.email}\n{profile.app_key}\n{profile.smtp_host}\n{profile.smtp_port}".encode("utf-8"))
+    token = ensure_fernet().encrypt(f"{profile.email}\n{profile.app_key}\n{profile.smtp_host}\n{profile.smtp_port}\n{profile.tracking_url}".encode("utf-8"))
     SENDER_PROFILE_PATH.write_bytes(token)
 
 def load_sender_profile() -> SenderProfile | None:
@@ -590,9 +874,10 @@ def load_sender_profile() -> SenderProfile | None:
         app_key = parts[1].strip() if len(parts) > 1 else ""
         smtp_host = parts[2].strip() if len(parts) > 2 else "smtp.gmail.com"
         smtp_port = int(parts[3]) if len(parts) > 3 else 587
+        tracking_url = parts[4].strip() if len(parts) > 4 else ""
         if not email:
             return None
-        return SenderProfile(email=email, app_key=app_key, smtp_host=smtp_host, smtp_port=smtp_port)
+        return SenderProfile(email=email, app_key=app_key, smtp_host=smtp_host, smtp_port=smtp_port, tracking_url=tracking_url)
     except Exception:
         return None
 

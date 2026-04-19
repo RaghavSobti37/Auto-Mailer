@@ -619,6 +619,9 @@ textarea {
 
 .dash-header {
   margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .dash-header p { margin: 0 0 6px; font-size: 0.8rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -744,9 +747,125 @@ textarea {
   font-weight: 600;
 }
 
-.no-campaigns-msg {
-  text-align: center;
-  padding: 60px 24px;
-  color: rgba(255,255,255,0.25);
-  font-size: 0.9rem;
+/* ─── MODALS ─── */
+.glass-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 11, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+.glass-modal.active { display: flex; }
+
+.glass-modal-content {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff; }
+.close-modal {
+  background: none; border: none; color: rgba(255,255,255,0.4);
+  font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+}
+.close-modal:hover { color: #fff; }
+
+#unsubListContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.mgmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.mgmt-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid var(--line);
+  color: rgba(255,255,255,0.4);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mgmt-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  color: rgba(255,255,255,0.85);
+}
+.btn-small {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.btn-danger {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--mc-red);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+.btn-danger:hover {
+  background: var(--mc-red);
+  color: #fff;
+}
+
+/* ─── CHART BOXES ─── */
+.chart-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.campaign-card-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .campaign-card-layout { grid-template-columns: 1fr; }
+}
+
+.delete-campaign-btn {
+  background: none; border: none; color: rgba(255,255,255,0.2); 
+  cursor: pointer; padding: 6px; border-radius: 6px; transition: all 0.2s;
+}
+.global-analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+@media (max-width: 1100px) {
+  .global-analysis-grid { grid-template-columns: 1fr; }
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
 }

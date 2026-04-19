@@ -6,6 +6,7 @@
   <title>Analytics — AutoMailer Studio</title>
   <link rel="icon" type="image/svg+xml" href="/static/web/favicon.svg">
   <link rel="stylesheet" href="/static/web/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="glass-body">
 
@@ -19,17 +20,47 @@
       <a href="/docs" class="nav-link">Docs</a>
     </div>
     <div style="flex:1;"></div>
+    <div class="nav-links">
+      <button id="manageUnsubsBtn" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;">Manage Unsubscribes</button>
+    </div>
   </nav>
+
+  <!-- Unsubscribe Manager Modal -->
+  <div id="unsubModal" class="glass-modal">
+    <div class="glass-modal-content" style="max-width:800px;">
+      <div class="modal-header">
+        <h2>Unsubscribe Management</h2>
+        <button class="close-modal" id="closeUnsubModal">&times;</button>
+      </div>
+      <p style="opacity:0.7; margin-bottom:1.5rem;">Emails in this list are blocked from all future campaigns. Delete an entry to re-enable them.</p>
+      <div id="unsubListContainer">
+        <!-- Table injected by JS -->
+      </div>
+    </div>
+  </div>
 
   <div class="dashboard-shell">
     <div class="dash-header">
-      <p>Analytics Matrix</p>
-      <h1>Campaign Dashboard</h1>
+      <div>
+        <p>Analytics Matrix</p>
+        <h1>Campaign Dashboard</h1>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button id="scanBouncesBtn" class="btn ghost" title="Search your inbox for bounce emails to update analytics">
+          <span>🔍</span> Scan Asynchronous Bounces
+        </button>
+      </div>
     </div>
 
-    <!-- Summary Bar (static totals across all campaigns) -->
-    <div class="summary-bar" id="summaryBar">
-      <!-- Injected by JS -->
+    <!-- Global Analysis Section -->
+    <div class="global-analysis-grid">
+      <div class="summary-bar" id="summaryBar">
+        <!-- Injected by JS -->
+      </div>
+      <div class="chart-box glass-card" style="padding:24px; min-width:320px;">
+        <h3 style="margin:0 0 16px; font-size:0.9rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em;">Aggregate Engagement Funnel</h3>
+        <canvas id="globalFunnelChart" width="240" height="240"></canvas>
+      </div>
     </div>
 
     <!-- Per-campaign cards -->

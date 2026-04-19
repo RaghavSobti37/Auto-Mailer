@@ -59,6 +59,9 @@
           <label class="check-row">
             <input id="rememberSender" type="checkbox" checked> Save identity locally
           </label>
+          <div class="divider"></div>
+          <label>Tracking URL Override <input id="trackingUrl" type="text" placeholder="https://your-ngrok-url.ngrok.io"></label>
+          <p class="hint">Recommended for local testing (e.g. ngrok). If empty, uses the current server URL.</p>
         </div>
       </div>
 
@@ -157,8 +160,14 @@
             </div>
           </div>
           <label>Subject Line <input id="subject" type="text" placeholder="Big news for you, {{name}}"></label>
-          <label style="flex-grow:1;">
-            Markdown Body <span class="hint">(Use {{CTA}} to place the button exactly)</span>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 4px;">
+            <label style="margin-bottom:0;">Markdown Body <span class="hint">(Use {{CTA}} to place the button)</span></label>
+            <div class="variable-buttons" style="display:flex; gap:8px;">
+              <button class="btn ghost mini-btn" onclick="insertToken('name')" type="button">+ Name</button>
+              <button class="btn ghost mini-btn" onclick="insertToken('firstname')" type="button">+ First Name</button>
+            </div>
+          </div>
+          <label style="flex-grow:1; margin-top:0;">
             <textarea id="message" placeholder="# Hello {{name}}&#10;&#10;Write your campaign here. **Markdown** is supported.&#10;&#10;The button will be added below unless you use {{CTA}}."></textarea>
           </label>
           <label>
@@ -204,7 +213,7 @@
           <p>To: <strong id="previewTo">recipient@example.com</strong></p>
           <p>Subject: <strong id="previewSubject">Your Subject Here</strong></p>
         </div>
-        <iframe id="previewFrame" class="mail-frame" title="Email preview" sandbox="allow-same-origin"></iframe>
+        <iframe id="previewFrame" class="mail-frame" title="Email preview" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
       </div>
     </section>
   </main>
@@ -230,7 +239,7 @@
         <h2 style="margin:0; font-size:1.1rem; color:#fff;">Full Screen Preview</h2>
         <button id="closeFullScreenBtn" class="btn ghost" style="padding:4px 12px;">Close</button>
       </div>
-      <iframe id="fullScreenFrame" style="flex:1; border:0; background:#fff; border-radius:8px;"></iframe>
+      <iframe id="fullScreenFrame" style="flex:1; border:0; background:#fff; border-radius:8px;" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
     </div>
   </div>
 

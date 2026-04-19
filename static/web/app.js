@@ -19,7 +19,8 @@ const state = {
   }
 };
 
-const SENDER_LOCAL_STORAGE_KEY = "automailer.senderProfile.v1";
+const APP_STATE_STORAGE_KEY = "automailer.appState.v1";
+const SENDER_LOCAL_STORAGE_KEY = "automailer.senderProfile.v1"; // Legacy fallback
 const GMAIL_ATTACHMENT_LIMIT_BYTES = 25 * 1024 * 1024;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ const TEMPLATES = [
     ],
     content: `# Something exciting is coming for music creators!
 
-Hi {{name}},
+Dear {{firstname}},
 
 Singer? Composer? Music Producer? Original Band? 
 
@@ -66,7 +67,7 @@ Ready to unfold your musical journey? Find out more below!
     content: `## Turn Up the Volume on Your Dreams
 Is your music living in a diary, waiting for its moment? 🎶
 
-Dear {{name}},
+Dear {{firstname}},
 
 Have you ever felt that your **original music** deserves to be heard? We understand that every **authentic voice** needs the right stage to shine.
 
@@ -87,7 +88,7 @@ We're introducing **mYOUsic** - a creative space where you'll:
     ],
     content: `# Unlock the Secrets of Music Composition!
 
-Dear {{name}},
+Dear {{firstname}},
 
 Learn directly from industry legends how to compose, produce, and perfect your original music.
 
@@ -105,7 +106,7 @@ Limited seats available. Don't miss this exclusive masterclass!
     ],
     content: `# Last Chance to Submit! 🎵
 
-Hey {{name}},
+Dear {{firstname}},
 
 Havells mYOUsic is discovering the next big voices. This is your final moment to join.
 
@@ -125,7 +126,7 @@ Havells mYOUsic is discovering the next big voices. This is your final moment to
     ],
     content: `# 🎤 Your Music Journey Begins
 
-Hello {{name}}!
+Dear {{firstname}},
 
 Thank you for registering for **Havells mYOUsic**. We are thrilled to welcome you!
 
@@ -147,7 +148,7 @@ Thank you for registering for **Havells mYOUsic**. We are thrilled to welcome yo
     ],
     content: `## UNFOLD Your Music Composition Potential!
 
-Dear {{name}},
+Dear {{firstname}},
 
 Imagine transforming your compositions into industry-ready masterpieces under Bollywood legend **Sandesh Shandilya**.
 
@@ -164,48 +165,57 @@ Imagine transforming your compositions into industry-ready masterpieces under Bo
 // DOM ELEMENTS
 // ─────────────────────────────────────────────────────────────────────────────
 const elements = {
-  sheetInput:           document.getElementById("sheetInput"),
-  uploadBtn:            document.getElementById("uploadBtn"),
-  nameColumn:           document.getElementById("nameColumn"),
-  emailColumn:          document.getElementById("emailColumn"),
-  datasetSummary:       document.getElementById("datasetSummary"),
-  smtpHost:             document.getElementById("smtpHost"),
-  smtpPort:             document.getElementById("smtpPort"),
-  senderEmail:          document.getElementById("senderEmail"),
-  appKey:               document.getElementById("appKey"),
-  rememberSender:       document.getElementById("rememberSender"),
-  emailType:            document.getElementById("emailType"),
-  subject:              document.getElementById("subject"),
-  message:              document.getElementById("message"),
-  templateGrid:         document.getElementById("templateGrid"),
-  attachments:          document.getElementById("attachments"),
-  attachmentSummary:    document.getElementById("attachmentSummary"),
-  sendBtn:              document.getElementById("sendBtn"),
-  status:               document.getElementById("status"),
-  previewTo:            document.getElementById("previewTo"),
-  previewSubject:       document.getElementById("previewSubject"),
-  previewFrame:         document.getElementById("previewFrame"),
-  progressContainer:    document.getElementById("progressContainer"),
-  progressBar:          document.getElementById("progressBar"),
-  progressStatusText:   document.getElementById("progressStatusText"),
-  progressCountText:    document.getElementById("progressCountText"),
+  sheetInput: document.getElementById("sheetInput"),
+  uploadBtn: document.getElementById("uploadBtn"),
+  nameColumn: document.getElementById("nameColumn"),
+  emailColumn: document.getElementById("emailColumn"),
+  datasetSummary: document.getElementById("datasetSummary"),
+  smtpHost: document.getElementById("smtpHost"),
+  smtpPort: document.getElementById("smtpPort"),
+  senderEmail: document.getElementById("senderEmail"),
+  appKey: document.getElementById("appKey"),
+  rememberSender: document.getElementById("rememberSender"),
+  trackingUrl: document.getElementById("trackingUrl"),
+  emailType: document.getElementById("emailType"),
+  subject: document.getElementById("subject"),
+  message: document.getElementById("message"),
+  templateGrid: document.getElementById("templateGrid"),
+  attachments: document.getElementById("attachments"),
+  attachmentSummary: document.getElementById("attachmentSummary"),
+  sendBtn: document.getElementById("sendBtn"),
+  status: document.getElementById("status"),
+  previewTo: document.getElementById("previewTo"),
+  previewSubject: document.getElementById("previewSubject"),
+  previewFrame: document.getElementById("previewFrame"),
+  progressContainer: document.getElementById("progressContainer"),
+  progressBar: document.getElementById("progressBar"),
+  progressStatusText: document.getElementById("progressStatusText"),
+  progressCountText: document.getElementById("progressCountText"),
   // Full Screen Preview
-  fullScreenBtn:        document.getElementById("fullScreenBtn"),
-  fullScreenModal:      document.getElementById("fullScreenModal"),
-  fullScreenFrame:      document.getElementById("fullScreenFrame"),
-  closeFullScreenBtn:   document.getElementById("closeFullScreenBtn"),
+  fullScreenBtn: document.getElementById("fullScreenBtn"),
+  fullScreenModal: document.getElementById("fullScreenModal"),
+  fullScreenFrame: document.getElementById("fullScreenFrame"),
+  closeFullScreenBtn: document.getElementById("closeFullScreenBtn"),
   // Banner
-  rawBannerInput:       document.getElementById("rawBannerInput"),
-  summonCropperBtn:     document.getElementById("summonCropperBtn"),
-  bannerPreviewBox:     document.getElementById("bannerPreviewBox"),
-  bannerThumb:          document.getElementById("bannerThumb"),
-  bannerStatus:         document.getElementById("bannerStatus"),
-  removeBannerBtn:      document.getElementById("removeBannerBtn"),
+  rawBannerInput: document.getElementById("rawBannerInput"),
+  summonCropperBtn: document.getElementById("summonCropperBtn"),
+  bannerPreviewBox: document.getElementById("bannerPreviewBox"),
+  bannerThumb: document.getElementById("bannerThumb"),
+  bannerStatus: document.getElementById("bannerStatus"),
+  removeBannerBtn: document.getElementById("removeBannerBtn"),
   // Modal
-  cropperModal:         document.getElementById("cropperModal"),
-  cropperImageEl:       document.getElementById("cropperImage"),
-  applyCropBtn:         document.getElementById("applyCropBtn"),
-  cancelCropBtn:        document.getElementById("cancelCropBtn"),
+  cropperModal: document.getElementById("cropperModal"),
+  cropperImageEl: document.getElementById("cropperImage"),
+  applyCropBtn: document.getElementById("applyCropBtn"),
+  cancelCropBtn: document.getElementById("cancelCropBtn"),
+  // Theme & CTA
+  themeWrapperBtns: document.querySelectorAll(".theme-wrapper-btn"),
+  ctaText: document.getElementById("ctaText"),
+  ctaLink: document.getElementById("ctaLink"),
+  ctaBgColor: document.getElementById("ctaBgColor"),
+  ctaTextColor: document.getElementById("ctaTextColor"),
+  ctaPadding: document.getElementById("ctaPadding"),
+  ctaAlignBtns: document.querySelectorAll(".align-btn"),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -230,12 +240,26 @@ function debounce(fn, ms) {
 }
 
 function escapeHtml(v) {
-  return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  return String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
 function setStatus(msg, isError) {
   elements.status.textContent = msg;
   elements.status.style.color = isError ? "var(--mc-red)" : "var(--mc-green)";
+}
+
+function insertToken(token) {
+  const el = elements.message;
+  const val = `{{${token}}}`;
+  const start = el.selectionStart;
+  const end = el.selectionEnd;
+  const text = el.value;
+  
+  el.value = text.substring(0, start) + val + text.substring(end);
+  el.selectionStart = el.selectionEnd = start + val.length;
+  el.focus();
+  triggerLivePreview();
+  persistAppState();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -274,40 +298,74 @@ function selectTemplate(id) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SENDER PROFILE
 // ─────────────────────────────────────────────────────────────────────────────
-function persistLocalSenderProfile() {
-  localStorage.setItem(SENDER_LOCAL_STORAGE_KEY, JSON.stringify({
+function persistAppState() {
+  const data = {
     smtpHost: elements.smtpHost.value.trim(),
     smtpPort: elements.smtpPort.value.trim(),
     senderEmail: elements.senderEmail.value.trim(),
     appKey: elements.appKey.value.trim(),
     rememberSender: elements.rememberSender.checked,
-  }));
+    trackingUrl: elements.trackingUrl.value.trim(),
+    subject: elements.subject.value,
+    message: elements.message.value,
+    nameColumn: elements.nameColumn.value,
+    emailColumn: elements.emailColumn.value,
+    emailType: elements.emailType.value,
+    ctaSettings: state.ctaSettings
+  };
+  localStorage.setItem(APP_STATE_STORAGE_KEY, JSON.stringify(data));
 }
 
-function loadLocalSenderProfile() {
+function loadAppState() {
   try {
-    const raw = localStorage.getItem(SENDER_LOCAL_STORAGE_KEY);
+    const raw = localStorage.getItem(APP_STATE_STORAGE_KEY) || localStorage.getItem(SENDER_LOCAL_STORAGE_KEY);
     if (!raw) return;
     const p = JSON.parse(raw);
-    if (p.smtpHost)      elements.smtpHost.value      = p.smtpHost;
-    if (p.smtpPort)      elements.smtpPort.value      = p.smtpPort;
-    if (p.senderEmail)   elements.senderEmail.value   = p.senderEmail;
-    if (p.appKey)        elements.appKey.value        = p.appKey;
+
+    // Identity
+    if (p.smtpHost) elements.smtpHost.value = p.smtpHost;
+    if (p.smtpPort) elements.smtpPort.value = p.smtpPort;
+    if (p.senderEmail) elements.senderEmail.value = p.senderEmail;
+    if (p.appKey) elements.appKey.value = p.appKey;
     if (typeof p.rememberSender === "boolean") elements.rememberSender.checked = p.rememberSender;
-  } catch { localStorage.removeItem(SENDER_LOCAL_STORAGE_KEY); }
+    if (p.trackingUrl) elements.trackingUrl.value = p.trackingUrl;
+
+    // Content
+    if (p.subject) elements.subject.value = p.subject;
+    if (p.message) elements.message.value = p.message;
+    if (p.emailType) elements.emailType.value = p.emailType;
+
+    // Settings
+    if (p.ctaSettings) {
+      state.ctaSettings = p.ctaSettings;
+      // Sync UI for CTA
+      if (elements.ctaText) elements.ctaText.value = state.ctaSettings.text || "";
+      if (elements.ctaLink) elements.ctaLink.value = state.ctaSettings.url || "";
+    }
+
+    // Mappings (will be applied once cols load)
+    state.savedMappings = {
+      name: p.nameColumn,
+      email: p.emailColumn
+    };
+
+    // Update UI theme selection
+    document.querySelectorAll(".theme-wrapper-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.type === elements.emailType.value);
+    });
+
+  } catch { localStorage.removeItem(APP_STATE_STORAGE_KEY); }
 }
 
 async function fetchSenderProfile() {
   try {
-    const res  = await fetch("/api/sender-profile");
+    const res = await fetch("/api/sender-profile");
     const data = await res.json();
-    if (data.saved && data.email && !elements.senderEmail.value.trim()) {
-      elements.senderEmail.value = data.email;
-      elements.smtpHost.value    = data.smtpHost || "smtp.gmail.com";
-      elements.smtpPort.value    = data.smtpPort || 587;
-      persistLocalSenderProfile();
-    }
-  } catch { /* silent */ }
+    elements.smtpHost.value = data.smtpHost || "smtp.gmail.com";
+    elements.smtpPort.value = data.smtpPort || 587;
+    elements.trackingUrl.value = data.trackingUrl || "";
+    persistAppState();
+  } catch (e) { console.error(e); /* silent */ }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -334,15 +392,27 @@ async function uploadSheet() {
   const fd = new FormData();
   fd.append("file", file);
   try {
-    const res  = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok) { setStatus(data.error || "Upload failed.", true); return; }
     state.datasetId = data.datasetId;
-    state.columns   = data.columns;
-    elements.nameColumn.innerHTML  = optionsHtml(data.columns);
+    state.columns = data.columns;
+    elements.nameColumn.innerHTML = optionsHtml(data.columns);
     elements.emailColumn.innerHTML = optionsHtml(data.columns);
-    elements.nameColumn.value  = pickColumn(data.columns, ["name","full name","contact name"]);
-    elements.emailColumn.value = pickColumn(data.columns, ["email","email address","email id"]);
+
+    // Use saved mapping if available, else auto-pick
+    if (state.savedMappings && state.savedMappings.name && data.columns.includes(state.savedMappings.name)) {
+      elements.nameColumn.value = state.savedMappings.name;
+    } else {
+      elements.nameColumn.value = pickColumn(data.columns, ["name", "full name", "contact name"]);
+    }
+
+    if (state.savedMappings && state.savedMappings.email && data.columns.includes(state.savedMappings.email)) {
+      elements.emailColumn.value = state.savedMappings.email;
+    } else {
+      elements.emailColumn.value = pickColumn(data.columns, ["email", "email address", "email id"]);
+    }
+
     elements.datasetSummary.textContent = `✓ ${data.rows} rows, ${data.columns.length} columns loaded.`;
     setStatus("", false);
     triggerLivePreview();
@@ -420,28 +490,29 @@ const triggerLivePreview = debounce(async () => {
   if (!state.datasetId) return;
 
   const payload = {
-    datasetId:   state.datasetId,
-    nameColumn:  elements.nameColumn.value,
+    datasetId: state.datasetId,
+    nameColumn: elements.nameColumn.value,
     emailColumn: elements.emailColumn.value,
-    emailType:   elements.emailType.value,
-    smtpHost:    elements.smtpHost.value.trim(),
-    smtpPort:    elements.smtpPort.value.trim(),
+    emailType: elements.emailType.value,
+    smtpHost: elements.smtpHost.value.trim(),
+    smtpPort: elements.smtpPort.value.trim(),
     senderEmail: elements.senderEmail.value.trim(),
-    appKey:      elements.appKey.value.trim(),
+    appKey: elements.appKey.value.trim(),
     rememberSender: elements.rememberSender.checked,
-    subject:     elements.subject.value,
-    message:     elements.message.value,
+    subject: elements.subject.value,
+    message: elements.message.value,
     bannerDataUrl: state.croppedBannerDataUrl, // Pass banner to preview
     ctaSettings: state.ctaSettings,             // Pass CTA logic
+    trackingUrl: elements.trackingUrl.value.trim(),
   };
 
   try {
-    const res  = await fetch("/api/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const res = await fetch("/api/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const data = await res.json();
     if (!res.ok) return;
-    elements.previewTo.textContent      = data.recipient || "recipient@example.com";
+    elements.previewTo.textContent = data.recipient || "recipient@example.com";
     elements.previewSubject.textContent = data.subject || payload.subject || "Your Subject Here";
-    elements.previewFrame.srcdoc        = data.emailHtml || previewPlaceholderHtml;
+    elements.previewFrame.srcdoc = data.emailHtml || previewPlaceholderHtml;
   } catch { /* silent */ }
 }, 500);
 
@@ -451,7 +522,7 @@ const triggerLivePreview = debounce(async () => {
 function updateAttachmentSummary() {
   const count = elements.attachments.files.length;
   if (!count) { elements.attachmentSummary.textContent = "No attachments configured."; return; }
-  const total = (Array.from(elements.attachments.files).reduce((s, f) => s + f.size, 0) / (1024*1024)).toFixed(2);
+  const total = (Array.from(elements.attachments.files).reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(2);
   elements.attachmentSummary.textContent = `${count} attachment(s) — ${total} MB total.`;
   if (parseFloat(total) > 25) setStatus("Attachments exceed the 25 MB Gmail limit.", true);
 }
@@ -460,27 +531,28 @@ function updateAttachmentSummary() {
 // SEND CAMPAIGN
 // ─────────────────────────────────────────────────────────────────────────────
 async function sendCampaign() {
-  if (!state.datasetId)                            { setStatus("Upload an audience sheet first.", true); return; }
-  if (!elements.senderEmail.value.trim())          { setStatus("Enter your sender email.", true); return; }
-  if (!elements.subject.value.trim())              { setStatus("Add a subject line.", true); return; }
-  if (!elements.message.value.trim())              { setStatus("Write your campaign message.", true); return; }
+  if (!state.datasetId) { setStatus("Upload an audience sheet first.", true); return; }
+  if (!elements.senderEmail.value.trim()) { setStatus("Enter your sender email.", true); return; }
+  if (!elements.subject.value.trim()) { setStatus("Add a subject line.", true); return; }
+  if (!elements.message.value.trim()) { setStatus("Write your campaign message.", true); return; }
 
   elements.sendBtn.disabled = true;
   setStatus("Initialising campaign…", false);
 
   const fd = new FormData();
-  fd.append("datasetId",    state.datasetId);
-  fd.append("nameColumn",   elements.nameColumn.value);
-  fd.append("emailColumn",  elements.emailColumn.value);
-  fd.append("emailType",    elements.emailType.value);
-  fd.append("smtpHost",     elements.smtpHost.value.trim());
-  fd.append("smtpPort",     elements.smtpPort.value.trim());
-  fd.append("senderEmail",  elements.senderEmail.value.trim());
-  fd.append("appKey",       elements.appKey.value.trim());
+  fd.append("datasetId", state.datasetId);
+  fd.append("nameColumn", elements.nameColumn.value);
+  fd.append("emailColumn", elements.emailColumn.value);
+  fd.append("emailType", elements.emailType.value);
+  fd.append("smtpHost", elements.smtpHost.value.trim());
+  fd.append("smtpPort", elements.smtpPort.value.trim());
+  fd.append("senderEmail", elements.senderEmail.value.trim());
+  fd.append("appKey", elements.appKey.value.trim());
   fd.append("rememberSender", String(elements.rememberSender.checked));
-  fd.append("subject",      elements.subject.value);
-  fd.append("message",      elements.message.value);
-  fd.append("ctaSettings",  JSON.stringify(state.ctaSettings));
+  fd.append("trackingUrl", elements.trackingUrl.value.trim());
+  fd.append("subject", elements.subject.value);
+  fd.append("message", elements.message.value);
+  fd.append("ctaSettings", JSON.stringify(state.ctaSettings));
 
   if (state.croppedBannerBlob) {
     fd.append("bannerImage", state.croppedBannerBlob, "banner.png");
@@ -491,48 +563,91 @@ async function sendCampaign() {
   }
 
   try {
-    const res  = await fetch("/api/send", { method: "POST", body: fd });
+    console.log("[DEBUG] Sending campaign payload:", fd);
+    const res = await fetch("/api/send", { method: "POST", body: fd });
     const data = await res.json();
-    if (!res.ok) { setStatus(data.error || "Send failed.", true); elements.sendBtn.disabled = false; return; }
+    console.log("[DEBUG] Send response:", data);
+    if (!res.ok) { 
+      console.error("[ERROR] Campaign send failed:", data.error);
+      setStatus(data.error || "Send failed.", true); 
+      elements.sendBtn.disabled = false; 
+      return; 
+    }
     if (data.campaignId) pollCampaignStatus(data.campaignId);
-  } catch (e) { setStatus(`Failed: ${e.message}`, true); elements.sendBtn.disabled = false; }
+  } catch (e) { 
+    console.error("[CRITICAL] Fetch error in sendCampaign:", e);
+    setStatus(`Failed: ${e.message}`, true); 
+    elements.sendBtn.disabled = false; 
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CAMPAIGN PROGRESS POLLING
 // ─────────────────────────────────────────────────────────────────────────────
 function pollCampaignStatus(campaignId) {
   if (state.pollInterval) clearInterval(state.pollInterval);
   elements.progressContainer.style.display = "flex";
   elements.progressBar.style.width = "0%";
   elements.progressStatusText.textContent = "Connecting…";
-  elements.progressCountText.textContent  = "0 / 0";
+  elements.progressCountText.textContent = "0 / 0";
 
+  // Store campaign ID to allow auto-resume on refresh
+  localStorage.setItem("automailer.lastCampaignId", campaignId);
+  
   state.pollInterval = setInterval(async () => {
     try {
-      const res  = await fetch(`/api/campaign-status/${campaignId}`);
-      if (!res.ok) return;
+      const res = await fetch(`/api/campaign-status/${campaignId}`);
+      if (!res.ok) {
+        console.warn("[WARN] Campaign status poll failed:", res.status);
+        return;
+      }
       const data = await res.json();
-      const done = (data.sent||0) + (data.failed||0);
+      console.log("[DEBUG] Campaign status update:", data);
+      
+      const done = (data.sent || 0) + (data.failed || 0);
       const total = data.total || 0;
-      const pct   = total > 0 ? Math.min(100, Math.floor((done / total) * 100)) : 0;
-      elements.progressBar.style.width        = `${pct}%`;
-      elements.progressCountText.textContent  = `${done} / ${total}`;
+      const pct = total > 0 ? Math.min(100, Math.floor((done / total) * 100)) : 0;
+      elements.progressBar.style.width = `${pct}%`;
+      elements.progressCountText.textContent = `${done} / ${total}`;
 
       if (data.status && data.status !== "sending" && data.status !== "running") {
-        clearInterval(state.pollInterval);
+        // Campaign finished sending, but we keep the interval alive for post-send monitoring!
         elements.sendBtn.disabled = false;
-        elements.progressStatusText.textContent = data.status === "complete"
-          ? "✓ Campaign Complete"
-          : `Error: ${data.status}`;
-        setStatus(data.status === "complete"
-          ? `Done. Sent: ${data.sent}, Failed: ${data.failed}`
-          : `Halted: ${data.status}`, data.status !== "complete");
+        
+        if (data.status === "complete") {
+           elements.progressStatusText.textContent = "✓ Sent. Monitoring Interactions…";
+           setStatus(`Sent: ${data.sent}, Bounced: ${data.failed} | Interactions: ${data.opens} Opens, ${data.clicks} Clicks`, false);
+           
+           // Slow down the interval for background monitoring (every 10 seconds)
+           if (state.pollInterval && !state.monitoringMode) {
+              clearInterval(state.pollInterval);
+              state.monitoringMode = true;
+              pollCampaignStatus(campaignId); // Restart with new slow interval? No, easier logic below:
+           }
+        } else {
+           // Error state - usually safe to stop polling
+           clearInterval(state.pollInterval);
+           state.pollInterval = null;
+           elements.progressStatusText.textContent = `Error: ${data.status}`;
+           setStatus(`Halted: ${data.status}`, true);
+        }
+      } else if (!data.status) {
+        // Safety: If status is missing (e.g. server restarted or error), we stop eventually.
+        state.consecutiveMissingStatus = (state.consecutiveMissingStatus || 0) + 1;
+        if (state.consecutiveMissingStatus > 5) {
+          console.error("[CRITICAL] Campaign status missing repeatedly. Stopping poll.");
+          clearInterval(state.pollInterval);
+          state.pollInterval = null;
+          elements.sendBtn.disabled = false;
+          elements.progressStatusText.textContent = "Status Unknown (Stopped)";
+          setStatus("Lost connection to campaign monitor.", true);
+        }
       } else {
+        state.consecutiveMissingStatus = 0;
         elements.progressStatusText.textContent = "Dispatching…";
       }
-    } catch { /* silent */ }
-  }, 1500);
+    } catch (e) {
+      console.error("[ERROR] Error in pollCampaignStatus:", e);
+    }
+  }, state.monitoringMode ? 10000 : 1500);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -552,11 +667,21 @@ function bindEvents() {
   // Attachments
   elements.attachments.addEventListener("change", updateAttachmentSummary);
 
-  // Persist identity
-  ["smtpHost","smtpPort","senderEmail","appKey"].forEach(id =>
-    elements[id].addEventListener("input", persistLocalSenderProfile)
-  );
-  elements.rememberSender.addEventListener("change", persistLocalSenderProfile);
+  // Expanded persistence
+  const persistenceInputs = [
+    "subject", "message", "nameColumn", "emailColumn", "emailType",
+    "smtpHost", "smtpPort", "senderEmail", "appKey", "trackingUrl"
+  ];
+  persistenceInputs.forEach(id => {
+    if (elements[id]) {
+      elements[id].addEventListener("input", persistAppState);
+      if (elements[id].tagName === "SELECT") {
+        elements[id].addEventListener("change", persistAppState);
+      }
+    }
+  });
+
+  elements.rememberSender.addEventListener("change", persistAppState);
 
   // Banner crop flow
   elements.summonCropperBtn.addEventListener("click", () => elements.rawBannerInput.click());
@@ -584,7 +709,7 @@ function bindEvents() {
   elements.ctaBgColor.addEventListener("input", () => { state.ctaSettings.bg = elements.ctaBgColor.value; triggerLivePreview(); });
   elements.ctaTextColor.addEventListener("input", () => { state.ctaSettings.color = elements.ctaTextColor.value; triggerLivePreview(); });
   elements.ctaPadding.addEventListener("input", () => { state.ctaSettings.padding = elements.ctaPadding.value; triggerLivePreview(); });
-  
+
   elements.ctaAlignBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       elements.ctaAlignBtns.forEach(b => b.classList.remove("active"));
@@ -626,5 +751,13 @@ buildTemplateGallery();
 bindEvents();
 elements.previewFrame.srcdoc = previewPlaceholderHtml;
 updateAttachmentSummary();
-loadLocalSenderProfile();
+loadAppState();
 fetchSenderProfile();
+
+// Auto-resume campaign monitoring if one was active
+const lastCid = localStorage.getItem("automailer.lastCampaignId");
+if (lastCid) {
+  console.log("[INIT] Resuming campaign monitoring for:", lastCid);
+  state.monitoringMode = true;
+  pollCampaignStatus(lastCid);
+}

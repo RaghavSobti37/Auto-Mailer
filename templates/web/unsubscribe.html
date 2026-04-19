@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribed - Auto-Mailer</title>
+    <link rel="stylesheet" href="/static/web/styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #f8fafc;
+        }
+        .unsub-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 600px;
+            width: 95%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: inline-block;
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4));
+        }
+        h1 {
+            font-size: 28px;
+            margin: 0 0 12px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin: 0 0 32px;
+            font-size: 0.95rem;
+        }
+        
+        /* Custom Square Radio Styling */
+        .reason-option {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            gap: 16px;
+            cursor: pointer;
+            padding: 14px 18px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 12px;
+        }
+        .reason-option:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .reason-option input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #475569;
+            border-radius: 6px; /* Square with slight rounding */
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .reason-option input[type="radio"]:checked {
+            background: #ef4444;
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+        .reason-option input[type="radio"]:checked::after {
+            content: "✓";
+            color: white;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .reason-text {
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: #ef4444;
+            color: white;
+            text-decoration: none;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-block;
+            transition: all 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px rgba(239, 68, 68, 0.4);
+            filter: brightness(1.1);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 480px) {
+            .unsub-card { padding: 32px 24px; }
+            h1 { font-size: 24px; }
+            .reason-option { gap: 12px; padding: 12px; }
+            .reason-text { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="unsub-card">
+        <div class="icon">🔕</div>
+        <div id="initialView">
+            <h1>Unsubscribe</h1>
+            <p>We're sorry to see you go. Please let us know why you're unsubscribing from our artist mailing list:</p>
+            
+            <form id="unsubForm" style="text-align: left; margin-bottom: 24px;">
+                <div style="display: flex; flex-direction: column; margin-bottom: 32px;">
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="too_many_emails" required>
+                        <span class="reason-text">Too many emails / Spam frequency</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="not_relevant">
+                        <span class="reason-text">Content not relevant to my music projects</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="never_signed_up">
+                        <span class="reason-text">I never signed up for this list</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="new_email">
+                        <span class="reason-text">I'm using a different email address now</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="not_interested">
+                        <span class="reason-text">I'm no longer interested in these updates</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="reason" value="others" id="othersRadio">
+                        <span class="reason-text">Others</span>
+                    </label>
+                    <div id="otherReasonContainer" style="display: none; margin-left:54px; margin-top: -4px; margin-bottom: 12px;">
+                        <textarea id="otherReasonText" placeholder="Please specify your reason..." style="width: 100%; min-height: 80px; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="btn" style="width: 100%; border: none; cursor: pointer;">Confirm Unsubscribe</button>
+            </form>
+        </div>
+
+        <div id="successView" style="display: none;">
+            <h1>Unsubscribed</h1>
+            <p>Your email address has been successfully removed from our mailing list. You will no longer receive marketing emails from this campaign.</p>
+            <a href="https://theshakticollective.in" class="btn">Return to Website</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('unsubForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const initialView = document.getElementById('initialView');
+        const successView = document.getElementById('successView');
+        const othersRadio = document.getElementById('othersRadio');
+        const otherReasonContainer = document.getElementById('otherReasonContainer');
+        const otherReasonText = document.getElementById('otherReasonText');
+
+        // Toggle visibility of the "Others" text area
+        form.addEventListener('change', (e) => {
+            if (othersRadio.checked) {
+                otherReasonContainer.style.display = 'block';
+                otherReasonText.focus();
+            } else {
+                otherReasonContainer.style.display = 'none';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let reason = form.querySelector('input[name="reason"]:checked').value;
+            
+            if (reason === 'others') {
+                const customReason = otherReasonText.value.trim();
+                if (!customReason) {
+                    alert('Please specify your reason.');
+                    return;
+                }
+                reason = "Others: " + customReason;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            try {
+                const res = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                if (res.ok) {
+                    initialView.style.display = 'none';
+                    successView.style.display = 'block';
+                } else {
+                    alert('Something went wrong. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Unsubscribe';
+                }
+            } catch (err) {
+                alert('Connection error. Please check your internet.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirm Unsubscribe';
+            }
+        });
+    </script>
+</body>
+</html>
