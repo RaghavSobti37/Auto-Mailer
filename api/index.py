@@ -1,10 +1,19 @@
 import os
 import sys
+import traceback
 
-# Add the project root to the sys.path so we can import web_app
+# Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from web_app import app
-
-# Vercel needs the flask app instance to be the 'app' variable
-# and it expects it to be exported in a file like api/index.py if configured that way.
+try:
+    from web_app import app
+except Exception as e:
+    from flask import Flask, jsonify
+    app = Flask(__name__)
+    @app.route("/(.*)")
+    def catch_all(path):
+        return jsonify({
+            "error": "Startup Crash",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
