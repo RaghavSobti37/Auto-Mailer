@@ -110,6 +110,9 @@ UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
 HOLYSHEET_API_KEY = "Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt"
 HOLYSHEET_URL = f"https://holysheet.soneshjain.com/api/v1/{HOLYSHEET_API_KEY}/rows"
 
+# Global tracking_db for background threads
+tracking_db: TrackingDB | None = None
+
 
 def fetch_external_unsubscribes() -> set[str]:
     """Fetch unsubscribed emails from HolySheet API."""
@@ -952,9 +955,6 @@ def error_response(message: str, status_code: int) -> Any:
 
 app = create_app()
 
-# Global tracking_db for background threads
-# On regular servers, this initializes here. On Vercel, it triggers via create_app factory.
-tracking_db: TrackingDB | None = None
 try:
     if not os.getenv("VERCEL"):
         ensure_runtime_dirs()
