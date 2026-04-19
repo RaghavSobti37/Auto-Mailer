@@ -1,26 +1,7 @@
 // ────────────────────────────────────────
 // DUMMY DATA (shown when real data is empty)
 // ────────────────────────────────────────
-const DUMMY_CAMPAIGNS = [
-  {
-    id: "demo-001",
-    subject: "🚀 Product Launch — Spring Collection 2024",
-    createdAt: "2024-04-10T08:30:00",
-    stats: { total: 12450, sent: 12180, failed: 270, opens: 5432, clicks: 1876, registered: 312 }
-  },
-  {
-    id: "demo-002",
-    subject: "🎯 AutoMailer Monthly Newsletter — March",
-    createdAt: "2024-03-28T14:00:00",
-    stats: { total: 8200, sent: 8031, failed: 169, opens: 3110, clicks: 892, registered: 148 }
-  },
-  {
-    id: "demo-003",
-    subject: "🎓 Webinar Invite: Mastering Email Marketing",
-    createdAt: "2024-03-15T09:00:00",
-    stats: { total: 4500, sent: 4455, failed: 45, opens: 2870, clicks: 1203, registered: 389 }
-  }
-];
+
 
 function escapeHtml(value) {
   return String(value)
@@ -141,9 +122,9 @@ function renderCampaignCard(c) {
   const dateStr = new Date(c.createdAt + (c.createdAt.endsWith("Z") ? "" : "Z")).toLocaleDateString("en-US", {
     month: "short", day: "numeric", year: "numeric"
   });
-  const openRate  = pct(c.stats.opens, c.stats.sent);
-  const clickRate = pct(c.stats.clicks, c.stats.sent);
-  const convRate  = pct(c.stats.registered, c.stats.sent);
+  const openRate  = pct(c.stats.opens, c.stats.total);
+  const clickRate = pct(c.stats.clicks, c.stats.total);
+  const convRate  = pct(c.stats.registered, c.stats.total);
   const isDemo    = c.id.startsWith("demo-");
 
   return `
@@ -173,7 +154,7 @@ function renderCampaignCard(c) {
           </div>
           <div class="metric-tile">
             <div class="val" style="color:var(--mc-red);">${c.stats.failed.toLocaleString()}</div>
-            <div class="lbl">Bounced</div>
+            <div class="lbl">Bounced <button class="help-icon" onclick="showImapHelp()" title="IMAP Setup Help">?</button></div>
           </div>
           <div class="metric-tile">
             <div class="val" style="color:#facc15;">${c.stats.opens.toLocaleString()}</div>
@@ -199,14 +180,23 @@ function renderCampaignCard(c) {
 }
 
 async function deleteCampaign(cid) {
-  if (!confirm("Are you sure you want to delete this campaign? All tracking data will be permanently removed.")) return;
-  try {
-    const res = await fetch(`/api/campaign/${cid}`, { method: "DELETE" });
-    if (res.ok) fetchCampaigns();
-    else alert("Failed to delete campaign.");
-  } catch (e) {
-    alert("Error deleting campaign: " + e.message);
-  }
+  showConfirm(
+    "Delete Campaign?",
+    "Are you sure you want to delete this campaign? All tracking data will be permanently removed.",
+    async () => {
+      try {
+        const res = await fetch(`/api/campaign/${cid}`, { method: "DELETE" });
+        if (res.ok) {
+          showToast("Campaign deleted successfully", "success");
+          fetchCampaigns();
+        } else {
+          showToast("Failed to delete campaign", "error");
+        }
+      } catch (e) {
+        showToast("Error deleting campaign: " + e.message, "error");
+      }
+    }
+  );
 }
 
 function initCharts(campaigns) {
@@ -294,33 +284,48 @@ async function showUnsubManager() {
 }
 
 async function removeUnsubscribe(email) {
-  if (!confirm(`Re-enable ${email}? They will be able to receive emails again.`)) return;
-  try {
-    const res = await fetch(`/api/unsubscribes/${encodeURIComponent(email)}`, { method: "DELETE" });
-    if (res.ok) showUnsubManager();
-    else alert("Failed to remove.");
-  } catch (e) {
-    alert("Error: " + e.message);
-  }
+  showConfirm(
+    "Re-enable Recipient?",
+    `Re-enable ${email}? They will be able to receive emails again.`,
+    async () => {
+      try {
+        const res = await fetch(`/api/unsubscribes/${encodeURIComponent(email)}`, { method: "DELETE" });
+        if (res.ok) {
+          showToast("Recipient re-enabled", "success");
+          showUnsubManager();
+        } else {
+          showToast("Failed to remove", "error");
+        }
+      } catch (e) {
+        showToast("Error: " + e.message, "error");
+      }
+    }
+  );
 }
 
-async function scanBounces() {
-  const btn = document.getElementById("scanBouncesBtn");
+function showImapHelp() {
+  showToast("Opening IMAP setup guide...", "info");
+  window.location.href = "/docs#imap-setup";
+}
+
+async function refreshDashboard() {
+  const btn = document.getElementById("refreshBtn");
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<span>⏳</span> Scanning Inbox…`;
+  btn.innerHTML = `<span>⏳</span> Syncing & Scanning…`;
   
   try {
-    const res = await fetch("/api/scan-bounces", { method: "POST" });
-    const data = await res.json();
-    if (res.ok) {
-      alert(`Scan complete!\nFound ${data.processed} bounce notifications.\nMetadata: ${data.bounces.join(', ') || 'None found recently.'}`);
-      fetchCampaigns();
-    } else {
-      alert("Scan failed: " + (data.error || "Unknown error"));
+    // 1. Trigger Async Bounce Scan
+    const scanRes = await fetch("/api/scan-bounces", { method: "POST" });
+    const scanData = await scanRes.json();
+    
+    // 2. Fetch Latest Campaigns
+    await fetchCampaigns();
+    
+    if (scanRes.ok && scanData.processed > 0) {
+      showToast(`Scan complete: Found ${scanData.processed} new bounces.`, "success");
     }
   } catch (e) {
-    alert("Network error: " + e.message);
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -336,8 +341,8 @@ async function fetchCampaigns() {
     if (res.ok) campaigns = await res.json();
   } catch (_) {}
 
-  // Merge real data with dummy seed
-  const allCampaigns = [...campaigns, ...DUMMY_CAMPAIGNS];
+  // Removed dummy seed
+  const allCampaigns = campaigns;
 
   renderSummaryBar(allCampaigns);
 
@@ -355,7 +360,8 @@ async function fetchCampaigns() {
 // ────────────────────────────────────────
 // AUTO-REFRESH (Keep tracking in background)
 // ────────────────────────────────────────
-setInterval(fetchCampaigns, 10000); // Refresh every 10s
+// Auto-refresh disabled per user request
+// setInterval(fetchCampaigns, 10000);
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchCampaigns();
@@ -363,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Modal listeners
   const modal = document.getElementById("unsubModal");
   document.getElementById("manageUnsubsBtn").addEventListener("click", showUnsubManager);
-  document.getElementById("scanBouncesBtn").addEventListener("click", scanBounces);
+  document.getElementById("refreshBtn").addEventListener("click", refreshDashboard);
   document.getElementById("closeUnsubModal").addEventListener("click", () => modal.classList.remove("active"));
   modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("active"); });
 });

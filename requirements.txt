@@ -8,3 +8,4 @@ openpyxl
 waitress
 Markdown
 bleach
+gunicorn

@@ -1,0 +1,55 @@
+2026-04-19 12:44:58,060 - WARNING -  * Debugger is active!
+2026-04-19 12:44:58,063 - INFO -  * Debugger PIN: 110-311-826
+2026-04-19 12:45:26,166 - INFO -  * Detected change in 'C:\\Users\\ragha\\OneDrive\\Desktop\\AutoMailer\\Auto-Mailer\\web_app.py', reloading
+2026-04-19 12:45:26,843 - WARNING -  * Debugger is active!
+2026-04-19 12:45:26,847 - INFO -  * Debugger PIN: 110-311-826
+2026-04-19 12:45:43,915 - INFO -  * Detected change in 'C:\\Users\\ragha\\OneDrive\\Desktop\\AutoMailer\\Auto-Mailer\\web_app.py', reloading
+2026-04-19 12:45:44,514 - WARNING -  * Debugger is active!
+2026-04-19 12:45:44,517 - INFO -  * Debugger PIN: 110-311-826
+2026-04-19 12:46:30,673 - INFO -  * Detected change in 'C:\\Users\\ragha\\OneDrive\\Desktop\\AutoMailer\\Auto-Mailer\\run_web.py', reloading
+2026-04-19 12:49:50,195 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "GET / HTTP/1.1" 200 -
+2026-04-19 12:49:50,253 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "GET /static/web/styles.css HTTP/1.1" 200 -
+2026-04-19 12:49:50,442 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "GET /static/web/utils.js HTTP/1.1" 200 -
+2026-04-19 12:49:50,520 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 12:49:50,566 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "GET /static/web/app.js HTTP/1.1" 200 -
+2026-04-19 12:49:50,909 - INFO - 127.0.0.1 - - [19/Apr/2026 12:49:50] "GET /api/sender-profile HTTP/1.1" 200 -
+2026-04-19 12:51:54,887 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:54] "GET /dashboard HTTP/1.1" 200 -
+2026-04-19 12:51:54,915 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:54] "[36mGET /static/web/styles.css HTTP/1.1[0m" 304 -
+2026-04-19 12:51:55,149 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:55] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 12:51:55,228 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:55] "[36mGET /static/web/utils.js HTTP/1.1[0m" 304 -
+2026-04-19 12:51:55,399 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:55] "GET /static/web/dashboard.js HTTP/1.1" 200 -
+2026-04-19 12:51:55,712 - INFO - 127.0.0.1 - - [19/Apr/2026 12:51:55] "GET /api/campaigns HTTP/1.1" 200 -
+2026-04-19 12:52:33,419 - INFO - Connecting to IMAP imap.gmail.com...
+2026-04-19 12:52:35,451 - INFO - Found 801 potential bounce emails.
+2026-04-19 12:53:15,052 - INFO - 127.0.0.1 - - [19/Apr/2026 12:53:15] "GET /docs HTTP/1.1" 200 -
+2026-04-19 12:53:15,389 - INFO - 127.0.0.1 - - [19/Apr/2026 12:53:15] "[36mGET /static/web/styles.css HTTP/1.1[0m" 304 -
+2026-04-19 12:53:15,389 - INFO - 127.0.0.1 - - [19/Apr/2026 12:53:15] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 12:53:30,428 - INFO - 127.0.0.1 - - [19/Apr/2026 12:53:30] "POST /api/scan-bounces HTTP/1.1" 200 -
+2026-04-19 12:55:32,694 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:32] "GET / HTTP/1.1" 200 -
+2026-04-19 12:55:32,771 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:32] "[36mGET /static/web/styles.css HTTP/1.1[0m" 304 -
+2026-04-19 12:55:32,943 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:32] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 12:55:33,021 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:33] "[36mGET /static/web/app.js HTTP/1.1[0m" 304 -
+2026-04-19 12:55:33,022 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:33] "[36mGET /static/web/utils.js HTTP/1.1[0m" 304 -
+2026-04-19 12:55:33,081 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:33] "GET /api/sender-profile HTTP/1.1" 200 -
+2026-04-19 12:55:47,480 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:47] "POST /api/upload HTTP/1.1" 200 -
+2026-04-19 12:55:48,321 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:48] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 12:55:57,018 - INFO - 127.0.0.1 - - [19/Apr/2026 12:55:57] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:00:26,786 - INFO - 127.0.0.1 - - [19/Apr/2026 13:00:26] "POST /api/upload HTTP/1.1" 200 -
+2026-04-19 13:00:27,301 - INFO - 127.0.0.1 - - [19/Apr/2026 13:00:27] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:00:44,223 - INFO - 127.0.0.1 - - [19/Apr/2026 13:00:44] "POST /api/upload HTTP/1.1" 200 -
+2026-04-19 13:00:44,740 - INFO - 127.0.0.1 - - [19/Apr/2026 13:00:44] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:01:35,916 - INFO - 127.0.0.1 - - [19/Apr/2026 13:01:35] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:01:51,970 - INFO - 127.0.0.1 - - [19/Apr/2026 13:01:51] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:03:05,505 - INFO - 127.0.0.1 - - [19/Apr/2026 13:03:05] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:03:49,893 - INFO - 127.0.0.1 - - [19/Apr/2026 13:03:49] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:04:47,528 - INFO - 127.0.0.1 - - [19/Apr/2026 13:04:47] "POST /api/preview HTTP/1.1" 200 -
+2026-04-19 13:04:59,568 - INFO - 127.0.0.1 - - [19/Apr/2026 13:04:59] "GET /dashboard HTTP/1.1" 200 -
+2026-04-19 13:04:59,883 - INFO - 127.0.0.1 - - [19/Apr/2026 13:04:59] "[36mGET /static/web/styles.css HTTP/1.1[0m" 304 -
+2026-04-19 13:04:59,884 - INFO - 127.0.0.1 - - [19/Apr/2026 13:04:59] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 13:04:59,914 - INFO - 127.0.0.1 - - [19/Apr/2026 13:04:59] "[36mGET /static/web/utils.js HTTP/1.1[0m" 304 -
+2026-04-19 13:05:00,145 - INFO - 127.0.0.1 - - [19/Apr/2026 13:05:00] "[36mGET /static/web/dashboard.js HTTP/1.1[0m" 304 -
+2026-04-19 13:05:00,207 - INFO - 127.0.0.1 - - [19/Apr/2026 13:05:00] "GET /api/campaigns HTTP/1.1" 200 -
+2026-04-19 13:05:35,301 - INFO - Connecting to IMAP imap.gmail.com...
+2026-04-19 13:05:37,229 - INFO - Found 801 potential bounce emails.
+2026-04-19 13:06:33,565 - INFO - 127.0.0.1 - - [19/Apr/2026 13:06:33] "POST /api/scan-bounces HTTP/1.1" 200 -
+2026-04-19 13:06:33,880 - INFO - 127.0.0.1 - - [19/Apr/2026 13:06:33] "GET /api/campaigns HTTP/1.1" 200 -

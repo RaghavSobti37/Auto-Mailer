@@ -365,7 +365,7 @@ async function fetchSenderProfile() {
     elements.smtpPort.value = data.smtpPort || 587;
     elements.trackingUrl.value = data.trackingUrl || "";
     persistAppState();
-  } catch (e) { console.error(e); /* silent */ }
+  } catch (e) { /* silent */ }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -563,20 +563,18 @@ async function sendCampaign() {
   }
 
   try {
-    console.log("[DEBUG] Sending campaign payload:", fd);
     const res = await fetch("/api/send", { method: "POST", body: fd });
     const data = await res.json();
-    console.log("[DEBUG] Send response:", data);
     if (!res.ok) { 
-      console.error("[ERROR] Campaign send failed:", data.error);
       setStatus(data.error || "Send failed.", true); 
+      showToast(data.error || "Send failed.", "error");
       elements.sendBtn.disabled = false; 
       return; 
     }
     if (data.campaignId) pollCampaignStatus(data.campaignId);
   } catch (e) { 
-    console.error("[CRITICAL] Fetch error in sendCampaign:", e);
     setStatus(`Failed: ${e.message}`, true); 
+    showToast(`Failed: ${e.message}`, "error");
     elements.sendBtn.disabled = false; 
   }
 }
@@ -595,12 +593,8 @@ function pollCampaignStatus(campaignId) {
   state.pollInterval = setInterval(async () => {
     try {
       const res = await fetch(`/api/campaign-status/${campaignId}`);
-      if (!res.ok) {
-        console.warn("[WARN] Campaign status poll failed:", res.status);
-        return;
-      }
+      if (!res.ok) return;
       const data = await res.json();
-      console.log("[DEBUG] Campaign status update:", data);
       
       const done = (data.sent || 0) + (data.failed || 0);
       const total = data.total || 0;
@@ -633,7 +627,6 @@ function pollCampaignStatus(campaignId) {
         // Safety: If status is missing (e.g. server restarted or error), we stop eventually.
         state.consecutiveMissingStatus = (state.consecutiveMissingStatus || 0) + 1;
         if (state.consecutiveMissingStatus > 5) {
-          console.error("[CRITICAL] Campaign status missing repeatedly. Stopping poll.");
           clearInterval(state.pollInterval);
           state.pollInterval = null;
           elements.sendBtn.disabled = false;
@@ -644,9 +637,7 @@ function pollCampaignStatus(campaignId) {
         state.consecutiveMissingStatus = 0;
         elements.progressStatusText.textContent = "Dispatching…";
       }
-    } catch (e) {
-      console.error("[ERROR] Error in pollCampaignStatus:", e);
-    }
+    } catch (e) { }
   }, state.monitoringMode ? 10000 : 1500);
 }
 
@@ -757,7 +748,6 @@ fetchSenderProfile();
 // Auto-resume campaign monitoring if one was active
 const lastCid = localStorage.getItem("automailer.lastCampaignId");
 if (lastCid) {
-  console.log("[INIT] Resuming campaign monitoring for:", lastCid);
   state.monitoringMode = true;
   pollCampaignStatus(lastCid);
 }

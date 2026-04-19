@@ -629,7 +629,7 @@ textarea {
 
 .summary-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -720,8 +720,30 @@ textarea {
 
 .metrics-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+.help-icon {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: rgba(255,255,255,0.4);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: all 0.2s;
+}
+
+.help-icon:hover {
+  background: var(--mc-yellow);
+  color: #000;
 }
 
 .metric-tile {
@@ -848,6 +870,117 @@ textarea {
 }
 @media (max-width: 900px) {
   .campaign-card-layout { grid-template-columns: 1fr; }
+
+/* ─── TOAST NOTIFICATIONS ─── */
+.toast-container {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10000;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 400px;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.toast.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+.toast.exit {
+  transform: translateX(120%);
+  opacity: 0;
+}
+.toast-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.toast-msg {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ─── CUSTOM CONFIRM MODAL ─── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.confirm-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.confirm-card {
+  background: rgba(31, 41, 55, 0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  transform: scale(0.9);
+  transition: transform 0.2s;
+}
+.confirm-overlay.active .confirm-card {
+  transform: scale(1);
+}
+.confirm-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.confirm-body {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.confirm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.confirm-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.confirm-cancel { background: rgba(255,255,255,0.05); color: #fff; }
+.confirm-cancel:hover { background: rgba(255,255,255,0.1); }
+.confirm-ok { background: var(--mc-yellow); color: #000; }
+.confirm-ok:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(250,204,21,0.3); }
 }
 
 .delete-campaign-btn {

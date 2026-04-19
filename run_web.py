@@ -27,18 +27,14 @@ def main() -> None:
 
     # If --prod is passed, run with Waitress. Otherwise, default to development (auto-reload).
     if args.prod:
-        print(f"Starting Waitress production server...")
-        print(f"Local URL: http://localhost:{args.port}")
         threads = int(os.getenv("WEB_THREADS", "8"))
         serve(app, host=args.host, port=args.port, threads=threads)
         return
 
-    print(f"Starting Flask development server...")
-    print(f"Local URL: http://127.0.0.1:{args.port}")
     if args.host != "127.0.0.1" and args.host != "localhost" and args.host != "0.0.0.0":
-        print(f"Network URL: http://{args.host}:{args.port}")
+        pass
     
-    app.run(host=args.host, port=args.port, debug=True)
+    app.run(host=args.host, port=args.port, debug=False)
 
 
 if __name__ == "__main__":

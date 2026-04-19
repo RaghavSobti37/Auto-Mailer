@@ -157,8 +157,20 @@
         </table>
       </div>
 
-      <div class="doc-card" style="--accent:linear-gradient(90deg,#34d399,#06b6d4);">
-        <h2>🔐 Gmail App Passwords</h2>
+      <div class="doc-card" id="imap-setup" style="--accent:linear-gradient(90deg,#facc15,#fb923c);">
+        <h2>🔍 IMAP Configuration (Bounce Tracking)</h2>
+        <p>To automatically detect bounced emails, AutoMailer needs to scan your inbox for delivery failure notifications. This requires <strong>IMAP</strong> to be enabled.</p>
+        <ol>
+          <li>Open <strong>Gmail</strong> in your browser.</li>
+          <li>Click the <strong>Settings (cog)</strong> icon &rarr; <em>See all settings</em>.</li>
+          <li>Go to the <strong>Forwarding and POP/IMAP</strong> tab.</li>
+          <li>In the "IMAP access" section, select <strong>Enable IMAP</strong>.</li>
+          <li>Click <strong>Save Changes</strong> at the bottom.</li>
+        </ol>
+        <p>💡 <strong>Note:</strong> You must also use an <a href="#app-passwords">App Password</a> if you have 2-Step Verification enabled on your Google Account.</p>
+      </div>
+
+      <div class="doc-card" id="app-passwords" style="--accent:linear-gradient(90deg,#34d399,#06b6d4);">
         <p>Google blocks standard password login for third-party apps. You must generate a dedicated 16-character App Password:</p>
         <ol>
           <li>Visit your <a href="https://myaccount.google.com/security" target="_blank" rel="noopener">Google Account Security Page →</a></li>

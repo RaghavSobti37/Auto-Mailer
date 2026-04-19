@@ -25,6 +25,18 @@ from typing import Any
 from uuid import uuid4
 from email.mime.image import MIMEImage
 from urllib.parse import quote_plus
+import logging
+
+# Configure production logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("automailer.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 import pandas as pd
 import bleach
@@ -82,7 +94,7 @@ def fetch_external_unsubscribes() -> set[str]:
                     unsubs.add(str(email).strip().lower())
             return unsubs
     except Exception as e:
-        print(f"Failed to fetch external unsubscribes: {e}")
+        logger.error(f"Failed to fetch external unsubscribes: {e}")
     return set()
 
 def append_external_unsubscribe(email: str, campaign_id: str, reason: str, name: str = ""):
@@ -99,7 +111,7 @@ def append_external_unsubscribe(email: str, campaign_id: str, reason: str, name:
         ]
         requests.post(HOLYSHEET_URL, json={"rows": [row_data]}, timeout=10)
     except Exception as e:
-        print(f"Failed to append external unsubscribe: {e}")
+        logger.error(f"Failed to append external unsubscribe: {e}")
 
 
 def sync_unsubscribe_csv(db: TrackingDB):
@@ -351,7 +363,7 @@ def create_app() -> Flask:
         imap_host = "imap.gmail.com" if "gmail" in profile.smtp_host else profile.smtp_host.replace("smtp", "imap")
         
         try:
-            print(f"[DEBUG] Connecting to IMAP {imap_host}...")
+            logger.info(f"Connecting to IMAP {imap_host}...")
             mail = imaplib.IMAP4_SSL(imap_host)
             mail.login(profile.email, profile.app_key)
             mail.select("inbox")
@@ -363,7 +375,7 @@ def create_app() -> Flask:
             _, data = mail.search(None, search_query)
             
             mail_ids = data[0].split()
-            print(f"[DEBUG] Found {len(mail_ids)} potential bounce emails.")
+            logger.info(f"Found {len(mail_ids)} potential bounce emails.")
             
             bounced_emails = []
             
@@ -406,10 +418,13 @@ def create_app() -> Flask:
             
             mail.logout()
             
-            # Deduplicate and update DB
+            # Deduplicate and update DB & HolySheet
             unique_bounces = list(set(bounced_emails))
             for email_addr in unique_bounces:
+                # Mark in local DB for immediate skipping in currently running campaigns
                 tracking_db.mark_bounce(email_addr)
+                # Append to HolySheet for future campaigns (as a universal unsubscribe)
+                append_external_unsubscribe(email_addr, "IMAP_SCAN", "Auto-Detected Bounce")
             
             return jsonify({
                 "success": True, 
@@ -419,7 +434,7 @@ def create_app() -> Flask:
             })
             
         except Exception as e:
-            print(f"[ERROR] IMAP Scan Failed: {e}")
+            logger.error(f"IMAP Scan Failed: {e}")
             return error_response(f"IMAP Error: {str(e)}", 500)
 
     @app.get("/api/campaign-status/<campaign_id>")
@@ -511,33 +526,33 @@ def create_app() -> Flask:
         }
 
         def process_campaign(cid: str, data: pd.DataFrame, attach: list, smhost: str, smport: int, banner_bytes: bytes, cta: dict):
-            print(f"[DEBUG] Starting campaign {cid} with {len(data)} rows.")
+            logger.info(f"Starting campaign {cid} with {len(data)} rows.")
             sent_count = 0
             failed_count = 0
             failed_rows = []
             
             # Fetch external unsubs at the start of campaign
-            print(f"[DEBUG] Fetching external unsubscribes from HolySheet...")
+            logger.info("Fetching external unsubscribes from HolySheet...")
             external_unsubs = fetch_external_unsubscribes() if email_type == "marketing" else set()
-            print(f"[DEBUG] Found {len(external_unsubs)} external unsubscribes.")
+            logger.info(f"Found {len(external_unsubs)} external unsubscribes.")
             
             try:
-                print(f"[DEBUG] Connecting to SMTP {smhost}:{smport}...")
+                logger.info(f"Connecting to SMTP {smhost}:{smport}...")
                 smtp = smtplib.SMTP(smhost, smport, timeout=30)
                 smtp.starttls()
-                print(f"[DEBUG] Attempting SMTP login for {sender_email}...")
+                logger.info(f"Attempting SMTP login for {sender_email}...")
                 smtp.login(sender_email, app_key)
-                print(f"[DEBUG] SMTP Login Successful.")
+                logger.info("SMTP Login Successful.")
             except Exception as exc:
                 err_msg = f"SMTP Connection/Login Failed: {exc}"
-                print(f"[ERROR] {err_msg}")
+                logger.error(err_msg)
                 ACTIVE_CAMPAIGNS[cid]["status"] = err_msg
                 return
 
             try:
                 for idx, row in data.iterrows():
                     recipient = str(row[email_column]).strip()
-                    print(f"[DEBUG] [{idx+1}/{len(data)}] Processing recipient: {recipient}")
+                    logger.info(f"[{idx+1}/{len(data)}] Processing: {recipient}")
                     
                     recipient_name = str(row.get(name_column, "")).strip() or "there"
                     context = {k: str(v) for k, v in row.to_dict().items()}
@@ -553,7 +568,7 @@ def create_app() -> Flask:
                             is_unsub = True
                     
                     if is_unsub:
-                        print(f"[DEBUG] Skipping {recipient} (Unsubscribed)")
+                        logger.info(f"Skipping {recipient} (Unsubscribed)")
                         tracking_db.record_sent_email(tracking_id, cid, recipient, status="skipped_unsubscribed")
                         sent_count += 1 # Count as processed
                         continue
@@ -620,20 +635,20 @@ def create_app() -> Flask:
                     try:
                         smtp.sendmail(sender_email, recipient, msg.as_string())
                         sent_count += 1
-                        print(f"[DEBUG] Email sent to {recipient}")
+                        logger.info(f"Email sent to {recipient}")
                         log_send_attempt(recipient, recipient_name, "SENT", "")
                     except (smtplib.SMTPRecipientsRefused, smtplib.SMTPDataError, smtplib.SMTPResponseException) as smtp_err:
                         failed_count += 1
                         err_str = str(smtp_err)
                         failed_rows.append({"email": recipient, "error": f"Bounced: {err_str}"})
                         tracking_db.update_status(tracking_id, "failed")
-                        print(f"[ERROR] Bounce to {recipient}: {err_str}")
+                        logger.warning(f"Bounce to {recipient}: {err_str}")
                         log_send_attempt(recipient, recipient_name, "BOUNCED", err_str)
                     except Exception as send_exc:
                         failed_count += 1
                         failed_rows.append({"email": recipient, "error": str(send_exc)})
                         tracking_db.update_status(tracking_id, "failed")
-                        print(f"[ERROR] Failed to send to {recipient}: {send_exc}")
+                        logger.error(f"Failed to send to {recipient}: {send_exc}")
                         log_send_attempt(recipient, recipient_name, "FAILED", str(send_exc))
                         
                     ACTIVE_CAMPAIGNS[cid].update({
@@ -646,14 +661,14 @@ def create_app() -> Flask:
             
             except Exception as loop_exc:
                 err_msg = f"Unexpected loop failure: {loop_exc}"
-                print(f"[CRITICAL] {err_msg}")
+                logger.critical(err_msg)
                 ACTIVE_CAMPAIGNS[cid]["status"] = f"CRASH: {loop_exc}"
             finally:
                 try: smtp.quit()
                 except: pass
                 if ACTIVE_CAMPAIGNS[cid]["status"] == "sending":
                     ACTIVE_CAMPAIGNS[cid]["status"] = "complete"
-                print(f"[DEBUG] Campaign {cid} finished. Status: {ACTIVE_CAMPAIGNS[cid]['status']}")
+                logger.info(f"Campaign {cid} finished. Status: {ACTIVE_CAMPAIGNS[cid]['status']}")
         threading.Thread(target=process_campaign, args=(campaign_id, valid_targets, attachment_payloads, smtp_host, smtp_port, banner_payload, cta_settings), daemon=True).start()
 
         return jsonify({"campaignId": campaign_id, "status": "started"})
