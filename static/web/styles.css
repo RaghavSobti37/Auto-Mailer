@@ -1022,3 +1022,65 @@ textarea {
   border-radius: 16px;
   backdrop-filter: blur(10px);
 }
+
+/* --- LIVE CONSOLE --- */
+.live-console-card {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  max-height: 240px;
+}
+
+.console-header {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
+}
+
+.live-blink {
+  width: 8px;
+  height: 8px;
+  background: #f87171;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.6);
+  animation: console-blink 1.5s infinite;
+}
+
+@keyframes console-blink {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.console-body {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.console-line {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.console-ts { opacity: 0.3; min-width: 65px; }
+.console-msg { color: rgba(255, 255, 255, 0.8); }
+.console-msg.type-sent { color: var(--mc-green); }
+.console-msg.type-failed { color: var(--mc-red); }
+.console-msg.type-dispatch { color: var(--mc-yellow); }
+.console-msg.muted { opacity: 0.3; font-style: italic; }

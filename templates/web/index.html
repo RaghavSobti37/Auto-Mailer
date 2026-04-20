@@ -22,8 +22,40 @@
       <a href="/dashboard" class="nav-link">Analytics</a>
       <a href="/docs" class="nav-link">Docs</a>
     </div>
-    <div style="width:140px;"></div><!-- Spacer to keep links centered -->
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="position:relative;">
+        <button id="userMenuBtn" class="btn ghost" style="display:flex; align-items:center; gap:8px;">
+          <img id="userPicture" src="" alt="User" style="width:24px; height:24px; border-radius:50%; display:none;">
+          <span id="userName" style="font-size:0.9rem;">User</span>
+          <span>▾</span>
+        </button>
+        <div id="userMenu" class="user-menu glass-nav" style="display:none; position:absolute; top:100%; right:0; min-width:240px; margin-top:8px; border-radius:8px; z-index:1000;">
+          <div style="padding:12px 16px; border-bottom:1px solid rgba(148, 163, 184, 0.1);">
+            <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Logged in as</p>
+            <p style="margin:4px 0 0; font-size:0.95rem; color:#fff;" id="userEmail">user@example.com</p>
+          </div>
+          <button class="btn ghost" style="width:100%; text-align:left; border:0; padding:12px 16px; border-radius:0;" onclick="openProfileManagerModal()">
+            📧 Manage Profiles
+          </button>
+          <button class="btn ghost" style="width:100%; text-align:left; border:0; padding:12px 16px; border-radius:0;" onclick="auth.logout()">
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+    </div>
   </nav>
+
+  <script>
+    document.getElementById('userMenuBtn').addEventListener('click', () => {
+      const menu = document.getElementById('userMenu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#userMenuBtn') && !e.target.closest('#userMenu')) {
+        document.getElementById('userMenu').style.display = 'none';
+      }
+    });
+  </script>
 
   <main class="workspace">
     <!-- LEFT PANE: BUILDER -->
@@ -36,6 +68,7 @@
           <span class="chevron">▾</span>
         </div>
         <div id="setupSection" class="builder-content open">
+          <div class="field-label">Data Source</div>
           <input id="sheetInput" type="file" accept=".csv,.xlsx,.xls">
           <p class="hint">Supported: CSV, XLSX, XLS — max 10 MB.</p>
           <button id="uploadBtn" class="btn ghost">Scan &amp; Upload Dataset</button>
@@ -46,22 +79,45 @@
           </div>
           <p id="datasetSummary" class="hint success-hint"></p>
 
-          <div class="divider"></div>
+          <div class="divider" style="margin:20px 0;"></div>
 
-          <div class="field-grid">
-            <label>SMTP Host <input id="smtpHost" type="text" placeholder="smtp.gmail.com"></label>
-            <label>SMTP Port <input id="smtpPort" type="number" placeholder="587"></label>
+          <div class="field-label">Sender Profile</div>
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <select id="emailProfileSelect" style="flex:1;">
+              <option value="">Choose Email Profile...</option>
+            </select>
+            <button class="btn ghost mini-btn" onclick="openProfileManagerModal()" style="white-space:nowrap;">+ Manage</button>
           </div>
-          <div class="field-grid">
-            <label>Sender Email <input id="senderEmail" type="email" placeholder="you@example.com"></label>
-            <label>App Key / Password <input id="appKey" type="password" placeholder="••••••••••••••••"></label>
+          
+          <div id="selectedProfileInfo" style="padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px; margin-bottom:12px; display:none; font-size:0.9rem;">
+            <p style="margin:0; color:#94a3b8;">Sending from: <strong id="selectedProfileEmail" style="color:#cbd5e1;"></strong></p>
           </div>
-          <label class="check-row">
-            <input id="rememberSender" type="checkbox" checked> Save identity locally
+
+          <div class="divider" style="margin:20px 0;"></div>
+
+          <div class="field-label">SMTP Server</div>
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <select id="smtpProfileSelect" style="flex:1;">
+              <option value="">Default (Gmail smtp.gmail.com)</option>
+            </select>
+            <button class="btn ghost mini-btn" onclick="openProfileManagerModal()" style="white-space:nowrap;">+ Manage</button>
+          </div>
+          
+          <label class="check-row" style="margin-top:12px;">
+            <input id="rememberSender" type="checkbox" checked> Use as default for future campaigns
           </label>
-          <div class="divider"></div>
-          <label>Tracking URL Override <input id="trackingUrl" type="text" placeholder="https://your-ngrok-url.ngrok.io"></label>
-          <p class="hint">Recommended for local testing (e.g. ngrok). If empty, uses the current server URL.</p>
+          
+          <div class="divider" style="margin:20px 0;"></div>
+          
+          <div class="field-label">Advanced</div>
+          <label>Tracking URL Override <input id="trackingUrl" type="text" placeholder="https://your-ngrok-url.ngrok.io" style="font-size:0.9rem;"></label>
+          <p class="hint">For local testing with ngrok. Leave empty to use current server URL.</p>
+          
+          <!-- Hidden legacy fields for backward compatibility -->
+          <input type="hidden" id="smtpHost" value="smtp.gmail.com">
+          <input type="hidden" id="smtpPort" value="587">
+          <input type="hidden" id="senderEmail">
+          <input type="hidden" id="appKey">
         </div>
       </div>
 
@@ -174,13 +230,21 @@
             Attachments (optional)
             <input id="attachments" type="file" multiple>
           </label>
+          <div class="divider"></div>
+          <label>
+            <span style="color:var(--mc-yellow);">Custom HTML Template (optional)</span>
+            <input id="htmlTemplateInput" type="file" accept=".html">
+            <p class="hint">Upload a .html file to use as a direct template (bypasses Markdown & Banner).</p>
+          </label>
+          <p id="htmlTemplateStatus" class="hint success-hint" style="display:none;"></p>
           <p id="attachmentSummary" class="hint">No attachments configured.</p>
         </div>
       </div>
 
       <!-- Sticky Action Row -->
-      <div class="action-row">
-        <button id="sendBtn" class="btn">🚀 Deploy Campaign Sequence</button>
+      <div class="action-row" style="display:flex; gap:12px;">
+        <button id="newCampaignBtn" class="btn ghost" style="flex:1;">✨ New Campaign</button>
+        <button id="sendBtn" class="btn" style="flex:2;">🚀 Deploy Campaign Sequence</button>
       </div>
 
       <!-- Progress -->
@@ -243,6 +307,56 @@
     </div>
   </div>
 
+  <!-- PROFILE MANAGER MODAL -->
+  <div id="profileManagerModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:600px; max-height:80vh; overflow-y:auto;">
+      <h2 style="margin:0 0 20px; color:#fff;">Profile Management</h2>
+      
+      <div style="margin-bottom:32px;">
+        <h3 style="margin:0 0 12px; color:#cbd5e1; font-size:1rem;">📧 Email Profiles</h3>
+        <div id="emailProfilesList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+          <!-- Populated by JS -->
+        </div>
+        <button id="addEmailProfileBtn" class="btn ghost" style="width:100%; margin-bottom:12px;">+ Add Email Profile</button>
+        
+        <div id="emailProfileForm" style="display:none; padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px;">
+          <input id="newEmailAddress" type="email" placeholder="your-email@gmail.com" style="width:100%; margin-bottom:8px;">
+          <input id="newEmailAppKey" type="password" placeholder="App Password / Secret Key" style="width:100%; margin-bottom:8px;">
+          <input id="newEmailName" type="text" placeholder="Profile Name (optional)" style="width:100%; margin-bottom:8px;">
+          <div style="display:flex; gap:8px;">
+            <button id="saveEmailProfileBtn" class="btn" style="flex:1;">Save</button>
+            <button id="cancelEmailProfileBtn" class="btn ghost" style="flex:1;">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-top:32px;">
+        <h3 style="margin:0 0 12px; color:#cbd5e1; font-size:1rem;">🔗 SMTP Servers</h3>
+        <div id="smtpProfilesList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+          <!-- Populated by JS -->
+        </div>
+        <button id="addSmtpProfileBtn" class="btn ghost" style="width:100%; margin-bottom:12px;">+ Add SMTP Server</button>
+        
+        <div id="smtpProfileForm" style="display:none; padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px;">
+          <input id="newSmtpName" type="text" placeholder="Profile Name (GM Gmail, Outlook, etc.)" style="width:100%; margin-bottom:8px;">
+          <input id="newSmtpHost" type="text" placeholder="smtp.gmail.com" style="width:100%; margin-bottom:8px;">
+          <input id="newSmtpPort" type="number" placeholder="587" value="587" style="width:100%; margin-bottom:8px;">
+          <div style="display:flex; gap:8px;">
+            <button id="saveSmtpProfileBtn" class="btn" style="flex:1;">Save</button>
+            <button id="cancelSmtpProfileBtn" class="btn ghost" style="flex:1;">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:32px; text-align:right;">
+        <button id="closeProfileManagerBtn" class="btn ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/web/auth.js"></script>
   <script src="/static/web/utils.js"></script>
   <script src="/static/web/app.js"></script>
   <script>

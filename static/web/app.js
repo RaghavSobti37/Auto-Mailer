@@ -16,7 +16,9 @@ const state = {
     bg: "#ef4444",
     color: "#ffffff",
     padding: 16
-  }
+  },
+  htmlTemplateContent: null,
+  htmlTemplateFilename: ""
 };
 
 const APP_STATE_STORAGE_KEY = "automailer.appState.v1";
@@ -216,6 +218,10 @@ const elements = {
   ctaTextColor: document.getElementById("ctaTextColor"),
   ctaPadding: document.getElementById("ctaPadding"),
   ctaAlignBtns: document.querySelectorAll(".align-btn"),
+  // New components
+  htmlTemplateInput: document.getElementById("htmlTemplateInput"),
+  htmlTemplateStatus: document.getElementById("htmlTemplateStatus"),
+  newCampaignBtn: document.getElementById("newCampaignBtn"),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -311,7 +317,9 @@ function persistAppState() {
     nameColumn: elements.nameColumn.value,
     emailColumn: elements.emailColumn.value,
     emailType: elements.emailType.value,
-    ctaSettings: state.ctaSettings
+    ctaSettings: state.ctaSettings,
+    htmlTemplateFilename: state.htmlTemplateFilename,
+    datasetId: state.datasetId
   };
   localStorage.setItem(APP_STATE_STORAGE_KEY, JSON.stringify(data));
 }
@@ -348,11 +356,22 @@ function loadAppState() {
       name: p.nameColumn,
       email: p.emailColumn
     };
+    
+    if (p.datasetId) {
+      state.datasetId = p.datasetId;
+      recallDataset(p.datasetId);
+    }
 
     // Update UI theme selection
     document.querySelectorAll(".theme-wrapper-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.type === elements.emailType.value);
     });
+
+    if (p.htmlTemplateFilename) {
+      state.htmlTemplateFilename = p.htmlTemplateFilename;
+      elements.htmlTemplateStatus.textContent = `✓ Active Template: ${p.htmlTemplateFilename}`;
+      elements.htmlTemplateStatus.style.display = "block";
+    }
 
   } catch { localStorage.removeItem(APP_STATE_STORAGE_KEY); }
 }
@@ -418,6 +437,27 @@ async function uploadSheet() {
     triggerLivePreview();
   } catch (e) { setStatus(`Upload failed: ${e.message}`, true); }
   finally { elements.uploadBtn.disabled = false; }
+}
+
+async function recallDataset(datasetId) {
+  try {
+    const res = await fetch(`/api/dataset/${datasetId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    state.columns = data.columns;
+    elements.nameColumn.innerHTML = optionsHtml(data.columns);
+    elements.emailColumn.innerHTML = optionsHtml(data.columns);
+    
+    if (state.savedMappings.name && data.columns.includes(state.savedMappings.name)) {
+      elements.nameColumn.value = state.savedMappings.name;
+    }
+    if (state.savedMappings.email && data.columns.includes(state.savedMappings.email)) {
+      elements.emailColumn.value = state.savedMappings.email;
+    }
+    
+    elements.datasetSummary.textContent = `✓ ${data.rows} rows restored.`;
+    triggerLivePreview();
+  } catch (e) { console.error("Recall Dataset failed", e); }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -504,6 +544,7 @@ const triggerLivePreview = debounce(async () => {
     bannerDataUrl: state.croppedBannerDataUrl, // Pass banner to preview
     ctaSettings: state.ctaSettings,             // Pass CTA logic
     trackingUrl: elements.trackingUrl.value.trim(),
+    htmlTemplate: state.htmlTemplateContent
   };
 
   try {
@@ -513,6 +554,11 @@ const triggerLivePreview = debounce(async () => {
     elements.previewTo.textContent = data.recipient || "recipient@example.com";
     elements.previewSubject.textContent = data.subject || payload.subject || "Your Subject Here";
     elements.previewFrame.srcdoc = data.emailHtml || previewPlaceholderHtml;
+    
+    // Alert user if HTML template is overriding
+    if (state.htmlTemplateContent) {
+      setStatus("Using Uploaded HTML Template (Previews Markdown/Banner/CTA)", false);
+    }
   } catch { /* silent */ }
 }, 500);
 
@@ -553,6 +599,10 @@ async function sendCampaign() {
   fd.append("subject", elements.subject.value);
   fd.append("message", elements.message.value);
   fd.append("ctaSettings", JSON.stringify(state.ctaSettings));
+  
+  if (state.htmlTemplateContent) {
+    fd.append("htmlTemplate", state.htmlTemplateContent);
+  }
 
   if (state.croppedBannerBlob) {
     fd.append("bannerImage", state.croppedBannerBlob, "banner.png");
@@ -571,7 +621,12 @@ async function sendCampaign() {
       elements.sendBtn.disabled = false; 
       return; 
     }
-    if (data.campaignId) pollCampaignStatus(data.campaignId);
+    if (data.campaignId) {
+      showToast("Campaign Started! Redirecting to Monitor...", "success");
+      setTimeout(() => {
+        window.location.href = `/monitor/${data.campaignId}`;
+      }, 1000);
+    }
   } catch (e) { 
     setStatus(`Failed: ${e.message}`, true); 
     showToast(`Failed: ${e.message}`, "error");
@@ -647,6 +702,38 @@ function pollCampaignStatus(campaignId) {
 function bindEvents() {
   elements.uploadBtn.addEventListener("click", uploadSheet);
   elements.sendBtn.addEventListener("click", sendCampaign);
+  
+  elements.newCampaignBtn.addEventListener("click", () => {
+    if (confirm("Clear current campaign draft and start over?")) {
+      elements.subject.value = "";
+      elements.message.value = "";
+      removeBanner();
+      state.htmlTemplateContent = null;
+      state.htmlTemplateFilename = "";
+      elements.htmlTemplateStatus.style.display = "none";
+      elements.htmlTemplateInput.value = "";
+      persistAppState();
+      triggerLivePreview();
+      showToast("Reset completed.", "info");
+    }
+  });
+
+  elements.htmlTemplateInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        state.htmlTemplateContent = ev.target.result;
+        state.htmlTemplateFilename = file.name;
+        elements.htmlTemplateStatus.textContent = `✓ Active Template: ${file.name}`;
+        elements.htmlTemplateStatus.style.display = "block";
+        persistAppState();
+        triggerLivePreview();
+        showToast("HTML Template Loaded", "success");
+      };
+      reader.readAsText(file);
+    }
+  });
 
   // Live preview triggers
   elements.subject.addEventListener("input", triggerLivePreview);
@@ -751,3 +838,305 @@ if (lastCid) {
   state.monitoringMode = true;
   pollCampaignStatus(lastCid);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROFILE MANAGEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function loadProfiles() {
+  if (!auth.user) return;
+  await auth.loadProfiles();
+  updateProfileDropdowns();
+}
+
+function updateProfileDropdowns() {
+  const emailSelect = document.getElementById('emailProfileSelect');
+  const smtpSelect = document.getElementById('smtpProfileSelect');
+  
+  // Update email profiles dropdown
+  emailSelect.innerHTML = '<option value="">Choose Email Profile...</option>' +
+    auth.profiles.email.map(p => `<option value="${p.profile_id}">${p.display_name}</option>`).join('');
+  
+  // Update SMTP profiles dropdown
+  smtpSelect.innerHTML = '<option value="">Default (Gmail smtp.gmail.com:587)</option>' +
+    auth.profiles.smtp.map(p => `<option value="${p.smtp_id}">${p.name}</option>`).join('');
+}
+
+function updateProfilesList() {
+  const emailList = document.getElementById('emailProfilesList');
+  const smtpList = document.getElementById('smtpProfilesList');
+  
+  // Email profiles
+  emailList.innerHTML = auth.profiles.email.map(p => `
+    <div style="padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <p style="margin:0; font-weight:500; color:#fff;">${p.display_name}</p>
+        <p style="margin:4px 0 0; font-size:0.9rem; color:#94a3b8;">${p.email}</p>
+      </div>
+      <div style="display:flex; gap:4px;">
+        ${!p.is_default ? `<button class="btn ghost mini-btn" onclick="setDefaultEmailProfile('${p.profile_id}')">Set Default</button>` : '<span style="color:#22c55e; font-size:0.9rem;">✓ Default</span>'}
+        <button class="btn ghost mini-btn" onclick="deleteEmailProfile('${p.profile_id}')" style="color:#ef4444;">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  
+  // SMTP profiles
+  smtpList.innerHTML = auth.profiles.smtp.map(p => `
+    <div style="padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <p style="margin:0; font-weight:500; color:#fff;">${p.name}</p>
+        <p style="margin:4px 0 0; font-size:0.9rem; color:#94a3b8;">${p.host}:${p.port}</p>
+      </div>
+      <div style="display:flex; gap:4px;">
+        ${!p.is_default ? `<button class="btn ghost mini-btn" onclick="setDefaultSmtpProfile('${p.smtp_id}')">Set Default</button>` : '<span style="color:#22c55e; font-size:0.9rem;">✓ Default</span>'}
+        <button class="btn ghost mini-btn" onclick="deleteSmtpProfile('${p.smtp_id}')" style="color:#ef4444;">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openProfileManagerModal() {
+  document.getElementById('profileManagerModal').classList.add('active');
+  updateProfilesList();
+  
+  // Reset forms
+  document.getElementById('emailProfileForm').style.display = 'none';
+  document.getElementById('smtpProfileForm').style.display = 'none';
+}
+
+function closeProfileManagerModal() {
+  document.getElementById('profileManagerModal').classList.remove('active');
+}
+
+async function saveEmailProfile() {
+  const email = document.getElementById('newEmailAddress').value.trim();
+  const appKey = document.getElementById('newEmailAppKey').value.trim();
+  const name = document.getElementById('newEmailName').value.trim();
+  
+  if (!email || !appKey) {
+    showToast('Email and app key required', 'error');
+    return;
+  }
+  
+  const profile = await auth.createEmailProfile(email, appKey, name);
+  if (profile) {
+    showToast('Email profile created', 'success');
+    document.getElementById('newEmailAddress').value = '';
+    document.getElementById('newEmailAppKey').value = '';
+    document.getElementById('newEmailName').value = '';
+    document.getElementById('emailProfileForm').style.display = 'none';
+    updateProfilesList();
+    updateProfileDropdowns();
+  } else {
+    showToast('Failed to create profile', 'error');
+  }
+}
+
+async function deleteEmailProfile(profileId) {
+  if (!confirm('Delete this email profile?')) return;
+  const success = await auth.deleteEmailProfile(profileId);
+  if (success) {
+    showToast('Profile deleted', 'success');
+    updateProfilesList();
+    updateProfileDropdowns();
+  } else {
+    showToast('Failed to delete profile', 'error');
+  }
+}
+
+async function setDefaultEmailProfile(profileId) {
+  const success = await auth.setDefaultEmailProfile(profileId);
+  if (success) {
+    updateProfilesList();
+    updateProfileDropdowns();
+  }
+}
+
+async function saveSmtpProfile() {
+  const name = document.getElementById('newSmtpName').value.trim();
+  const host = document.getElementById('newSmtpHost').value.trim();
+  const port = parseInt(document.getElementById('newSmtpPort').value) || 587;
+  
+  if (!name || !host) {
+    showToast('Name and host required', 'error');
+    return;
+  }
+  
+  const profile = await auth.createSmtpProfile(name, host, port);
+  if (profile) {
+    showToast('SMTP profile created', 'success');
+    document.getElementById('newSmtpName').value = '';
+    document.getElementById('newSmtpHost').value = '';
+    document.getElementById('newSmtpPort').value = '587';
+    document.getElementById('smtpProfileForm').style.display = 'none';
+    updateProfilesList();
+    updateProfileDropdowns();
+  } else {
+    showToast('Failed to create profile', 'error');
+  }
+}
+
+async function deleteSmtpProfile(smtpId) {
+  if (!confirm('Delete this SMTP profile?')) return;
+  const success = await auth.deleteSmtpProfile(smtpId);
+  if (success) {
+    showToast('Profile deleted', 'success');
+    updateProfilesList();
+    updateProfileDropdowns();
+  } else {
+    showToast('Failed to delete profile', 'error');
+  }
+}
+
+async function setDefaultSmtpProfile(smtpId) {
+  const success = await auth.setDefaultSmtpProfile(smtpId);
+  if (success) {
+    updateProfilesList();
+    updateProfileDropdowns();
+  }
+}
+
+// Profile manager event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Email profile buttons
+  const addEmailBtn = document.getElementById('addEmailProfileBtn');
+  const cancelEmailBtn = document.getElementById('cancelEmailProfileBtn');
+  const saveEmailBtn = document.getElementById('saveEmailProfileBtn');
+  const emailForm = document.getElementById('emailProfileForm');
+  
+  if (addEmailBtn) {
+    addEmailBtn.addEventListener('click', () => {
+      emailForm.style.display = emailForm.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+  if (cancelEmailBtn) {
+    cancelEmailBtn.addEventListener('click', () => {
+      emailForm.style.display = 'none';
+    });
+  }
+  if (saveEmailBtn) {
+    saveEmailBtn.addEventListener('click', saveEmailProfile);
+  }
+  
+  // SMTP profile buttons
+  const addSmtpBtn = document.getElementById('addSmtpProfileBtn');
+  const cancelSmtpBtn = document.getElementById('cancelSmtpProfileBtn');
+  const saveSmtpBtn = document.getElementById('saveSmtpProfileBtn');
+  const smtpForm = document.getElementById('smtpProfileForm');
+  
+  if (addSmtpBtn) {
+    addSmtpBtn.addEventListener('click', () => {
+      smtpForm.style.display = smtpForm.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+  if (cancelSmtpBtn) {
+    cancelSmtpBtn.addEventListener('click', () => {
+      smtpForm.style.display = 'none';
+    });
+  }
+  if (saveSmtpBtn) {
+    saveSmtpBtn.addEventListener('click', saveSmtpProfile);
+  }
+  
+  // Close profile manager
+  const closeManagerBtn = document.getElementById('closeProfileManagerBtn');
+  if (closeManagerBtn) {
+    closeManagerBtn.addEventListener('click', closeProfileManagerModal);
+  }
+  
+  // Profile selection
+  const emailSelect = document.getElementById('emailProfileSelect');
+  if (emailSelect) {
+    emailSelect.addEventListener('change', (e) => {
+      const profileId = e.target.value;
+      if (profileId) {
+        const profile = auth.profiles.email.find(p => p.profile_id === profileId);
+        document.getElementById('selectedProfileEmail').textContent = profile.email;
+        document.getElementById('selectedProfileInfo').style.display = 'block';
+      } else {
+        document.getElementById('selectedProfileInfo').style.display = 'none';
+      }
+    });
+  }
+  
+  // Load profiles after auth is ready
+  setTimeout(loadProfiles, 500);
+});
+
+// Update send campaign to use profiles
+const origSendCampaign = window.sendCampaign;
+window.sendCampaign = async function() {
+  const emailProfileId = document.getElementById('emailProfileSelect')?.value || '';
+  const smtpProfileId = document.getElementById('smtpProfileSelect')?.value || '';
+  
+  // Validate that either profiles are selected or fallback to manual entry
+  if (!emailProfileId && !elements.senderEmail.value.trim()) {
+    setStatus('Select an email profile or enter sender email', true);
+    return;
+  }
+  
+  // Call original with profile IDs
+  const fd = new FormData();
+  fd.append('datasetId', state.datasetId);
+  fd.append('nameColumn', elements.nameColumn.value);
+  fd.append('emailColumn', elements.emailColumn.value);
+  fd.append('emailType', elements.emailType.value);
+  fd.append('subject', elements.subject.value);
+  fd.append('message', elements.message.value);
+  fd.append('ctaSettings', JSON.stringify(state.ctaSettings));
+  fd.append('trackingUrl', elements.trackingUrl.value.trim());
+  
+  // Use profiles if selected, otherwise fallback to manual entry
+  if (emailProfileId) {
+    fd.append('emailProfileId', emailProfileId);
+  } else {
+    fd.append('senderEmail', elements.senderEmail.value.trim());
+    fd.append('appKey', elements.appKey.value.trim());
+    fd.append('smtpHost', elements.smtpHost.value.trim());
+    fd.append('smtpPort', elements.smtpPort.value.trim());
+    fd.append('rememberSender', String(elements.rememberSender.checked));
+  }
+  
+  if (smtpProfileId) {
+    fd.append('smtpProfileId', smtpProfileId);
+  } else if (!emailProfileId) {
+    fd.append('smtpHost', elements.smtpHost.value.trim() || 'smtp.gmail.com');
+    fd.append('smtpPort', elements.smtpPort.value.trim() || '587');
+  }
+  
+  if (state.htmlTemplateContent) {
+    fd.append('htmlTemplate', state.htmlTemplateContent);
+  }
+  
+  if (state.croppedBannerBlob) {
+    fd.append('bannerImage', state.croppedBannerBlob);
+  }
+  
+  if (elements.attachments.files.length) {
+    for (const file of elements.attachments.files) {
+      fd.append('attachments', file);
+    }
+  }
+  
+  elements.sendBtn.disabled = true;
+  setStatus('Initialising campaign…', false);
+  
+  try {
+    const res = await fetch('/api/send', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) {
+      setStatus(data.error || 'Send failed', true);
+      return;
+    }
+    state.campaignId = data.campaignId;
+    localStorage.setItem('automailer.lastCampaignId', data.campaignId);
+    state.monitoringMode = true;
+    pollCampaignStatus(data.campaignId);
+    auth.logActivity('send_campaign', data.campaignId);
+  } catch (e) {
+    setStatus(`Send failed: ${e.message}`, true);
+  } finally {
+    elements.sendBtn.disabled = false;
+  }
+};
+

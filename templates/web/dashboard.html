@@ -57,9 +57,22 @@
       <div class="summary-bar" id="summaryBar">
         <!-- Injected by JS -->
       </div>
-      <div class="chart-box glass-card" style="padding:24px; min-width:320px;">
-        <h3 style="margin:0 0 16px; font-size:0.9rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em;">Aggregate Engagement Funnel</h3>
-        <canvas id="globalFunnelChart" width="240" height="240"></canvas>
+      
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="chart-box glass-card" style="padding:24px; min-width:320px;">
+          <h3 style="margin:0 0 16px; font-size:0.9rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em;">Aggregate Engagement Funnel</h3>
+          <canvas id="globalFunnelChart" width="240" height="240"></canvas>
+        </div>
+
+        <div class="glass-card live-console-card">
+          <div class="console-header">
+            <span class="live-blink"></span>
+            LIVE DISPATCH LOGS
+          </div>
+          <div id="liveConsole" class="console-body">
+            <div class="console-msg muted">Waiting for activity...</div>
+          </div>
+        </div>
       </div>
     </div>
 

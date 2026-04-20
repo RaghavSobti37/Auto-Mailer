@@ -53,3 +53,9 @@
 2026-04-19 13:05:37,229 - INFO - Found 801 potential bounce emails.
 2026-04-19 13:06:33,565 - INFO - 127.0.0.1 - - [19/Apr/2026 13:06:33] "POST /api/scan-bounces HTTP/1.1" 200 -
 2026-04-19 13:06:33,880 - INFO - 127.0.0.1 - - [19/Apr/2026 13:06:33] "GET /api/campaigns HTTP/1.1" 200 -
+2026-04-19 14:01:24,869 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:24] "GET / HTTP/1.1" 200 -
+2026-04-19 14:01:25,025 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:25] "[36mGET /static/web/styles.css HTTP/1.1[0m" 304 -
+2026-04-19 14:01:25,133 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:25] "[36mGET /static/web/favicon.svg HTTP/1.1[0m" 304 -
+2026-04-19 14:01:25,196 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:25] "[36mGET /static/web/utils.js HTTP/1.1[0m" 304 -
+2026-04-19 14:01:25,197 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:25] "[36mGET /static/web/app.js HTTP/1.1[0m" 304 -
+2026-04-19 14:01:25,338 - INFO - 127.0.0.1 - - [19/Apr/2026 14:01:25] "GET /api/sender-profile HTTP/1.1" 200 -

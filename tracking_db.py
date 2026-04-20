@@ -48,16 +48,30 @@ class TrackingDB:
             ''')
             
             conn.execute('''
-                CREATE TABLE IF NOT EXISTS unsubscribes (
-                    email TEXT PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS campaign_activity (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     campaign_id TEXT,
-                    tracking_id TEXT,
-                    reason TEXT,
-                    unsubscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    event_type TEXT,
+                    email TEXT,
+                    message TEXT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns (campaign_id)
                 )
             ''')
             
-            # Safe migrations if returning to existing DB
+            # Persistent Status for scaling/resilience
+            cursor = conn.execute("PRAGMA table_info(campaigns)")
+            columns = [col[1] for col in cursor.fetchall()]
+            if 'status' not in columns:
+                conn.execute("ALTER TABLE campaigns ADD COLUMN status TEXT DEFAULT 'complete'")
+            if 'total' not in columns:
+                conn.execute("ALTER TABLE campaigns ADD COLUMN total INTEGER DEFAULT 0")
+            if 'sent' not in columns:
+                conn.execute("ALTER TABLE campaigns ADD COLUMN sent INTEGER DEFAULT 0")
+            if 'failed' not in columns:
+                conn.execute("ALTER TABLE campaigns ADD COLUMN failed INTEGER DEFAULT 0")
+            
+            # Safe migrations
             cursor = conn.execute("PRAGMA table_info(sent_emails)")
             columns = [col[1] for col in cursor.fetchall()]
             if 'status' not in columns:
@@ -143,6 +157,35 @@ class TrackingDB:
                 (tracking_id,)
             )
             conn.commit()
+
+    def record_activity(self, campaign_id: str, event_type: str, email: str, message: str = ""):
+        with self._get_conn() as conn:
+            conn.execute(
+                "INSERT INTO campaign_activity (campaign_id, event_type, email, message) VALUES (?, ?, ?, ?)",
+                (campaign_id, event_type, email, message)
+            )
+            conn.commit()
+
+    def get_recent_activity(self, campaign_id: str, limit: int = 50):
+        with self._get_conn() as conn:
+            cursor = conn.execute(
+                "SELECT event_type, email, message, timestamp FROM campaign_activity WHERE campaign_id = ? ORDER BY id DESC LIMIT ?",
+                (campaign_id, limit)
+            )
+            return [{"type": r[0], "email": r[1], "message": r[2], "ts": r[3]} for r in cursor.fetchall()]
+
+    def update_campaign_persistence(self, campaign_id: str, status: str, total: int, sent: int, failed: int):
+        with self._get_conn() as conn:
+            conn.execute(
+                "UPDATE campaigns SET status = ?, total = ?, sent = ?, failed = ? WHERE campaign_id = ?",
+                (status, total, sent, failed, campaign_id)
+            )
+            conn.commit()
+
+    def get_persisted_active_campaigns(self):
+        with self._get_conn() as conn:
+            cursor = conn.execute("SELECT campaign_id, status, total, sent, failed FROM campaigns WHERE status = 'sending'")
+            return {r[0]: {"status": r[1], "total": r[2], "sent": r[3], "failed": r[4]} for r in cursor.fetchall()}
 
     def get_campaign_stats(self, campaign_id: str):
         with self._get_conn() as conn:

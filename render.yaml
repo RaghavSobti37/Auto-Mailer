@@ -1,11 +1,23 @@
 services:
+  # API Backend Service Only
+  # Frontend is hosted on Vercel: https://auto-mailer-blue.vercel.app/
   - type: web
-    name: auto-mailer-prod
+    name: automailer-api
     env: python
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn web_app:app --worker-class sync --workers 1 --bind 0.0.0.0:$PORT
+    startCommand: 'python api_server.py'
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
-      - key: WEB_THREADS
-        value: 4
+        value: 3.11.0
+      - key: API_SERVER_PORT
+        value: $PORT
+      - key: FLASK_ENV
+        value: production
+      - key: HOLYSHEET_API_KEY
+        value: Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt
+    routes:
+      - type: http
+        path: /api
+    healthCheckPath: /health
+    autoDeploy: true

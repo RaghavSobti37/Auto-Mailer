@@ -58,6 +58,7 @@ from flask import Flask, jsonify, render_template, request, make_response, redir
 from markdown import markdown
 
 from tracking_db import TrackingDB
+from auth_db import AuthDB
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -67,14 +68,15 @@ def runtime_data_root() -> Path:
     return BASE_DIR
 
 RUNTIME_ROOT = runtime_data_root()
-# On Vercel, keep paths flat in /tmp to avoid directory creation issues
+
 if os.getenv("VERCEL"):
-    UPLOAD_DIR = RUNTIME_ROOT / "ui_uploads"
-    LOG_PATH = RUNTIME_ROOT / "web_email_log.csv"
-    SENDER_PROFILE_PATH = RUNTIME_ROOT / "sender_profile.enc"
-    SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "sender_profile.key"
-    DB_PATH = RUNTIME_ROOT / "tracking.db"
-    UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "unsubscribes.csv"
+    UPLOAD_DIR = RUNTIME_ROOT / "data" / "ui_uploads"
+    LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
+    SENDER_PROFILE_PATH = RUNTIME_ROOT / "data" / "sender_profile.enc"
+    SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "data" / "sender_profile.key"
+    DB_PATH = RUNTIME_ROOT / "data" / "tracking.db"
+    UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
+    AUTH_DB_PATH = RUNTIME_ROOT / "data" / "auth.db"
 else:
     UPLOAD_DIR = RUNTIME_ROOT / "data" / "ui_uploads"
     LOG_PATH = RUNTIME_ROOT / "logs" / "web_email_log.csv"
@@ -82,6 +84,7 @@ else:
     SENDER_PROFILE_KEY_PATH = RUNTIME_ROOT / "params" / "sender_profile.key"
     DB_PATH = RUNTIME_ROOT / "data" / "tracking.db"
     UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
+    AUTH_DB_PATH = RUNTIME_ROOT / "data" / "auth.db"
 
 
 # Lazy-init directories
@@ -110,8 +113,9 @@ UNSUBSCRIBE_LIST_PATH = RUNTIME_ROOT / "data" / "unsubscribes.csv"
 HOLYSHEET_API_KEY = "Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt"
 HOLYSHEET_URL = f"https://holysheet.soneshjain.com/api/v1/{HOLYSHEET_API_KEY}/rows"
 
-# Global tracking_db for background threads
+# Global tracking_db and auth_db for background threads
 tracking_db: TrackingDB | None = None
+auth_db: AuthDB | None = None
 
 
 def fetch_external_unsubscribes() -> set[str]:
@@ -171,6 +175,7 @@ class SenderProfile:
 
 
 def create_app() -> Flask:
+    global tracking_db, auth_db
     load_dotenv()
     app = Flask(__name__, template_folder="templates", static_folder="static")
     @app.get("/api/debug-env")
@@ -195,9 +200,196 @@ def create_app() -> Flask:
     
     logger.info(f"Initializing TrackingDB at {DB_PATH}")
     # Initialize global tracking_db if not already
-    global tracking_db
     if tracking_db is None:
         tracking_db = TrackingDB(DB_PATH)
+    
+    # Initialize global auth_db if not already
+    if auth_db is None:
+        auth_db = AuthDB(AUTH_DB_PATH)
+    
+    # Recover active campaign state from DB (for Resilience)
+    persisted = tracking_db.get_persisted_active_campaigns()
+    for cid, s in persisted.items():
+        if cid not in ACTIVE_CAMPAIGNS:
+            ACTIVE_CAMPAIGNS[cid] = s
+            logger.info(f"Recovered active campaign {cid} from persistent storage.")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # AUTHENTICATION & PROFILE MANAGEMENT
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    def get_current_user():
+        """Extract user from session cookie or auth header."""
+        token = request.cookies.get("auth_token")
+        if not token:
+            auth_header = request.headers.get("Authorization", "")
+            if auth_header.startswith("Bearer "):
+                token = auth_header.split(" ", 1)[1]
+        return auth_db.get_user_by_session(token) if token else None
+    
+    def require_auth(f):
+        """Decorator to require authentication."""
+        def wrapper(*args, **kwargs):
+            user = get_current_user()
+            if not user:
+                return jsonify({"error": "Unauthorized"}), 401
+            return f(user, *args, **kwargs)
+        wrapper.__name__ = f.__name__
+        return wrapper
+    
+    @app.post("/api/auth/callback")
+    def auth_callback():
+        """Handle Google OAuth callback."""
+        payload = request.get_json(silent=True) or {}
+        google_id = payload.get("id")
+        email = payload.get("email")
+        name = payload.get("name", "")
+        picture = payload.get("picture", "")
+        
+        if not email or not google_id:
+            return jsonify({"error": "Missing OAuth data"}), 400
+        
+        user = auth_db.get_or_create_user(email, google_id, name, picture)
+        token = auth_db.create_session_token(user["user_id"])
+        
+        resp = jsonify({"success": True, "user": user, "token": token})
+        resp.set_cookie("auth_token", token, max_age=60*60*24*30, httponly=True, samesite="Lax")
+        return resp
+    
+    @app.post("/api/auth/logout")
+    @require_auth
+    def logout(user):
+        """Logout user."""
+        resp = jsonify({"success": True})
+        resp.set_cookie("auth_token", "", max_age=0)
+        return resp
+    
+    @app.get("/api/auth/user")
+    @require_auth
+    def get_user(user):
+        """Get current authenticated user."""
+        return jsonify(user)
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # EMAIL PROFILE MANAGEMENT
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    @app.post("/api/profiles/email")
+    @require_auth
+    def create_email_profile(user):
+        """Create new email profile."""
+        payload = request.get_json(silent=True) or {}
+        email = (payload.get("email") or "").strip()
+        app_key = (payload.get("appKey") or "").strip()
+        name = (payload.get("name") or "").strip()
+        
+        if not email or not app_key:
+            return jsonify({"error": "Email and app key required"}), 400
+        
+        profile = auth_db.create_email_profile(user["user_id"], email, app_key, name)
+        auth_db.log_activity(user["user_id"], "create_email_profile", details=f"Added {email}")
+        return jsonify(profile), 201
+    
+    @app.get("/api/profiles/email")
+    @require_auth
+    def list_email_profiles(user):
+        """Get all email profiles for user."""
+        profiles = auth_db.get_user_email_profiles(user["user_id"])
+        return jsonify(profiles)
+    
+    @app.post("/api/profiles/email/<profile_id>/default")
+    @require_auth
+    def set_default_email_profile(user, profile_id):
+        """Set email profile as default."""
+        success = auth_db.set_default_email_profile(user["user_id"], profile_id)
+        if not success:
+            return jsonify({"error": "Profile not found"}), 404
+        auth_db.log_activity(user["user_id"], "set_default_email", details=profile_id)
+        return jsonify({"success": True})
+    
+    @app.delete("/api/profiles/email/<profile_id>")
+    @require_auth
+    def delete_email_profile(user, profile_id):
+        """Delete email profile."""
+        success = auth_db.delete_email_profile(profile_id, user["user_id"])
+        if not success:
+            return jsonify({"error": "Profile not found"}), 404
+        auth_db.log_activity(user["user_id"], "delete_email_profile", details=profile_id)
+        return jsonify({"success": True})
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # SMTP PROFILE MANAGEMENT
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    @app.post("/api/profiles/smtp")
+    @require_auth
+    def create_smtp_profile(user):
+        """Create new SMTP profile."""
+        payload = request.get_json(silent=True) or {}
+        name = (payload.get("name") or "").strip()
+        host = (payload.get("host") or "").strip()
+        port = payload.get("port", 587)
+        
+        if not name or not host:
+            return jsonify({"error": "Name and host required"}), 400
+        
+        profile = auth_db.create_smtp_profile(user["user_id"], name, host, int(port))
+        auth_db.log_activity(user["user_id"], "create_smtp_profile", details=f"Added {name}")
+        return jsonify(profile), 201
+    
+    @app.get("/api/profiles/smtp")
+    @require_auth
+    def list_smtp_profiles(user):
+        """Get all SMTP profiles for user."""
+        profiles = auth_db.get_user_smtp_profiles(user["user_id"])
+        return jsonify(profiles)
+    
+    @app.post("/api/profiles/smtp/<smtp_id>/default")
+    @require_auth
+    def set_default_smtp_profile(user, smtp_id):
+        """Set SMTP profile as default."""
+        success = auth_db.set_default_smtp_profile(user["user_id"], smtp_id)
+        if not success:
+            return jsonify({"error": "Profile not found"}), 404
+        auth_db.log_activity(user["user_id"], "set_default_smtp", details=smtp_id)
+        return jsonify({"success": True})
+    
+    @app.delete("/api/profiles/smtp/<smtp_id>")
+    @require_auth
+    def delete_smtp_profile(user, smtp_id):
+        """Delete SMTP profile."""
+        success = auth_db.delete_smtp_profile(smtp_id, user["user_id"])
+        if not success:
+            return jsonify({"error": "Profile not found"}), 404
+        auth_db.log_activity(user["user_id"], "delete_smtp_profile", details=smtp_id)
+        return jsonify({"success": True})
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # ANALYTICS
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    @app.get("/api/analytics/campaigns")
+    @require_auth
+    def get_campaign_analytics(user):
+        """Get campaign analytics for user."""
+        campaigns = auth_db.get_user_campaigns(user["user_id"])
+        return jsonify(campaigns)
+
+    @app.post("/api/log-activity")
+    @require_auth
+    def log_user_activity(user):
+        """Log user action."""
+        payload = request.get_json(silent=True) or {}
+        action = payload.get("action", "unknown")
+        campaign_id = payload.get("campaignId", "")
+        auth_db.log_activity(user["user_id"], action, campaign_id)
+        return jsonify({"success": True})
+
+    @app.get("/login")
+    def login():
+        """Login page with Google OAuth."""
+        google_client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+        return render_template("web/login.html", GOOGLE_CLIENT_ID=google_client_id)
 
     @app.get("/")
     def index() -> str:
@@ -264,6 +456,18 @@ def create_app() -> Flask:
             }
         )
 
+    @app.get("/api/dataset/<dataset_id>")
+    def get_dataset_info(dataset_id: str) -> Any:
+        df = load_dataset(dataset_id)
+        if df is None:
+            return error_response("Dataset not found", 404)
+        return jsonify({
+            "datasetId": dataset_id,
+            "columns": df.columns.tolist(),
+            "rows": len(df),
+            "sample": sanitize_records(df.head(8).to_dict(orient="records")),
+        })
+
     @app.post("/api/preview")
     def preview_message() -> Any:
         payload = request.get_json(silent=True) or {}
@@ -274,6 +478,7 @@ def create_app() -> Flask:
         email_type = normalize_email_type(payload.get("emailType") or "marketing")
         banner_data_url = payload.get("bannerDataUrl") or ""
         cta_settings = payload.get("ctaSettings") or {}
+        html_template_raw = payload.get("htmlTemplate") or ""
 
         if not dataset_id:
             return error_response("Upload a sheet first.", 400)
@@ -314,7 +519,7 @@ def create_app() -> Flask:
             {
                 "subject": rendered_subject,
                 "html": rendered_fragment,
-                "emailHtml": build_email_html(rendered_fragment, email_type, unsub_link, banner_tag),
+                "emailHtml": html_template_raw if html_template_raw else build_email_html(rendered_fragment, email_type, unsub_link, banner_tag),
                 "recipient": str(row.get(email_column, "")),
                 "name": str(row.get(name_column, "")),
             }
@@ -327,6 +532,33 @@ def create_app() -> Flask:
     @app.get("/docs")
     def docs_page() -> str:
         return render_template("web/docs.html")
+
+    @app.get("/monitor/<cid>")
+    def render_monitor(cid: str):
+        return render_template("web/monitor.html", campaign_id=cid)
+
+    @app.get("/api/monitor-stats/<cid>")
+    def get_monitor_stats(cid: str):
+        stats = tracking_db.get_campaign_stats(cid)
+        logs = tracking_db.get_recent_activity(cid, limit=100)
+        
+        # Merge real-time progress
+        status = "complete"
+        current_recipient = None
+        if cid in ACTIVE_CAMPAIGNS:
+            active = ACTIVE_CAMPAIGNS[cid]
+            status = active.get("status", "sending")
+            current_recipient = active.get("currentRecipient")
+            stats["sent"] = active["sent"]
+            stats["failed"] = active["failed"]
+            stats["total"] = active["total"]
+            
+        return jsonify({
+            "stats": stats,
+            "logs": logs,
+            "status": status,
+            "currentRecipient": current_recipient
+        })
 
     @app.get("/api/campaigns")
     def get_campaigns() -> Any:
@@ -363,9 +595,8 @@ def create_app() -> Flask:
             url = tracking_id if tracking_id.startswith(("http://", "https://")) else f"http://{tracking_id}"
             tracking_id = "unknown"
 
-        if url:
-            # A click implies an open
             try:
+                tracking_db.record_activity(campaign_id, "click", "unknown", f"Clicked: {url}")
                 tracking_db.record_open(tracking_id)
                 tracking_db.record_click(tracking_id, url)
             except: pass
@@ -511,7 +742,8 @@ def create_app() -> Flask:
         return jsonify(stats)
 
     @app.post("/api/send")
-    def send_campaign() -> Any:
+    @require_auth
+    def send_campaign(user) -> Any:
         payload = request.get_json(silent=True) if request.is_json else request.form
         dataset_id = (payload.get("datasetId") or "").strip()
         name_column = (payload.get("nameColumn") or "").strip()
@@ -523,8 +755,27 @@ def create_app() -> Flask:
         email_type = normalize_email_type(payload.get("emailType") or "marketing")
         remember_sender = parse_bool(payload.get("rememberSender"))
         
-        smtp_host = (payload.get("smtpHost") or "smtp.gmail.com").strip()
-        smtp_port = int(payload.get("smtpPort") or 587)
+        # Support profile selection: emailProfileId or direct email/appKey
+        email_profile_id = (payload.get("emailProfileId") or "").strip()
+        if email_profile_id:
+            profile = auth_db.get_email_profile(email_profile_id)
+            if not profile:
+                return error_response("Email profile not found", 404)
+            sender_email = profile["email"]
+            app_key = profile["app_key"]
+        
+        # Support SMTP profile selection: smtpProfileId or direct host/port
+        smtp_profile_id = (payload.get("smtpProfileId") or "").strip()
+        if smtp_profile_id:
+            smtp_profile = auth_db.get_smtp_profile(smtp_profile_id)
+            if not smtp_profile:
+                return error_response("SMTP profile not found", 404)
+            smtp_host = smtp_profile["host"]
+            smtp_port = smtp_profile["port"]
+        else:
+            smtp_host = (payload.get("smtpHost") or "smtp.gmail.com").strip()
+            smtp_port = int(payload.get("smtpPort") or 587)
+        
         tracking_url_override = (payload.get("trackingUrl") or "").strip()
         
         cta_settings_raw = payload.get("ctaSettings")
@@ -533,6 +784,8 @@ def create_app() -> Flask:
             try:
                 cta_settings = json.loads(cta_settings_raw) if isinstance(cta_settings_raw, str) else cta_settings_raw
             except: cta_settings = {}
+        
+        html_template = payload.get("htmlTemplate") or ""
         
         banner_file = request.files.get("bannerImage") if not request.is_json else None
         banner_payload = banner_file.read() if banner_file else b""
@@ -581,6 +834,17 @@ def create_app() -> Flask:
 
         campaign_id = str(uuid4())
         tracking_db.create_campaign(campaign_id, subject)
+        
+        # Track campaign in user's analytics
+        auth_db.create_user_campaign(
+            user["user_id"], 
+            campaign_id, 
+            f"Campaign {campaign_id[:8]}",
+            subject,
+            email_profile_id,
+            smtp_profile_id
+        )
+        auth_db.log_activity(user["user_id"], "start_campaign", campaign_id, f"Sent to {len(valid_targets)} recipients")
 
         ACTIVE_CAMPAIGNS[campaign_id] = {
             "status": "sending",
@@ -591,7 +855,7 @@ def create_app() -> Flask:
             "currentRecipient": None
         }
 
-        def process_campaign(cid: str, data: pd.DataFrame, attach: list, smhost: str, smport: int, banner_bytes: bytes, cta: dict):
+        def process_campaign(cid: str, data: pd.DataFrame, attach: list, smhost: str, smport: int, banner_bytes: bytes, cta: dict, html_tpl: str = ""):
             logger.info(f"Starting campaign {cid} with {len(data)} rows.")
             sent_count = 0
             failed_count = 0
@@ -620,6 +884,9 @@ def create_app() -> Flask:
                     recipient = str(row[email_column]).strip()
                     logger.info(f"[{idx+1}/{len(data)}] Processing: {recipient}")
                     ACTIVE_CAMPAIGNS[cid]["currentRecipient"] = recipient
+                    tracking_db.record_activity(cid, "dispatch", recipient, "Attempting delivery...")
+                    # Update persistence
+                    tracking_db.update_campaign_persistence(cid, "sending", len(data), sent_count, failed_count)
                     
                     recipient_name = str(row.get(name_column, "")).strip() or "there"
                     context = {k: str(v) for k, v in row.to_dict().items()}
@@ -666,7 +933,17 @@ def create_app() -> Flask:
                         banner_tag = '<img src="cid:custom_banner.png" alt="Banner" style="width:100%; height:auto; display:block; border-bottom:1px solid #eee;">'
                     
                     unsub_url = f"{host_url}/unsubscribe/{cid}/{tracking_id}"
-                    html_body = build_email_html(rendered_fragment, email_type, unsub_url, banner_tag)
+                    
+                    if html_tpl:
+                        # Direct HTML template - just replace tokens
+                        html_body = render_tokens(html_tpl, context)
+                        # Ensure unsub link is present if marketing
+                        if email_type == "marketing" and "{{UNSUBSCRIBE_URL}}" in html_body:
+                            html_body = html_body.replace("{{UNSUBSCRIBE_URL}}", unsub_url)
+                        elif email_type == "marketing" and "unsubscribe" not in html_body.lower():
+                            html_body += f'<p style="font-size:10px; color:#aaa; text-align:center;"><a href="{unsub_url}">Unsubscribe</a></p>'
+                    else:
+                        html_body = build_email_html(rendered_fragment, email_type, unsub_url, banner_tag)
                     
                     if email_type == "marketing":
                         plain_text_indication = f"\n\nUnsubscribe: {unsub_url}"
@@ -703,6 +980,7 @@ def create_app() -> Flask:
                         smtp.sendmail(sender_email, recipient, msg.as_string())
                         sent_count += 1
                         logger.info(f"Email sent to {recipient}")
+                        tracking_db.record_activity(cid, "sent", recipient, "Delivered successfully")
                         log_send_attempt(recipient, recipient_name, "SENT", "")
                     except (smtplib.SMTPRecipientsRefused, smtplib.SMTPDataError, smtplib.SMTPResponseException) as smtp_err:
                         failed_count += 1
@@ -711,31 +989,32 @@ def create_app() -> Flask:
                         tracking_db.update_status(tracking_id, "failed")
                         logger.warning(f"Bounce to {recipient}: {err_str}")
                         log_send_attempt(recipient, recipient_name, "BOUNCED", err_str)
-                    except Exception as send_exc:
-                        failed_count += 1
-                        failed_rows.append({"email": recipient, "error": str(send_exc)})
-                        tracking_db.update_status(tracking_id, "failed")
-                        logger.error(f"Failed to send to {recipient}: {send_exc}")
-                        log_send_attempt(recipient, recipient_name, "FAILED", str(send_exc))
-                        
-                    ACTIVE_CAMPAIGNS[cid].update({
-                        "sent": sent_count,
-                        "failed": failed_count,
-                        "lastError": str(failed_rows[-1]["error"]) if failed_rows else None
-                    })
+                    sent_count += 1
+                    ACTIVE_CAMPAIGNS[cid]["sent"] = sent_count
+                    ACTIVE_CAMPAIGNS[cid]["failed"] = failed_count
+                    
+                    # Update persistence every 5 emails
+                    if sent_count % 5 == 0:
+                        tracking_db.update_campaign_persistence(cid, "sending", len(data), sent_count, failed_count)
+                    
                     if len(failed_rows) <= 10:
                         ACTIVE_CAMPAIGNS[cid]["failedRows"] = failed_rows
             
             except Exception as e:
                 logger.error(f"Campaign {cid} crashed: {e}")
                 ACTIVE_CAMPAIGNS[cid]["status"] = f"Failed: {e}"
+                tracking_db.record_activity(cid, "crash", "system", str(e))
+                tracking_db.update_campaign_persistence(cid, "failed", 0, 0, 0)
             finally:
+                # Update final persistence
+                tracking_db.update_campaign_persistence(cid, "complete", sent_count, sent_count, failed_count)
                 try: smtp.quit()
                 except: pass
                 if ACTIVE_CAMPAIGNS[cid]["status"] == "sending":
                     ACTIVE_CAMPAIGNS[cid]["status"] = "complete"
                 logger.info(f"Campaign {cid} finished. Status: {ACTIVE_CAMPAIGNS[cid]['status']}")
-        threading.Thread(target=process_campaign, args=(campaign_id, valid_targets, attachment_payloads, smtp_host, smtp_port, banner_payload, cta_settings), daemon=True).start()
+        
+        threading.Thread(target=process_campaign, args=(campaign_id, valid_targets, attachment_payloads, smtp_host, smtp_port, banner_payload, cta_settings, html_template), daemon=True).start()
 
         return jsonify({"campaignId": campaign_id, "status": "started"})
 

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — AutoMailer Studio</title>
+  <link rel="icon" type="image/svg+xml" href="/static/web/favicon.svg">
+  <link rel="stylesheet" href="/static/web/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="glass-body">
+
+  <nav class="navbar glass-nav">
+    <a href="/" class="nav-brand">
+      <img src="/static/web/favicon.svg" alt="Logo" style="height:22px;filter:invert(1);"> Auto-Mailer
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Studio</a>
+      <a href="/dashboard" class="nav-link active">Analytics</a>
+      <a href="/docs" class="nav-link">Docs</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+      <button id="manageUnsubsBtn" class="btn ghost" title="Manage unsubscribe list (HolySheet)" style="white-space:nowrap;">
+        🚫 Unsubscribes
+      </button>
+      <button id="scanBouncesBtn" class="btn ghost" title="Scan IMAP inbox for bounce notifications" style="white-space:nowrap;">
+        📬 Scan Bounces
+      </button>
+      <button id="refreshBtn" class="btn" title="Refresh campaign analytics" style="white-space:nowrap;">
+        🔄 Refresh
+      </button>
+    </div>
+  </nav>
+
+  <!-- Unsubscribe Manager Modal -->
+  <div id="unsubModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width:900px; max-height:80vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#fff;">Unsubscribe Management</h2>
+        <button class="btn ghost" id="closeUnsubModal" style="padding:4px 12px;">&times; Close</button>
+      </div>
+      <p style="opacity:0.7; margin-bottom:1.5rem; color:#cbd5e1;">Manage emails linked to HolySheet. Marked emails are blocked from all future campaigns.</p>
+      
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0 0 12px; color:#cbd5e1; font-size:0.95rem;">Add Unsubscribe</h3>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input id="unsubEmailInput" type="email" placeholder="email@example.com" style="flex:1;">
+          <input id="unsubReasonInput" type="text" placeholder="Reason (optional)" style="flex:1.5;">
+          <button id="addUnsubBtn" class="btn">+ Add</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3 style="margin:20px 0 12px; color:#cbd5e1; font-size:0.95rem;">Current List</h3>
+      <div id="unsubListContainer" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto;">
+        <!-- Table injected by JS -->
+      </div>
+
+      <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
+        <button id="exportUnsubBtn" class="btn ghost" title="Export as CSV">
+          📥 Export List
+        </button>
+        <button id="syncUnsubBtn" class="btn ghost" title="Sync with HolySheet">
+          🔗 Sync HolySheet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bounce Scan Modal -->
+  <div id="bounceModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width:600px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#fff;">Scan for Bounces</h2>
+        <button class="btn ghost" id="closeBounceModal" style="padding:4px 12px;">&times; Close</button>
+      </div>
+      <p style="opacity:0.7; margin-bottom:1.5rem; color:#cbd5e1;">Connect to your email IMAP and scan for bounced messages.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <label>
+          Email Address
+          <input id="bounceEmailInput" type="email" placeholder="your-email@gmail.com">
+        </label>
+        <label>
+          App Password / Secret
+          <input id="bounceAppKeyInput" type="password" placeholder="••••••••••••••••">
+        </label>
+        <label>
+          IMAP Host
+          <input id="bounceImapHostInput" type="text" placeholder="imap.gmail.com" value="imap.gmail.com">
+        </label>
+        <div style="display:flex; gap:8px;">
+          <button id="startBounceBtn" class="btn" style="flex:1;">🔍 Scan Now</button>
+          <button id="closeBounceModalBtn" class="btn ghost" style="flex:1;">Cancel</button>
+        </div>
+      </div>
+
+      <div id="bounceResultsContainer" style="display:none; margin-top:20px; padding:12px; background:rgba(15, 23, 42, 0.5); border-radius:8px;">
+        <h3 style="margin:0 0 12px; color:#22c55e; font-size:0.95rem;">Scan Results</h3>
+        <p id="bounceResultsText" style="margin:0; font-size:0.9rem; color:#cbd5e1;"></p>
+        <div id="bounceListResults" style="margin-top:12px; max-height:200px; overflow-y:auto; font-size:0.85rem;">
+          <!-- Results injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-shell">
+    <!-- HEADER SECTION -->
+    <div class="dash-header">
+      <div>
+        <p>Analytics Matrix</p>
+        <h1>Campaign Dashboard</h1>
+      </div>
+    </div>
+
+    <!-- OVERVIEW SECTION (Summary Cards + Global Chart) -->
+    <div class="global-analysis-grid">
+      <div class="summary-bar" id="summaryBar">
+        <!-- Injected by JS -->
+      </div>
+      
+      <div class="chart-box glass-card" style="padding:24px;">
+        <h3 style="margin:0 0 16px; font-size:0.9rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em;">Aggregate Engagement Funnel</h3>
+        <canvas id="globalFunnelChart" width="240" height="240"></canvas>
+      </div>
+    </div>
+
+    <!-- PER-CAMPAIGN GRID -->
+    <div style="margin:40px 0; padding:0 24px;">
+      <h2 style="margin:0 0 20px; color:#fff;">Campaign Performance</h2>
+      <div class="campaigns-grid" id="campaignsContainer">
+        <div class="no-campaigns-msg">Loading campaign data…</div>
+      </div>
+    </div>
+
+    <!-- LIVE DISPATCH LOGS (Full Width Below) -->
+    <div style="margin-top:60px; padding:24px; background:linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.6)); border:1px solid rgba(148, 163, 184, 0.1); border-radius:12px; backdrop-filter:blur(10px);">
+      <div class="glass-card live-console-card" style="border:none; background:transparent; padding:0;">
+        <div class="console-header" style="margin-bottom:16px;">
+          <span class="live-blink"></span>
+          LIVE DISPATCH LOGS
+        </div>
+        <div id="liveConsole" class="console-body" style="min-height:300px;">
+          <div class="console-msg muted">Waiting for activity...</div>
+        </div>
+      </div>
+      <p style="margin:12px 0 0; font-size:0.85rem; color:#94a3b8; text-align:right;">
+        Auto-refreshes every 5 seconds • Connect to API server for real-time updates
+      </p>
+    </div>
+  </div>
+
+  <script src="/static/web/auth.js"></script>
+  <script src="/static/web/utils.js"></script>
+  <script src="/static/web/dashboard.js"></script>
+</body>
+</html>

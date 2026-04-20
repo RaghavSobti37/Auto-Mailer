@@ -22,6 +22,9 @@ function pct(num, denom) {
   return denom > 0 ? ((num / denom) * 100).toFixed(1) : "0";
 }
 
+let lastLogTimestamp = null;
+let activeCidForLogs = null;
+
 function renderSummaryBar(campaigns) {
   const totals = campaigns.reduce((acc, c) => {
     acc.total += c.stats.total;
@@ -139,7 +142,10 @@ function renderCampaignCard(c) {
           ${c.currentRecipient ? `<p style="font-size:0.7rem; color:var(--mc-yellow); margin-top:4px;">→ Processing: ${escapeHtml(c.currentRecipient)}</p>` : ''}
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-          <span class="status-badge ${statusClass}">${statusText}</span>
+          <a href="/monitor/${c.id}" class="btn-small monitor-link-btn" title="Open Live Monitor">
+             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+             Live Monitor
+          </a>
           ${!isDemo ? `<button class="delete-campaign-btn" onclick="deleteCampaign('${c.id}')" title="Delete Campaign">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           </button>` : ''}
@@ -363,6 +369,11 @@ async function fetchCampaigns() {
   
   // Paint charts after DOM update
   setTimeout(() => initCharts(allCampaigns), 50);
+
+  // Update active campaign for logs
+  const active = allCampaigns.find(c => c.status === "sending" || c.status === "running");
+  if (active) activeCidForLogs = active.id;
+  else if (allCampaigns.length > 0) activeCidForLogs = allCampaigns[0].id;
 }
 
 // ────────────────────────────────────────
@@ -388,8 +399,52 @@ function stopAutoRefresh() {
   }
 }
 
+// ────────────────────────────────────────
+// LIVE CONSOLE FEED
+// ────────────────────────────────────────
+async function pollLiveLogs() {
+  if (!activeCidForLogs) return;
+
+  try {
+    const res = await fetch(`/api/monitor-stats/${activeCidForLogs}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    
+    const consoleBody = document.getElementById("liveConsole");
+    if (!consoleBody) return;
+
+    if (data.logs && data.logs.length > 0) {
+      // Filter new logs
+      const newLogs = lastLogTimestamp 
+        ? data.logs.filter(l => new Date(l.ts) > new Date(lastLogTimestamp))
+        : data.logs.slice(0, 5); // Show last 5 on first load
+
+      if (newLogs.length > 0) {
+        if (consoleBody.querySelector(".muted")) consoleBody.innerHTML = "";
+        
+        newLogs.reverse().forEach(log => {
+          const line = document.createElement("div");
+          line.className = "console-line";
+          const timeStr = new Date(log.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          line.innerHTML = `
+            <span class="console-ts">[${timeStr}]</span>
+            <span class="console-msg type-${log.type}">${escapeHtml(log.email)}: ${escapeHtml(log.message)}</span>
+          `;
+          consoleBody.prepend(line);
+        });
+        lastLogTimestamp = data.logs[0].ts;
+      }
+    }
+  } catch (e) {
+    console.error("Log Poll Error:", e);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   fetchCampaigns();
+  
+  // Start log polling
+  setInterval(pollLiveLogs, 2000);
   
   // Modal listeners
   const modal = document.getElementById("unsubModal");

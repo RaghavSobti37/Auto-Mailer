@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Monitor | AutoMailer</title>
+    <link rel="stylesheet" href="/static/web/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .monitor-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .monitor-title-box h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .monitor-id {
+            font-family: monospace;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        /* ─── GRID LAYOUT ─── */
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        /* ─── LEFT: LIVE FEED ─── */
+        .live-feed-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 600px;
+        }
+
+        .feed-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feed-title { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .feed-dot { width: 8px; height: 8px; background: var(--mc-yellow); border-radius: 50%; box-shadow: 0 0 10px var(--mc-yellow); animation: pulse 1.5s infinite; }
+
+        .feed-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+
+        .log-entry {
+            display: grid;
+            grid-template-columns: 100px 1fr 1fr;
+            gap: 16px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            align-items: center;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .log-entry:hover { background: rgba(255,255,255,0.04); }
+        .log-entry.dispatch { border-left-color: var(--mc-blue); }
+        .log-entry.open { border-left-color: var(--mc-yellow); }
+        .log-entry.click { border-left-color: var(--mc-cyan); }
+        .log-entry.error { border-left-color: var(--mc-red); }
+
+        .log-ts { opacity: 0.4; font-size: 0.75rem; }
+        .log-email { font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+        .log-msg { opacity: 0.7; }
+
+        /* ─── RIGHT: METRICS ─── */
+        .metrics-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-val { font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; }
+        .stat-lbl { font-size: 0.8rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+
+        .progress-circle-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+        }
+        
+        .progress-circle-svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.05);
+            stroke-width: 8;
+        }
+
+        .progress-circle-fill {
+            fill: none;
+            stroke: var(--mc-green);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="glass-bg">
+    
+    <div class="monitor-container">
+        <div class="monitor-header">
+            <div class="monitor-title-box">
+                <a href="/" style="color:var(--mc-yellow); font-size:0.8rem; text-decoration:none; display:flex; align-items:center; gap:4px; margin-bottom:12px;">← Back to Studio</a>
+                <h1 id="campaignSubject">Loading Campaign...</h1>
+                <div class="monitor-id" id="campaignIdDisplay">{{ campaign_id }}</div>
+            </div>
+            
+            <div class="stat-card" style="padding: 12px 24px; min-width:180px;">
+                <div class="stat-val" style="font-size: 1.2rem; color:var(--mc-yellow);" id="campaignStatus">Connecting...</div>
+                <div class="stat-lbl">System Status</div>
+            </div>
+        </div>
+
+        <div class="monitor-grid">
+            <div class="live-feed-card">
+                <div class="feed-header">
+                    <div class="feed-title"><div class="feed-dot"></div> Live Activity Feed</div>
+                    <div id="processingRecipient" style="font-size:0.75rem; opacity:0.6;">Waiting for events...</div>
+                </div>
+                <div class="feed-content" id="activityFeed">
+                    <!-- Logs injected here -->
+                </div>
+            </div>
+
+            <div class="metrics-stack">
+                <div class="stat-card">
+                    <div class="progress-circle-box">
+                        <svg class="progress-circle-svg" width="150" height="150">
+                            <circle class="progress-circle-bg" cx="75" cy="75" r="70"></circle>
+                            <circle class="progress-circle-fill" id="progressFill" cx="75" cy="75" r="70"></circle>
+                        </svg>
+                        <div class="progress-text" id="progressPctText">0%</div>
+                    </div>
+                    <div class="stat-val" id="sentCount">0 / 0</div>
+                    <div class="stat-lbl">Delivery Progress</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-val" style="color:var(--mc-yellow);" id="openCount">0</div>
+                    <div class="stat-lbl">Unique Opens</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-val" style="color:var(--mc-cyan);" id="clickCount">0</div>
+                    <div class="stat-lbl">Unique Clicks</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-val" style="color:var(--mc-red);" id="bounceCount">0</div>
+                    <div class="stat-lbl">Bounces</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CID = "{{ campaign_id }}";
+        const feed = document.getElementById("activityFeed");
+        const ui = {
+            subject: document.getElementById("campaignSubject"),
+            status: document.getElementById("campaignStatus"),
+            sent: document.getElementById("sentCount"),
+            opens: document.getElementById("openCount"),
+            clicks: document.getElementById("clickCount"),
+            bounces: document.getElementById("bounceCount"),
+            progressFill: document.getElementById("progressFill"),
+            progressText: document.getElementById("progressPctText"),
+            recipient: document.getElementById("processingRecipient")
+        };
+
+        let lastLogs = [];
+
+        async function poll() {
+            try {
+                const res = await fetch(`/api/monitor-stats/${CID}`);
+                if (!res.ok) throw new Error("Connection lost");
+                const data = await res.json();
+                
+                updateUI(data);
+                updateFeed(data.logs);
+            } catch (e) {
+                ui.status.textContent = "Reconnecting...";
+                ui.status.style.color = "var(--mc-red)";
+            }
+        }
+
+        function updateUI(data) {
+            const s = data.stats;
+            ui.subject.textContent = data.stats.subject || "Campaign Monitor";
+            ui.status.textContent = data.status === "sending" ? "Live Dispatch" : "Complete";
+            ui.status.style.color = data.status === "sending" ? "var(--mc-yellow)" : "var(--mc-green)";
+            
+            ui.sent.textContent = `${s.sent} / ${s.total}`;
+            ui.opens.textContent = s.opens || 0;
+            ui.clicks.textContent = s.clicks || 0;
+            ui.bounces.textContent = s.failed || 0;
+            
+            const pct = s.total > 0 ? (s.sent / s.total) * 100 : 0;
+            ui.progressText.textContent = `${Math.floor(pct)}%`;
+            
+            const dashoffset = 440 - (pct / 100) * 440;
+            ui.progressFill.style.strokeDashoffset = dashoffset;
+
+            if (data.currentRecipient) {
+                ui.recipient.textContent = `→ Processing: ${data.currentRecipient}`;
+            }
+        }
+
+        function updateFeed(logs) {
+            if (!logs || !logs.length) return;
+            
+            // Check if we have new logs
+            const latestTs = logs[0].ts;
+            const knownTs = lastLogs.length ? lastLogs[0].ts : null;
+            
+            if (latestTs === knownTs) return;
+            
+            feed.innerHTML = logs.map(l => {
+                const ts = new Date(l.ts + (l.ts.endsWith("Z") ? "" : "Z")).toLocaleTimeString([], { hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                return `
+                    <div class="log-entry ${l.type}">
+                        <div class="log-ts">${ts}</div>
+                        <div class="log-email">${l.email}</div>
+                        <div class="log-msg">${l.message}</div>
+                    </div>
+                `;
+            }).join("");
+            
+            lastLogs = logs;
+        }
+
+        setInterval(poll, 2000);
+        poll();
+    </script>
+</body>
+</html>

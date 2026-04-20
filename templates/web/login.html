@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto-Mailer Studio - Login</title>
+  <link rel="icon" type="image/svg+xml" href="/static/web/favicon.svg">
+  <link rel="stylesheet" href="/static/web/styles.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="glass-body" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+
+  <div style="max-width: 500px; width: 90%; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 16px; padding: 60px 40px; text-align: center;">
+    
+    <img src="/static/web/favicon.svg" alt="Logo" style="height: 64px; margin-bottom: 20px; filter: invert(1);">
+    
+    <h1 style="margin: 0 0 8px; font-size: 2rem; color: #fff;">Auto-Mailer Studio</h1>
+    <p style="margin: 0 0 40px; color: #cbd5e1; font-size: 0.95rem;">Professional email campaigns with multi-account management</p>
+    
+    <div id="googleButton" style="margin-bottom: 32px;"></div>
+    
+    <div style="text-align: center; color: #94a3b8; font-size: 0.85rem;">
+      <p style="margin: 0;">By signing in, you agree to our Terms of Service</p>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      google.accounts.id.initialize({
+        client_id: '{{ GOOGLE_CLIENT_ID }}', // Will be injected by backend
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById('googleButton'),
+        { theme: 'dark', size: 'large', width: '100%' }
+      );
+    };
+
+    async function handleCredentialResponse(response) {
+      // Decode JWT (simplified - in production use proper JWT library)
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64).split('').map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+      );
+      const userData = JSON.parse(jsonPayload);
+
+      try {
+        const res = await fetch('/api/auth/callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: userData.sub,
+            email: userData.email,
+            name: userData.name,
+            picture: userData.picture
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          // Redirect to main app
+          window.location.href = '/';
+        } else {
+          alert('Login failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('Login error: ' + e.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 Flask
+flask-cors
 pandas
 python-dotenv
 Pillow
@@ -10,3 +11,6 @@ Markdown
 bleach
 gunicorn
 requests
+google-auth-oauthlib
+google-auth-httplib2
+python-multipart
