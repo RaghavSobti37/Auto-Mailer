@@ -1,35 +1,34 @@
 /**
  * API Configuration
- * Loads configuration from environment variables and backend
- * NEVER hardcode sensitive values in this file
+ * Points to Render backend at https://auto-mailer-5e54.onrender.com
  */
 
-// Default to environment variables (set in Vercel/build)
-// Falls back to localhost for local development
-let API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5001',
-  API_KEY: process.env.REACT_APP_API_KEY || 'dev-key-for-local-only',
+const API_CONFIG = {
+  BASE_URL: 'https://auto-mailer-5e54.onrender.com',
   TIMEOUT: 10000,
 };
 
-// Override with runtime environment if available
-if (typeof window !== 'undefined') {
-  if (window.__API_CONFIG__) {
-    API_CONFIG = { ...API_CONFIG, ...window.__API_CONFIG__ };
-  }
-}
-
-console.log(`[API Config] Using API: ${API_CONFIG.BASE_URL}`);
+console.log(`[API] Using backend: ${API_CONFIG.BASE_URL}`);
 
 /**
- * Make an authenticated API call
- * Automatically prepends the base URL and adds auth header
+ * Get authorization header from stored session token
+ */
+function getAuthHeader() {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
+}
+
+/**
+ * Make an API call to the backend
  */
 async function apiCall(endpoint, options = {}) {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
   const headers = {
-    'X-API-Key': API_CONFIG.API_KEY,
+    ...getAuthHeader(),
     ...options.headers,
   };
 
@@ -46,6 +45,13 @@ async function apiCall(endpoint, options = {}) {
   try {
     const response = await fetch(url, config);
 
+    if (response.status === 401) {
+      // Clear invalid token and redirect to login
+      localStorage.removeItem('auth_token');
+      window.location.href = '/login';
+      return;
+    }
+
     if (!response.ok) {
       console.error(`API Error: ${response.status} ${response.statusText}`);
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -61,7 +67,7 @@ async function apiCall(endpoint, options = {}) {
 /**
  * Helper: GET request
  */
-function apiGet(endpoint, data = null, options = {}) {
+function apiGet(endpoint, options = {}) {
   return apiCall(endpoint, {
     method: 'GET',
     ...options,

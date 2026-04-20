@@ -60,20 +60,6 @@ HOLYSHEET_API_KEY = os.getenv("HOLYSHEET_API_KEY", "Z2BhkUlsA5F-wq2GQ-g5fSYu-Jgf
 HOLYSHEET_URL = f"https://holysheet.soneshjain.com/api/v1/{HOLYSHEET_API_KEY}/rows"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# API KEY VALIDATION MIDDLEWARE
-# ─────────────────────────────────────────────────────────────────────────────
-
-@app.before_request
-def validate_api_key():
-    """Validate API key for all requests (skip /health)."""
-    if request.path == "/health":
-        return
-
-    api_key = request.headers.get("X-API-Key", "")
-    if api_key != API_KEY:
-        return jsonify({"error": "Unauthorized: Invalid API key"}), 401
-
-# ─────────────────────────────────────────────────────────────────────────────
 # AUTHENTICATION
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -94,6 +80,12 @@ def require_auth(f):
         return f(user, *args, **kwargs)
     wrapper.__name__ = f.__name__
     return wrapper
+
+@app.before_request
+def setup_auth():
+    """Make auth_db available to all requests."""
+    g = {}
+    g['auth_db'] = auth_db
 
 # ─────────────────────────────────────────────────────────────────────────────
 # UNSUBSCRIBE MANAGEMENT
