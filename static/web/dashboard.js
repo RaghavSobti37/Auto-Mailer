@@ -195,7 +195,7 @@ async function deleteCampaign(cid) {
     "Are you sure you want to delete this campaign? All tracking data will be permanently removed.",
     async () => {
       try {
-        const res = await fetch(`/api/campaign/${cid}`, { method: "DELETE" });
+        const res = await apiDelete(`/api/campaign/${cid}`);
         if (res.ok) {
           showToast("Campaign deleted successfully", "success");
           fetchCampaigns();
@@ -259,7 +259,7 @@ async function showUnsubManager() {
   container.innerHTML = `<div style="text-align:center;padding:20px;opacity:0.5;">Loading list…</div>`;
   
   try {
-    const res = await fetch("/api/unsubscribes");
+    const res = await apiGet("/api/unsubscribes");
     const data = await res.json();
     if (!data.length) {
       container.innerHTML = `<div style="text-align:center;padding:20px;opacity:0.3;">No unsubscribed emails yet.</div>`;
@@ -299,7 +299,7 @@ async function removeUnsubscribe(email) {
     `Re-enable ${email}? They will be able to receive emails again.`,
     async () => {
       try {
-        const res = await fetch(`/api/unsubscribes/${encodeURIComponent(email)}`, { method: "DELETE" });
+        const res = await apiDelete(`/api/unsubscribes/${encodeURIComponent(email)}`);
         if (res.ok) {
           showToast("Recipient re-enabled", "success");
           showUnsubManager();
@@ -326,7 +326,7 @@ async function refreshDashboard() {
   
   try {
     // 1. Trigger Async Bounce Scan
-    const scanRes = await fetch("/api/scan-bounces", { method: "POST" });
+    const scanRes = await apiPost("/api/scan-bounces");
     const scanData = await scanRes.json();
     
     // 2. Fetch Latest Campaigns
@@ -351,7 +351,7 @@ async function fetchCampaigns() {
   let campaigns = [];
 
   try {
-    const res = await fetch("/api/campaigns");
+    const res = await apiGet("/api/campaigns");
     if (res.ok) campaigns = await res.json();
   } catch (_) {}
 
@@ -406,7 +406,7 @@ async function pollLiveLogs() {
   if (!activeCidForLogs) return;
 
   try {
-    const res = await fetch(`/api/monitor-stats/${activeCidForLogs}`);
+    const res = await apiGet(`/api/monitor-stats/${activeCidForLogs}`);
     if (!res.ok) return;
     const data = await res.json();
     

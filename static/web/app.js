@@ -378,7 +378,7 @@ function loadAppState() {
 
 async function fetchSenderProfile() {
   try {
-    const res = await fetch("/api/sender-profile");
+    const res = await apiGet("/api/sender-profile");
     const data = await res.json();
     elements.smtpHost.value = data.smtpHost || "smtp.gmail.com";
     elements.smtpPort.value = data.smtpPort || 587;
@@ -411,7 +411,7 @@ async function uploadSheet() {
   const fd = new FormData();
   fd.append("file", file);
   try {
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await apiPost("/api/upload", fd);
     const data = await res.json();
     if (!res.ok) { setStatus(data.error || "Upload failed.", true); return; }
     state.datasetId = data.datasetId;
@@ -441,7 +441,7 @@ async function uploadSheet() {
 
 async function recallDataset(datasetId) {
   try {
-    const res = await fetch(`/api/dataset/${datasetId}`);
+    const res = await apiGet(`/api/dataset/${datasetId}`);
     if (!res.ok) return;
     const data = await res.json();
     state.columns = data.columns;
@@ -548,7 +548,7 @@ const triggerLivePreview = debounce(async () => {
   };
 
   try {
-    const res = await fetch("/api/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const res = await apiPost("/api/preview", payload);
     const data = await res.json();
     if (!res.ok) return;
     elements.previewTo.textContent = data.recipient || "recipient@example.com";
@@ -613,7 +613,7 @@ async function sendCampaign() {
   }
 
   try {
-    const res = await fetch("/api/send", { method: "POST", body: fd });
+    const res = await apiPost("/api/send", fd);
     const data = await res.json();
     if (!res.ok) { 
       setStatus(data.error || "Send failed.", true); 
@@ -647,7 +647,7 @@ function pollCampaignStatus(campaignId) {
   
   state.pollInterval = setInterval(async () => {
     try {
-      const res = await fetch(`/api/campaign-status/${campaignId}`);
+      const res = await apiGet(`/api/campaign-status/${campaignId}`);
       if (!res.ok) return;
       const data = await res.json();
       
@@ -1122,7 +1122,7 @@ window.sendCampaign = async function() {
   setStatus('Initialising campaign…', false);
   
   try {
-    const res = await fetch('/api/send', { method: 'POST', body: fd });
+    const res = await apiPost('/api/send', fd);
     const data = await res.json();
     if (!res.ok) {
       setStatus(data.error || 'Send failed', true);

@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for calls from main web server
 
+# API Key for frontend authentication
+API_KEY = os.getenv("API_KEY", "auto-mailer-secret-key-2024")
+
 BASE_DIR = Path(__file__).resolve().parent
 RUNTIME_ROOT = Path("/tmp/auto_mailer") if os.getenv("VERCEL") else BASE_DIR
 
@@ -55,6 +58,20 @@ auth_db = AuthDB(AUTH_DB_PATH)
 # HolySheet configuration
 HOLYSHEET_API_KEY = os.getenv("HOLYSHEET_API_KEY", "Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt")
 HOLYSHEET_URL = f"https://holysheet.soneshjain.com/api/v1/{HOLYSHEET_API_KEY}/rows"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API KEY VALIDATION MIDDLEWARE
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.before_request
+def validate_api_key():
+    """Validate API key for all requests (skip /health)."""
+    if request.path == "/health":
+        return
+
+    api_key = request.headers.get("X-API-Key", "")
+    if api_key != API_KEY:
+        return jsonify({"error": "Unauthorized: Invalid API key"}), 401
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AUTHENTICATION
@@ -284,13 +301,22 @@ def get_campaign_stats(user, campaign_id):
     return jsonify(stats)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HEALTH CHECK
+# HEALTH CHECK & CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 def health():
     """Health check endpoint."""
     return jsonify({"status": "ok", "service": "api_server"}), 200
+
+@app.get("/api/config")
+def get_config():
+    """Safe config endpoint - frontend calls this instead of hardcoding values."""
+    return jsonify({
+        "api_url": request.host_url.rstrip('/'),
+        "service": "api_server",
+        "version": "1.0"
+    }), 200
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ERROR HANDLERS

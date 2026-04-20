@@ -12,7 +12,7 @@ const auth = {
 
   async init() {
     try {
-      const res = await fetch('/api/auth/user');
+      const res = await apiGet('/api/auth/user');
       if (res.ok) {
         this.user = await res.json();
         return true;
@@ -25,7 +25,7 @@ const auth = {
 
   async logout() {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await apiPost('/api/auth/logout');
       window.location.href = '/login';
     } catch (e) {
       console.error('Logout error:', e);
@@ -36,8 +36,8 @@ const auth = {
     if (!this.user) return false;
     try {
       const [emailRes, smtpRes] = await Promise.all([
-        fetch('/api/profiles/email'),
-        fetch('/api/profiles/smtp')
+        apiGet('/api/profiles/email'),
+        apiGet('/api/profiles/smtp')
       ]);
       if (emailRes.ok) this.profiles.email = await emailRes.json();
       if (smtpRes.ok) this.profiles.smtp = await smtpRes.json();
@@ -50,11 +50,7 @@ const auth = {
 
   async createEmailProfile(email, appKey, name) {
     try {
-      const res = await fetch('/api/profiles/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, appKey, name })
-      });
+      const res = await apiPost('/api/profiles/email', { email, appKey, name });
       if (res.ok) {
         const profile = await res.json();
         this.profiles.email.push(profile);
@@ -69,7 +65,7 @@ const auth = {
 
   async setDefaultEmailProfile(profileId) {
     try {
-      const res = await fetch(`/api/profiles/email/${profileId}/default`, { method: 'POST' });
+      const res = await apiPost(`/api/profiles/email/${profileId}/default`);
       return res.ok;
     } catch (e) {
       console.error('Set default email profile failed:', e);
@@ -79,7 +75,7 @@ const auth = {
 
   async deleteEmailProfile(profileId) {
     try {
-      const res = await fetch(`/api/profiles/email/${profileId}`, { method: 'DELETE' });
+      const res = await apiDelete(`/api/profiles/email/${profileId}`);
       if (res.ok) {
         this.profiles.email = this.profiles.email.filter(p => p.profile_id !== profileId);
       }
@@ -92,11 +88,7 @@ const auth = {
 
   async createSmtpProfile(name, host, port) {
     try {
-      const res = await fetch('/api/profiles/smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, host, port })
-      });
+      const res = await apiPost('/api/profiles/smtp', { name, host, port });
       if (res.ok) {
         const profile = await res.json();
         this.profiles.smtp.push(profile);
@@ -111,7 +103,7 @@ const auth = {
 
   async setDefaultSmtpProfile(smtpId) {
     try {
-      const res = await fetch(`/api/profiles/smtp/${smtpId}/default`, { method: 'POST' });
+      const res = await apiPost(`/api/profiles/smtp/${smtpId}/default`);
       return res.ok;
     } catch (e) {
       console.error('Set default SMTP profile failed:', e);
@@ -121,7 +113,7 @@ const auth = {
 
   async deleteSmtpProfile(smtpId) {
     try {
-      const res = await fetch(`/api/profiles/smtp/${smtpId}`, { method: 'DELETE' });
+      const res = await apiDelete(`/api/profiles/smtp/${smtpId}`);
       if (res.ok) {
         this.profiles.smtp = this.profiles.smtp.filter(p => p.smtp_id !== smtpId);
       }
@@ -134,7 +126,7 @@ const auth = {
 
   async loadAnalytics() {
     try {
-      const res = await fetch('/api/analytics/campaigns');
+      const res = await apiGet('/api/analytics/campaigns');
       if (res.ok) return await res.json();
     } catch (e) {
       console.error('Load analytics failed:', e);
@@ -143,11 +135,8 @@ const auth = {
   },
 
   logActivity(action, campaignId = '') {
-    fetch('/api/log-activity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, campaignId })
-    }).catch(e => console.error('Log activity failed:', e));
+    apiPost('/api/log-activity', { action, campaignId })
+      .catch(e => console.error('Log activity failed:', e));
   }
 };
 

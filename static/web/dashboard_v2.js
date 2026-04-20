@@ -60,7 +60,7 @@ function showToast(msg, type = 'info') {
 
 async function loadUnsubscribes() {
   try {
-    const res = await fetch(`${API_SERVER_URL}/api/unsubscribes`, {
+    const res = await apiGet(`${API_SERVER_URL}/api/unsubscribes`, null, {
       headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Failed to load unsubscribes');
@@ -74,10 +74,8 @@ async function loadUnsubscribes() {
 
 async function addUnsubscribe(email, reason) {
   try {
-    const res = await fetch(`${API_SERVER_URL}/api/unsubscribes/add`, {
-      method: 'POST',
-      headers: getAuthHeader(),
-      body: JSON.stringify({ email, reason })
+    const res = await apiPost(`${API_SERVER_URL}/api/unsubscribes/add`, { email, reason }, {
+      headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Failed to add unsubscribe');
     showToast('Added to unsubscribe list', 'success');
@@ -91,8 +89,7 @@ async function addUnsubscribe(email, reason) {
 async function removeUnsubscribe(email) {
   if (!confirm(`Remove ${email} from unsubscribe list?`)) return;
   try {
-    const res = await fetch(`${API_SERVER_URL}/api/unsubscribes/${encodeURIComponent(email)}`, {
-      method: 'DELETE',
+    const res = await apiDelete(`${API_SERVER_URL}/api/unsubscribes/${encodeURIComponent(email)}`, {
       headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Failed to remove unsubscribe');
@@ -106,8 +103,7 @@ async function removeUnsubscribe(email) {
 
 async function exportUnsubscribes() {
   try {
-    const res = await fetch(`${API_SERVER_URL}/api/unsubscribes/export`, {
-      method: 'POST',
+    const res = await apiPost(`${API_SERVER_URL}/api/unsubscribes/export`, null, {
       headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Export failed');
@@ -203,12 +199,10 @@ async function scanBounces() {
   document.getElementById('startBounceBtn').textContent = '⏳ Scanning...';
   
   try {
-    const res = await fetch(`${API_SERVER_URL}/api/bounces/scan`, {
-      method: 'POST',
-      headers: getAuthHeader(),
-      body: JSON.stringify({ email, appKey, imapHost })
+    const res = await apiPost(`${API_SERVER_URL}/api/bounces/scan`, { email, appKey, imapHost }, {
+      headers: getAuthHeader()
     });
-    
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Scan failed');
     
@@ -341,7 +335,7 @@ function initGlobalChart(funnel) {
 
 async function loadCampaigns() {
   try {
-    const res = await fetch('/api/analytics/campaigns');
+    const res = await apiGet('/api/analytics/campaigns');
     if (!res.ok) throw new Error('Failed to load campaigns');
     return await res.json();
   } catch (e) {
