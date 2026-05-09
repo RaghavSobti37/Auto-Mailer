@@ -4,18 +4,30 @@ __pycache__/
 venv/
 .env
 
-# Large Data Archives
-import data/archive/
+# Data (Ignore all data files)
+data/
+*.csv
+*.xlsx
+*.db
+*.sqlite
+*.sql
+*.zip
+*.tar
+*.gz
 
-# Logs and Generated Files
-data/csv/email_log.csv
-assets/pixel.png
+# Logs
+logs/
+reports/
+*.log
 
-# Generated/processed data
-data/processed/
+# Sensitive
+params/*.key
+params/*.enc
 
-# Web frontend generated state
-data/ui_uploads/
-params/sender_profile.enc
-params/sender_profile.key
-logs/web_email_log.csv
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+auto-havells/
+node_modules/
