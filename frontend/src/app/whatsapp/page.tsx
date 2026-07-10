@@ -2,13 +2,12 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function WhatsAppPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+  const [columnMapping] = useState<Record<string, string>>({});
   const [linkedCampaignId, setLinkedCampaignId] = useState('');
 
   const { data: campaigns } = useQuery({ queryKey: ['campaigns'], queryFn: () => live.campaigns.list() });

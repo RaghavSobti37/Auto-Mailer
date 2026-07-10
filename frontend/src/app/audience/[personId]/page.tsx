@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { mirror, live } from '@/lib/api';
+import { mirror } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ContactTimelinePage() {

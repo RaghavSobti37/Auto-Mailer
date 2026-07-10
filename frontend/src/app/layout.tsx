@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const hasKey = !!localStorage.getItem('auto_mailer_api_key');
     if (!hasKey && pathname !== '/login') router.push('/login');
     if (hasKey && pathname === '/login') router.push('/');
-  }, [pathname]);
+  }, [pathname, router]);
 
   if (pathname === '/login') return <>{children}</>;
 
