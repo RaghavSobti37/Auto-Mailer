@@ -5,6 +5,10 @@ const mongoose = require('mongoose');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 
+function isHostedRuntime() {
+  return Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.VERCEL || process.env.K_SERVICE);
+}
+
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -22,6 +26,15 @@ function run(command, args, options = {}) {
 }
 
 async function dockerComposeUp() {
+  if (isHostedRuntime()) {
+    return {
+      ok: true,
+      skipped: true,
+      mode: 'hosted',
+      command: 'docker compose up -d',
+      message: 'Hosted Render/Vercel runtimes cannot start Docker Desktop on this laptop. Data Hub sync will run against the configured MongoDB instead.',
+    };
+  }
   const ready = await ensureDockerReady();
   if (!ready.ok) return ready;
   const result = await run('docker', ['compose', 'up', '-d']);
@@ -33,6 +46,17 @@ async function dockerComposeUp() {
 }
 
 async function dockerStatus() {
+  if (isHostedRuntime()) {
+    return {
+      ok: true,
+      skipped: true,
+      mode: 'hosted',
+      command: 'docker compose ps --format json',
+      stdout: '',
+      stderr: '',
+      message: 'Docker status is only available from the local laptop runtime.',
+    };
+  }
   const result = await run('docker', ['compose', 'ps', '--format', 'json']);
   return {
     ok: result.code === 0,
@@ -95,4 +119,5 @@ module.exports = {
   dockerStatus,
   getDatabaseStatus,
   ensureDockerReady,
+  isHostedRuntime,
 };

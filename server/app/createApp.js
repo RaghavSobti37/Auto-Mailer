@@ -6,8 +6,28 @@ const path = require('path');
 const config = require('../config');
 
 function buildCorsOptions(originConfig) {
+  const isAllowedAutoMailerOrigin = (origin) => {
+    try {
+      const url = new URL(origin);
+      const host = url.hostname.toLowerCase();
+      return (
+        host === 'localhost'
+        || host === '127.0.0.1'
+        || (host.endsWith('.vercel.app') && host.startsWith('auto-mailer'))
+      );
+    } catch {
+      return false;
+    }
+  };
+
   if (!originConfig || originConfig === '*') {
-    return { origin: true, credentials: true };
+    return {
+      credentials: true,
+      origin(origin, callback) {
+        if (!origin || isAllowedAutoMailerOrigin(origin)) return callback(null, true);
+        return callback(new Error(`CORS origin blocked: ${origin}`));
+      },
+    };
   }
 
   const allowed = String(originConfig)
@@ -18,7 +38,7 @@ function buildCorsOptions(originConfig) {
   return {
     credentials: true,
     origin(origin, callback) {
-      if (!origin || allowed.includes(origin)) return callback(null, true);
+      if (!origin || allowed.includes(origin) || isAllowedAutoMailerOrigin(origin)) return callback(null, true);
       return callback(new Error(`CORS origin blocked: ${origin}`));
     },
   };
