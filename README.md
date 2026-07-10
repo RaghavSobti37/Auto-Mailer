@@ -344,6 +344,14 @@ Supported columns include `Name`, `Mobile Number`, `Phone`, `WhatsApp Number`, `
 
 ---
 
+Additional production deployment variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `APP_BASE_URL` | Public backend URL, such as `https://automailer-api.onrender.com` |
+| `TRACKING_BASE_URL` | Public URL used in outbound email open/click/unsubscribe links |
+| `CORS_ORIGIN` | Comma-separated browser origins allowed to call the API |
+
 ## Deployment
 
 ### Docker
@@ -377,6 +385,13 @@ volumes:
 
 ### Render
 
+The current `render.yaml` Blueprint is authoritative for the new codebase:
+- Web service: `automailer-api`
+- Build Command: `npm ci`
+- Start Command: `npm start`
+- Health Check Path: `/health`
+- Daily backup cron: `automailer-data-hub-backup`, running `npm run backup:data-hub` at `30 20 * * *` UTC
+
 A `render.yaml` is included — deploy as a Web Service with:
 - **Build Command:** `npm install`
 - **Start Command:** `node server/server.js`
@@ -385,6 +400,23 @@ A `render.yaml` is included — deploy as a Web Service with:
 ### Environment Variables (Render)
 
 Set all `.env` values as Render environment variables. MongoDB can be MongoDB Atlas or a Render-managed instance.
+
+Production defaults in `render.yaml` assume:
+- Render API: `https://automailer-api.onrender.com`
+- Vercel console: `https://auto-mailer-raghavsobti37s-projects.vercel.app`
+- `TRACKING_BASE_URL=https://automailer-api.onrender.com` so outbound email pixels and click links hit the API directly.
+
+The cron service needs both `MONGODB_URI` and `ONLINE_BACKUP_MONGODB_URI`. If the online URI is not configured, the backup script exits with a clear skipped result.
+
+### Vercel
+
+`vercel.json` deploys the `public/` console as a static site and proxies runtime calls to Render:
+- `/api/*` -> `https://automailer-api.onrender.com/api/*`
+- `/track/*` -> `https://automailer-api.onrender.com/track/*`
+- `/webhooks/*` -> `https://automailer-api.onrender.com/webhooks/*`
+- `/health` -> `https://automailer-api.onrender.com/health`
+
+The file sets `"framework": null`, `buildCommand: "npm run vercel:build"`, and `outputDirectory: "public"` so the existing Vercel project no longer tries to build this repo as Next.js.
 
 ---
 

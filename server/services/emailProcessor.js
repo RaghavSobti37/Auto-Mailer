@@ -6,7 +6,7 @@ const mailService = require('./mailService');
 const config = require('../config');
 
 function resolveTrackingBaseUrl() {
-  return config.frontendUrl || `http://localhost:${config.port}`;
+  return config.trackingBaseUrl || config.frontendUrl || `http://localhost:${config.port}`;
 }
 
 /**

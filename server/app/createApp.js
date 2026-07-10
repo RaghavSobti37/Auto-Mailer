@@ -5,12 +5,31 @@ const morgan = require('morgan');
 const path = require('path');
 const config = require('../config');
 
+function buildCorsOptions(originConfig) {
+  if (!originConfig || originConfig === '*') {
+    return { origin: true, credentials: true };
+  }
+
+  const allowed = String(originConfig)
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return {
+    credentials: true,
+    origin(origin, callback) {
+      if (!origin || allowed.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS origin blocked: ${origin}`));
+    },
+  };
+}
+
 function createApp() {
   const app = express();
 
   // Security
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
-  app.use(cors({ origin: config.corsOrigin, credentials: true }));
+  app.use(cors(buildCorsOptions(config.corsOrigin)));
 
   // Body parsing
   app.use(express.json({ limit: '50mb' }));

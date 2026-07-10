@@ -5,6 +5,7 @@ const MailCampaign = require('../models/MailCampaign');
 const MailEvent = require('../models/MailEvent');
 const EmailLog = require('../models/EmailLog');
 const { updateEmailTags } = require('../services/mailService');
+const config = require('../config');
 
 // Tracking pixel - 1x1 transparent GIF
 router.get('/open/:campaignId/:recipientId.gif', async (req, res) => {
@@ -89,14 +90,14 @@ router.get('/click/:campaignId/:trackingId', async (req, res) => {
   if (targetUrl) {
     return res.redirect(targetUrl);
   }
-  res.redirect(process.env.FRONTEND_URL || 'https://theshakticollective.in');
+  res.redirect(config.frontendUrl || 'https://theshakticollective.in');
 });
 
 // Unsubscribe page
 router.get('/unsubscribe/:campaignId/:trackingId', async (req, res) => {
   const { campaignId, trackingId } = req.params;
   const { email } = req.query;
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = config.frontendUrl || 'http://localhost:5173';
   res.redirect(`${frontendUrl}/unsubscribe?email=${encodeURIComponent(email || '')}&campaignId=${campaignId}&trackingId=${trackingId}`);
 });
 

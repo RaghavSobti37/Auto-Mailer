@@ -8,6 +8,8 @@ module.exports = {
   resendApiKey: process.env.RESEND_API_KEY || '',
   resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET || '',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  appBaseUrl: process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL || '',
+  trackingBaseUrl: process.env.TRACKING_BASE_URL || process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL || process.env.FRONTEND_URL || '',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseKey: process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || '',

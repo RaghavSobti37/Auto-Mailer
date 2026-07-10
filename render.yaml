@@ -1,26 +1,52 @@
 services:
   - type: web
     name: automailer-api
-    env: node
+    runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
+    autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
-        value: 20
-      - key: PORT
-        value: $PORT
+        value: 20.18.1
       - key: MONGODB_URI
         sync: false
       - key: REDIS_URL
         sync: false
+      - key: ONLINE_BACKUP_MONGODB_URI
+        sync: false
+      - key: BACKUP_SCHEDULE_HOUR
+        value: 2
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_WEBHOOK_SECRET
         sync: false
+      - key: SYSTEM_VERIFIED_FROM_EMAIL
+        sync: false
       - key: HOLYSHEET_API_KEY
         value: Z2BhkUlsA5F-wq2GQ-g5fSYu-JgfHryt
       - key: FRONTEND_URL
-        value: https://auto-mailer.vercel.app
+        value: https://auto-mailer-raghavsobti37s-projects.vercel.app
+      - key: APP_BASE_URL
+        value: https://automailer-api.onrender.com
+      - key: TRACKING_BASE_URL
+        value: https://automailer-api.onrender.com
+      - key: CORS_ORIGIN
+        value: https://auto-mailer-raghavsobti37s-projects.vercel.app,https://auto-mailer-git-main-raghavsobti37s-projects.vercel.app,https://auto-mailer.vercel.app
     healthCheckPath: /health
-    autoDeploy: true
+
+  - type: cron
+    name: automailer-data-hub-backup
+    runtime: node
+    plan: starter
+    schedule: '30 20 * * *'
+    buildCommand: npm ci
+    startCommand: npm run backup:data-hub
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.1
+      - key: MONGODB_URI
+        sync: false
+      - key: ONLINE_BACKUP_MONGODB_URI
+        sync: false
