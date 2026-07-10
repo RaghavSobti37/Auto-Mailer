@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Auto Mailer Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Auto Mailer navigation">
+        <div class="brand">
+          <span>The Shakti Collective</span>
+          <strong>Auto Mailer</strong>
+        </div>
+        <nav class="nav" id="navTabs">
+          <button data-view="overview" class="active">Overview</button>
+          <button data-view="campaigns">Campaigns</button>
+          <button data-view="templates">Templates</button>
+          <button data-view="senders">Senders</button>
+          <button data-view="audience">Audience</button>
+          <button data-view="whatsapp">WhatsApp</button>
+          <button data-view="analytics">Analytics</button>
+          <button data-view="settings">Settings</button>
+        </nav>
+        <div class="sidebar-status">
+          <span id="connectionDot" class="dot"></span>
+          <span id="connectionLabel">Connecting</span>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Multi-channel campaign console</p>
+            <h1 id="viewTitle">Overview</h1>
+          </div>
+          <div class="topbar-actions">
+            <button id="refreshButton" class="button secondary">Refresh</button>
+            <button id="bootButton" class="button primary">Boot / Sync Data Hub</button>
+          </div>
+        </header>
+
+        <section class="alert" id="notice" hidden></section>
+        <section id="viewRoot" class="view-root" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <template id="loadingTemplate">
+      <div class="loading-grid">
+        <div></div><div></div><div></div><div></div>
+      </div>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
