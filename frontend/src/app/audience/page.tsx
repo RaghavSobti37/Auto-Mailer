@@ -2,10 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { mirror } from '@/lib/api';
 import { SyncStatusChip } from '@/components/SyncStatusChip';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PostmarkBadge } from '@/components/PostmarkBadge';
 
 export default function AudiencePage() {
   const [search, setSearch] = useState('');
@@ -24,7 +24,7 @@ export default function AudiencePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Audience</h1>
-            <p className="text-sm text-gray-500 mt-1">Data Hub - mirror path</p>
+            <p className="text-sm text-muted-ledger mt-1">Data Hub - mirror path</p>
           </div>
           {syncStatus && (
             <SyncStatusChip lastSyncAt={syncStatus.lastSyncAt}
@@ -38,36 +38,36 @@ export default function AudiencePage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-400">Loading audience...</div>
+          <div className="text-center py-12 text-muted-ledger">Loading audience...</div>
         ) : !audience?.items?.length ? (
-          <div className="text-center py-12 text-gray-400">No audience data found</div>
+          <div className="text-center py-12 text-muted-ledger">No audience data found</div>
         ) : (
           <>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="ledger-shell">
+              <table className="ledger-table">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Email</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Phone</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-500">Suppressed</th>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th className="text-center">Suppressed</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(audience.items || []).map((person: any, i: number) => (
-                    <motion.tr key={person._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}
-                      className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                  {(audience.items || []).map((person: any) => (
+                    <tr key={person._id}
+                      className="cursor-pointer"
                       onClick={() => window.location.href = '/audience/' + person._id}
                     >
-                      <td className="px-4 py-3 font-medium">{person.name || '-'}</td>
-                      <td className="px-4 py-3 text-gray-600">{person.email || '-'}</td>
-                      <td className="px-4 py-3 text-gray-600">{person.phone || person.normalizedPhone || '-'}</td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="font-medium">{person.name || '-'}</td>
+                      <td className="text-muted-ledger">{person.email || '-'}</td>
+                      <td className="mono text-muted-ledger">{person.phone || person.normalizedPhone || '-'}</td>
+                      <td className="text-center">
                         {person.suppressed ? (
-                          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">{person.suppressionReason || 'suppressed'}</span>
+                          <PostmarkBadge status="failed" label={person.suppressionReason || 'suppressed'} size="sm" />
                         ) : <span className="text-gray-300">-</span>}
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>

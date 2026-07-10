@@ -14,10 +14,11 @@ const TEST_EMAILS = [
 ];
 
 const ASPECTS = [
-  { label: 'Wide', value: '3:1', ratio: 3 },
-  { label: 'Classic', value: '2:1', ratio: 2 },
-  { label: 'Square', value: '1:1', ratio: 1 },
-  { label: 'Tall', value: '4:5', ratio: 0.8 },
+  { label: 'Auto', value: '3:1', ratio: 3 },
+  { label: '16:9', value: '16:9', ratio: 16 / 9 },
+  { label: '1:1', value: '1:1', ratio: 1 },
+  { label: '3:1 banner', value: '3:1', ratio: 3 },
+  { label: 'Custom', value: '4:5', ratio: 0.8 },
 ];
 
 type BannerAsset = {
@@ -198,9 +199,9 @@ export default function NewCampaignPage() {
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <a href="/campaigns" className="text-sm text-indigo-600 hover:text-indigo-800">Back to campaigns</a>
+            <a href="/campaigns" className="text-sm font-semibold text-postmark">Back to campaigns</a>
             <h1 className="text-2xl font-bold tracking-tight mt-1">New campaign</h1>
-            <p className="text-sm text-gray-500 mt-1">Compose, preview, test, then send.</p>
+            <p className="text-sm text-muted-ledger mt-1">Compose, preview, test, then send.</p>
           </div>
           <button onClick={() => createMut.mutate()} disabled={createMut.isPending || !title || !subject || !senderId || recipients.length === 0} className="btn-primary">
             {createMut.isPending ? 'Creating...' : action === 'dispatch' ? 'Create and send' : 'Save draft'}
@@ -210,6 +211,7 @@ export default function NewCampaignPage() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-5">
             <section className="card space-y-4">
+              <h2 className="text-sm font-semibold">Details</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
                   <label className="label">Campaign title</label>
@@ -230,16 +232,17 @@ export default function NewCampaignPage() {
                 </div>
                 <div>
                   <label className="label">Content mode</label>
-                  <div className="flex rounded-lg border border-gray-200 bg-white p-1">
-                    {(['rawHtml', 'visual'] as const).map((nextFormat) => (
+                  <div className="flex rounded-lg border bg-white/70 p-1" style={{ borderColor: 'var(--line)' }}>
+                    {(['visual', 'rawHtml'] as const).map((nextFormat) => (
                       <button key={nextFormat} type="button" onClick={() => setFormat(nextFormat)} className={`flex-1 rounded-md px-3 py-1.5 text-sm ${format === nextFormat ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                        {nextFormat === 'rawHtml' ? 'Raw HTML' : 'Simple'}
+                        {nextFormat === 'rawHtml' ? 'Raw HTML' : 'Rich editor'}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
               <div>
+                <h2 className="mb-3 text-sm font-semibold">Body</h2>
                 <label className="label">Email HTML</label>
                 <textarea className="input min-h-72 font-mono text-xs leading-5" value={content} onChange={(event) => setContent(event.target.value)} placeholder="<p>Hello...</p>" />
               </div>
@@ -249,7 +252,7 @@ export default function NewCampaignPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-sm font-semibold text-gray-900">Banner</h2>
-                  <p className="text-xs text-gray-500">Crop locally, upload to UploadThing, store only the URL.</p>
+                  <p className="text-xs text-muted-ledger">Crop locally, upload to UploadThing, store only the URL.</p>
                 </div>
                 {bannerAsset && <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Uploaded</span>}
               </div>
@@ -282,11 +285,12 @@ export default function NewCampaignPage() {
             </section>
 
             <section className="card space-y-4">
+              <h2 className="text-sm font-semibold">Recipients & footer</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="label">Recipients</label>
                   <textarea className="input min-h-40" value={customRecipients} onChange={(event) => setCustomRecipients(event.target.value)} />
-                  <p className="mt-1 text-xs text-gray-500">{recipients.length} recipient{recipients.length === 1 ? '' : 's'}</p>
+                  <p className="mt-1 text-xs text-muted-ledger">{recipients.length} recipient{recipients.length === 1 ? '' : 's'}</p>
                 </div>
                 <div className="space-y-3">
                   <div>
@@ -312,17 +316,23 @@ export default function NewCampaignPage() {
             </section>
 
             <section className="card space-y-4">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+              <label className="flex items-center gap-2 text-sm font-medium">
                 <input type="checkbox" checked={includeSignature} onChange={(event) => setIncludeSignature(event.target.checked)} />
                 Add signature
               </label>
               {includeSignature && (
                 <textarea className="input min-h-24" value={signature} onChange={(event) => setSignature(event.target.value)} placeholder={selectedSender?.signature || 'Warmly,\nRaghav'} />
               )}
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+              <label className="flex items-center gap-2 text-sm font-medium">
                 <input type="checkbox" checked={includeUnsubscribe} onChange={(event) => setIncludeUnsubscribe(event.target.checked)} />
                 Add unsubscribe text at the bottom
               </label>
+              <div className="rounded-lg border p-3 text-xs text-muted-ledger" style={{ borderColor: 'var(--line)' }}>
+                <div className="mb-2 font-semibold" style={{ color: 'var(--ink)' }}>Footer preview</div>
+                <p>You are receiving this because you are on this campaign list.</p>
+                <label className="mt-2 flex items-center gap-2"><input type="checkbox" readOnly checked /> Unsubscribe from this list</label>
+                <label className="mt-1 flex items-center gap-2"><input type="checkbox" readOnly /> Unsubscribe from all emails</label>
+              </div>
             </section>
           </div>
 

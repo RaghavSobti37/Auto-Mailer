@@ -3,7 +3,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -50,15 +49,15 @@ export default function TemplateEditorPage() {
   return (
     <ErrorBoundary>
       <div className="max-w-4xl mx-auto space-y-6">
-        <a href="/templates" className="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to templates</a>
+        <a href="/templates" className="text-sm font-semibold text-postmark">Back to templates</a>
         <h1 className="text-2xl font-bold tracking-tight">{id === 'new' ? 'New Template' : 'Edit Template'}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div><label className="label">Name</label><input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Template name" /></div>
             <div className="flex gap-2">
-              <button onClick={() => setFormat('rawHtml')} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${format === 'rawHtml' ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200'}`}>Raw HTML</button>
-              <button onClick={() => setFormat('visual')} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${format === 'visual' ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200'}`}>Visual</button>
+              <button onClick={() => setFormat('visual')} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${format === 'visual' ? 'text-white' : 'bg-white/70 text-muted-ledger'}`} style={{ background: format === 'visual' ? 'var(--ink)' : undefined, borderColor: 'var(--line)' }}>Rich editor</button>
+              <button onClick={() => setFormat('rawHtml')} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${format === 'rawHtml' ? 'text-white' : 'bg-white/70 text-muted-ledger'}`} style={{ background: format === 'rawHtml' ? 'var(--ink)' : undefined, borderColor: 'var(--line)' }}>Raw HTML</button>
             </div>
             <div><label className="label">Content</label>
               {format === 'rawHtml' ? (
@@ -71,16 +70,16 @@ export default function TemplateEditorPage() {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700">Preview</h3>
-              <label className="flex items-center gap-2 text-xs text-gray-500">
+              <h3 className="text-sm font-semibold">Preview</h3>
+              <label className="flex items-center gap-2 text-xs text-muted-ledger">
                 <input type="checkbox" checked={showSentPreview} onChange={e => setShowSentPreview(e.target.checked)} className="rounded border-gray-300" />
                 <span>Show as sent</span>
               </label>
             </div>
-            <div className="border border-gray-200 rounded-xl bg-white p-4 min-h-[400px]">
+            <div className="min-h-[400px] rounded-lg border bg-white p-4" style={{ borderColor: 'var(--line)' }}>
               <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: showSentPreview ? content + withSignature + withUnsubscribe : content }} />
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-ledger">
               {showSentPreview ? 'Showing with signature + unsubscribe merged at send time' : 'Showing saved content (as saved, not as sent)'}
             </p>
           </div>

@@ -1,25 +1,197 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --ink: #17232e;
+    --paper: #f1f2ed;
+    --postmark: #b33a2e;
+    --ledger-green: #33654a;
+    --manila: #c9a227;
+    --void: #7a2a20;
+    --slate: #5b6570;
+    --line: rgba(23, 35, 46, 0.14);
+  }
+
   body {
     @apply antialiased;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  }
+
+  h1, h2 {
+    font-family: "Roboto Slab", "Zilla Slab", Georgia, serif;
+    letter-spacing: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--postmark);
+    outline-offset: 2px;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    background: var(--postmark);
+  }
+  .btn-primary:hover {
+    background: #962f25;
   }
   .btn-secondary {
-    @apply px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 bg-transparent text-sm font-medium rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn-secondary:hover {
+    background: rgba(23, 35, 46, 0.05);
   }
   .card {
     @apply bg-white rounded-lg border border-gray-200 p-4;
+    background: rgba(255, 255, 255, 0.62);
+    border-color: var(--line);
   }
   .input {
-    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all;
+    @apply w-full px-3 py-2 text-sm border rounded-lg focus:outline-none transition-all;
+    background: rgba(255, 255, 255, 0.72);
+    border-color: var(--line);
+    color: var(--ink);
   }
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium mb-1;
+    color: var(--slate);
+  }
+  .ledger-shell {
+    @apply overflow-hidden rounded-lg border;
+    background: rgba(255, 255, 255, 0.54);
+    border-color: var(--line);
+  }
+  .ledger-table {
+    @apply w-full text-sm;
+  }
+  .ledger-table thead {
+    background: rgba(23, 35, 46, 0.04);
+  }
+  .ledger-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase;
+    color: var(--slate);
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger-table td {
+    @apply px-4 py-3 align-middle;
+    border-bottom: 1px solid rgba(23, 35, 46, 0.08);
+  }
+  .ledger-table tr:hover {
+    background: rgba(23, 35, 46, 0.035);
+  }
+  .mono {
+    font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-tile {
+    @apply rounded-lg px-4 py-3;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.38);
+  }
+  .metric-label {
+    @apply text-xs font-semibold uppercase;
+    color: var(--slate);
+    letter-spacing: 0.04em;
+  }
+  .metric-value {
+    @apply mt-2 text-3xl font-bold;
+    font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .metric-hint {
+    @apply mt-1 text-xs;
+    color: var(--slate);
+  }
+  .postmark-badge {
+    @apply inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold;
+    position: relative;
+    color: var(--ink);
+    border: 1px dashed var(--slate);
+    background: transparent;
+  }
+  .postmark-badge-sm {
+    @apply px-2 py-0.5 text-[11px];
+  }
+  .postmark-badge-ring {
+    @apply h-2.5 w-2.5 rounded-full;
+    border: 1px solid currentColor;
+  }
+  .postmark-badge-pending {
+    color: var(--manila);
+    animation: postmark-pulse 1.8s ease-in-out infinite;
+  }
+  .postmark-badge-success {
+    color: white;
+    border-color: var(--ledger-green);
+    background: var(--ledger-green);
+  }
+  .postmark-badge-failed {
+    color: white;
+    border-color: var(--void);
+    background: var(--void);
+    text-decoration: line-through;
+  }
+  .postmark-badge-draft {
+    color: var(--slate);
+  }
+  .postmark-badge-press {
+    animation: postmark-press 360ms ease-out;
+  }
+  .quota-bar-wrap {
+    @apply flex items-center gap-3;
+  }
+  .quota-bar {
+    @apply h-2 flex-1 overflow-hidden rounded-full;
+    background: rgba(23, 35, 46, 0.12);
+  }
+  .quota-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+  .quota-fill-slate {
+    background: var(--slate);
+  }
+  .quota-fill-manila {
+    background: var(--manila);
+  }
+  .quota-fill-void {
+    background: var(--void);
+  }
+  .quota-label {
+    @apply text-xs font-semibold;
+    color: var(--ink);
+    font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+  }
+  .text-muted-ledger {
+    color: var(--slate);
+  }
+  .text-postmark {
+    color: var(--postmark);
+  }
+
+  @keyframes postmark-pulse {
+    0%, 100% { opacity: 0.72; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes postmark-press {
+    0% { transform: scale(1) rotate(0); }
+    45% { transform: scale(0.92) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
