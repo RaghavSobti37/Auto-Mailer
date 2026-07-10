@@ -8,19 +8,19 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://automailer-api.onrender.com/api/$1"
+      "destination": "https://auto-mailer-5e54.onrender.com/api/$1"
     },
     {
       "source": "/track/(.*)",
-      "destination": "https://automailer-api.onrender.com/track/$1"
+      "destination": "https://auto-mailer-5e54.onrender.com/track/$1"
     },
     {
       "source": "/webhooks/(.*)",
-      "destination": "https://automailer-api.onrender.com/webhooks/$1"
+      "destination": "https://auto-mailer-5e54.onrender.com/webhooks/$1"
     },
     {
       "source": "/health",
-      "destination": "https://automailer-api.onrender.com/health"
+      "destination": "https://auto-mailer-5e54.onrender.com/health"
     }
   ],
   "headers": [

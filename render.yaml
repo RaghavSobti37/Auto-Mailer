@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: automailer-api
+    name: Auto-Mailer
     runtime: node
     plan: free
     buildCommand: npm ci
@@ -28,9 +28,9 @@ services:
       - key: FRONTEND_URL
         value: https://auto-mailer-raghavsobti37s-projects.vercel.app
       - key: APP_BASE_URL
-        value: https://automailer-api.onrender.com
+        value: https://auto-mailer-5e54.onrender.com
       - key: TRACKING_BASE_URL
-        value: https://automailer-api.onrender.com
+        value: https://auto-mailer-5e54.onrender.com
       - key: CORS_ORIGIN
         value: https://auto-mailer-raghavsobti37s-projects.vercel.app,https://auto-mailer-git-main-raghavsobti37s-projects.vercel.app,https://auto-mailer.vercel.app
     healthCheckPath: /health
