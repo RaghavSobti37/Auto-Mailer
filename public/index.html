@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Auto Mailer</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">The Shakti Collective</p>
+          <h1>Auto Mailer</h1>
+        </div>
+        <button id="bootButton" class="primary">Boot Docker + Sync Data Hub</button>
+      </header>
+
+      <section class="grid stats" aria-label="Service stats">
+        <article><span>Health</span><strong id="health">Checking</strong></article>
+        <article><span>People</span><strong id="peopleCount">0</strong></article>
+        <article><span>Campaigns</span><strong id="campaignCount">0</strong></article>
+        <article><span>WA Active</span><strong id="waActive">0</strong></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Email System</h2>
+            <p>Campaigns, templates, sender profiles, tracking, clicks, analytics.</p>
+          </div>
+          <button id="refreshButton" class="ghost">Refresh</button>
+        </div>
+        <div class="actions">
+          <a href="/api/mail/campaign-api" target="_blank" rel="noreferrer">Campaign API</a>
+          <a href="/api/mail/templates" target="_blank" rel="noreferrer">Templates</a>
+          <a href="/api/mail/profiles" target="_blank" rel="noreferrer">Profiles</a>
+          <a href="/api/mail/analytics/stats" target="_blank" rel="noreferrer">Analytics</a>
+          <a href="/api/data-hub/people" target="_blank" rel="noreferrer">Data Hub</a>
+        </div>
+      </section>
+
+      <section class="panel split">
+        <div>
+          <h2>AiSensy CSV Upload</h2>
+          <p>Upload exported AiSensy CSVs per campaign. Status can come from filename or CSV columns.</p>
+          <form id="uploadForm" class="upload">
+            <input id="campaignName" name="campaignName" placeholder="Campaign name (optional)">
+            <select id="status" name="status">
+              <option value="">Infer status</option>
+              <option value="sent">Sent</option>
+              <option value="delivered">Delivered</option>
+              <option value="read">Read</option>
+              <option value="clicked">Clicked</option>
+              <option value="replied">Replied</option>
+              <option value="failed">Failed</option>
+            </select>
+            <input id="tags" name="tags" placeholder="Tags, comma separated">
+            <input id="csvFile" name="file" type="file" accept=".csv,text/csv" required>
+            <button class="primary" type="submit">Import CSV</button>
+          </form>
+        </div>
+        <pre id="output" class="output">Ready.</pre>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>WhatsApp Campaign Outcomes</h2>
+            <p>Activity score: sent 1, delivered 2, read 3, clicked 4, replied 5, failed 6.</p>
+          </div>
+        </div>
+        <div id="waCampaigns" class="campaign-list"></div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

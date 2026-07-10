@@ -1,33 +1,8 @@
-# Python
-__pycache__/
-*.py[cod]
-venv/
+node_modules/
 .env
-
-# Data (Ignore all data files)
+*.log
 data/
-*.csv
-*.xlsx
-*.db
-*.sqlite
-*.sql
-*.zip
-*.tar
-*.gz
-
-# Logs
 logs/
 reports/
-*.log
-
-# Sensitive
-params/*.key
-params/*.enc
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project specific
-auto-havells/
-node_modules/
+dist/
+.tmp/
