@@ -1,52 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const Campaign = require('../models/Campaign');
-const MailCampaign = require('../models/MailCampaign');
-const MailEvent = require('../models/MailEvent');
 const EmailLog = require('../models/EmailLog');
 const { updateEmailTags } = require('../services/mailService');
+const { enqueueEngagementWrite, recordOpen, recordClick } = require('../services/engagementWriteQueue');
 
 // Tracking pixel - 1x1 transparent GIF
 router.get('/open/:campaignId/:recipientId.gif', async (req, res) => {
   const { campaignId, recipientId } = req.params;
   const { email } = req.query;
-
-  try {
-    await MailEvent.create({
-      eventType: 'Open',
-      email: email || 'unknown',
-      timestamp: new Date(),
-      campaignId: campaignId !== 'undefined' ? campaignId : null,
-      metadata: { recipientId, ip: req.ip },
-    });
-
-    // Update campaign metrics
-    if (campaignId && campaignId !== 'undefined') {
-      const updatePayload = { $inc: { 'metrics.opened': 1, 'stats.opened': 1 } };
-      const arrayFilter = { 'recipients._id': recipientId };
-
-      // Try Core Campaign model first
-      const coreResult = await Campaign.findOneAndUpdate(
-        { $or: [{ _id: campaignId }, { campaignId }] },
-        { ...updatePayload, $push: { timeSeries: { time: new Date(), opens: 1, clicks: 0 } } },
-        { arrayFilters: [{ 'elem._id': recipientId, 'elem.status': { $nin: ['Opened', 'Clicked'] } }] },
-      );
-
-      if (!coreResult) {
-        await MailCampaign.findOneAndUpdate(
-          { _id: campaignId },
-          { $inc: { 'stats.opened': 1 } },
-          { arrayFilters: [{ 'elem._id': recipientId, 'elem.status': { $nin: ['Opened', 'Clicked'] } }] },
-        );
-      }
-    }
-
-    if (email) {
-      await updateEmailTags(email, 'Active', 'Active');
-    }
-  } catch (err) {
-    console.error('Open tracking error:', err);
-  }
 
   // Return 1x1 transparent GIF
   const buf = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
@@ -58,6 +19,11 @@ router.get('/open/:campaignId/:recipientId.gif', async (req, res) => {
     'Expires': '0',
   });
   res.end(buf);
+
+  enqueueEngagementWrite(async () => {
+    await recordOpen({ campaignKey: campaignId, recipientId, email });
+    if (email) await updateEmailTags(email, 'Active', 'Active');
+  });
 });
 
 // Click tracking
@@ -66,25 +32,12 @@ router.get('/click/:campaignId/:trackingId', async (req, res) => {
   const { url } = req.query;
   const targetUrl = url && url !== '#' && url !== 'undefined' ? url : null;
 
-  try {
-    await MailEvent.create({
-      eventType: 'Click',
-      email: req.query.email || 'unknown',
-      timestamp: new Date(),
-      campaignId: campaignId !== 'undefined' ? campaignId : null,
-      metadata: { trackingId, url: targetUrl, ip: req.ip },
-      linkClicked: targetUrl || undefined,
-    });
-
-    if (campaignId && campaignId !== 'undefined') {
-      await Campaign.findOneAndUpdate(
-        { $or: [{ _id: campaignId }, { campaignId }] },
-        { $inc: { 'metrics.clicked': 1, 'stats.clicked': 1 }, $push: { timeSeries: { time: new Date(), opens: 0, clicks: 1 } } },
-      );
-    }
-  } catch (err) {
-    console.error('Click tracking error:', err);
-  }
+  enqueueEngagementWrite(() => recordClick({
+    campaignKey: campaignId,
+    trackingId,
+    email: req.query.email,
+    targetUrl,
+  }));
 
   if (targetUrl) {
     return res.redirect(targetUrl);

@@ -8,15 +8,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import './globals.css';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Overview', icon: '\u25C9' },
-  { href: '/campaigns', label: 'Campaigns', icon: '\u2709' },
-  { href: '/templates', label: 'Templates', icon: '\u25FB' },
-  { href: '/senders', label: 'Senders', icon: '\u2197' },
-  { href: '/audience', label: 'Audience', icon: '\u2295' },
-  { href: '/whatsapp', label: 'WhatsApp', icon: '\uD83D\uDCAC' },
-  { href: '/analytics', label: 'Analytics', icon: '\u25C8' },
-  { href: '/system', label: 'System', icon: '\u2699' },
-  { href: '/settings', label: 'Settings', icon: '\u22EE' },
+  { href: '/', label: 'Overview', icon: 'O' },
+  { href: '/campaigns', label: 'Campaigns', icon: 'C' },
+  { href: '/templates', label: 'Templates', icon: 'T' },
+  { href: '/senders', label: 'Senders', icon: 'S' },
+  { href: '/audience', label: 'Audience', icon: 'A' },
+  { href: '/whatsapp', label: 'WhatsApp', icon: 'W' },
+  { href: '/analytics', label: 'Analytics', icon: 'R' },
+  { href: '/system', label: 'System', icon: 'H' },
+  { href: '/settings', label: 'Settings', icon: 'N' },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <aside className={`${sidebarOpen ? 'w-56' : 'w-14'} bg-white border-r border-gray-200 flex flex-col transition-all duration-200 shrink-0`}>
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                 {sidebarOpen && <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-bold tracking-tight">Auto-Mailer</motion.h1>}
-                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"><span className="text-gray-500">{sidebarOpen ? '\u25C0' : '\u25B6'}</span></button>
+                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"><span className="text-gray-500">{sidebarOpen ? '<' : '>'}</span></button>
               </div>
               <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
                 {NAV_ITEMS.map((item) => {

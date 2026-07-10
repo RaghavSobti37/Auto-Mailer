@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -76,25 +75,29 @@ export default function CampaignDetailPage() {
           </div>
         )}
 
-        {/* Time series chart */}
+        {/* Time series */}
         {analytics?.timeSeries?.length > 0 && (
           <div className="card">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Engagement Over Time</h3>
-            <div className="h-48 flex items-end gap-1">
-              {analytics.timeSeries.map((point: any, i: number) => {
-                const maxOpens = Math.max(...analytics.timeSeries.map((t: any) => t.opens), 1);
-                const maxClicks = Math.max(...analytics.timeSeries.map((t: any) => t.clicks), 1);
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-0.5" title={`${point.time}: ${point.opens} opens, ${point.clicks} clicks`}>
-                    <motion.div initial={{ height: 0 }} animate={{ height: `${(point.clicks / maxClicks) * 100}%` }} className="w-full bg-violet-400 rounded-t" style={{ maxHeight: '100%' }} />
-                    <motion.div initial={{ height: 0 }} animate={{ height: `${(point.opens / maxOpens) * 100}%` }} className="w-full bg-blue-400 rounded-t" style={{ maxHeight: '100%' }} />
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-4 mt-2 text-xs text-gray-500">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-blue-400" /> Opens</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-violet-400" /> Clicks</span>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Engagement Log</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-3 py-2 text-left font-medium text-gray-500">Time</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500">Opens</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500">Clicks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {analytics.timeSeries.map((point: any) => (
+                    <tr key={point.time} className="border-b border-gray-50">
+                      <td className="px-3 py-2">{point.time}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{point.opens}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{point.clicks}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

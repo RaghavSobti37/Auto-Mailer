@@ -37,7 +37,6 @@ export interface Campaign {
   emailStreamSlug?: string;
   metrics: { totalSent: number; opened: number; clicked: number; bounced: number; };
   timeSeries?: Array<{ time: string; opens: number; clicks: number }>;
-  locationBreakdown?: Record<string, { opens: number; clicks: number }>;
   recipients?: CampaignRecipient[];
   attachments?: Array<{ filename: string; contentType: string; storageKey?: string; storageUrl?: string }>;
   createdAt: string;
@@ -145,7 +144,6 @@ export interface WhatsAppImportResult {
 
 export interface AnalyticsData {
   timeSeries: Array<{ time: string; opens: number; clicks: number }>;
-  locationBreakdown: Record<string, { opens: number; clicks: number }>;
   campaignSummary?: Array<{ campaignId: string; title: string; channel: 'email' | 'whatsapp'; sent: number; opened: number; clicked: number; bounced: number; }>;
 }
 

@@ -1,542 +1,183 @@
-# Auto-Mailer — Standalone Email Campaign & Automation Service
+# Auto-Mailer
 
-A fully standalone, single-tenant email campaign service with batch sending, open/click tracking, unsubscribe handling, Resend webhooks, and a local data hub for audience analytics. Runs independently with its own local MongoDB and Redis via Docker. No external dependencies.
+Single-tenant email campaign tool for local audience data, simple campaign tracking, banner uploads, and optional online MongoDB backup.
 
----
+## What It Does
 
-## Architecture
+- Compose campaigns with raw HTML or simple HTML fragments.
+- Upload campaign banners through UploadThing, with local crop, zoom, and flexible aspect ratios.
+- Send with Resend, environment SMTP, or saved sender profiles.
+- Track opens with a pixel and clicks with redirected links.
+- Track only engagement state and link target. City/location tracking is not collected.
+- Keep campaign analytics plain: sent, opened, clicked, bounced, and hourly engagement rows.
+- Store working data locally in MongoDB, with optional compressed backup to online MongoDB.
 
+## Safety Notes
+
+Keep the repo private, but do not commit live secrets. Private repos still leak through logs, forks, screenshots, dependency tools, and accidental remotes.
+
+Use `.env` for real values and `.env.example` for placeholders. This repo already ignores `.env`.
+
+If a live key was pasted into chat or committed earlier, rotate it in the provider dashboard.
+
+## Make The GitHub Repo Private
+
+With GitHub CLI:
+
+```bash
+gh repo edit RaghavSobti37/Auto-Mailer --visibility private --accept-visibility-change-consequences
 ```
-┌──────────────┐     ┌───────────────┐     ┌────────────┐
-│  Campaign    │────▶│  Email Queue   │────▶│  Resend    │
-│  Controller  │     │  (BullMQ /     │     │  API       │
-│              │     │   Direct)      │     │            │
-└──────────────┘     └───────┬───────┘     └─────┬──────┘
-                             │                    │
-                             ▼                    ▼
-                      ┌──────────────┐    ┌──────────────┐
-                      │  MongoDB     │    │  Resend      │
-                      │  (Campaigns, │    │  Webhooks    │
-                      │   Logs,      │    │  (Delivery,  │
-                      │   Events)    │    │   Bounce)    │
-                      └──────────────┘    └──────────────┘
+
+If `gh` is not logged in:
+
+```bash
+gh auth login
 ```
 
-### Key Design Decisions
-
-- **Batch send → Batch track**: All emails are sent first (no per-email DB writes), then tracking events are created in a single `insertMany` after. This avoids tracking queue overhead during send.
-- **BullMQ (Redis) optional**: Falls back to direct batch processing if Redis is unavailable.
-- **Single-tenant**: No tenant/user scopes. Uses its own local MongoDB database (`auto-mailer`).
-- **Tracking**: Open/click pixels embedded in HTML. Resend webhooks handle delivery/bounce events.
-
----
-
-## Quick Start
-
-### 1. Prerequisites
-
-- **Node.js** v18+
-- **MongoDB** 7+ (local via Docker or cloud Atlas)
-- **Resend** account (for sending emails) — [resend.com](https://resend.com)
-- **Docker Desktop** (recommended for local MongoDB)
-
-### 2. Setup
+## Local Setup
 
 ```bash
 cd auto-mailer
-
-# Install dependencies
 npm install
-
-# Copy environment file
-cp .env.example .env
+npm install --prefix frontend
+copy .env.example .env
 ```
 
-### 3. Configure Environment
-
-Edit `.env` with your settings:
+Edit `.env` with real values:
 
 ```bash
-# Required — your Resend API key
-RESEND_API_KEY=re_xxxxxxxxxxxx
-
-# MongoDB — Docker local or Atlas
 MONGODB_URI=mongodb://localhost:27017/auto-mailer
+LOCAL_MONGODB_URI=mongodb://localhost:27017/auto-mailer-mirror
+ATLAS_MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/auto-mailer
+ONLINE_BACKUP_MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/auto-mailer-backup
 
-# Optional — Redis for BullMQ queue
 REDIS_URL=redis://localhost:6379
 
-# Optional — online MongoDB backup destination
-ONLINE_BACKUP_MONGODB_URI=
-BACKUP_SCHEDULE_HOUR=2
+RESEND_API_KEY=re_xxxxxxxxxxxx
+RESEND_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
+SMTP_USER=
+SMTP_PASS=
 
-# Frontend URL (for unsubscribe redirects)
-FRONTEND_URL=http://localhost:5173
+UPLOADTHING_TOKEN=eyJhcGlLZXkiOi...
+
+AUTO_MAILER_API_KEY=<long-random-local-password>
+PORT=5001
+FRONTEND_URL=http://localhost:5001
+NEXT_PUBLIC_LIVE_API_URL=http://localhost:5001
+NEXT_PUBLIC_MIRROR_API_URL=http://localhost:5001
 ```
 
-### 4. Start Local Data Services (Docker)
+Start local services:
 
 ```bash
-# Start MongoDB 7 and Redis in background
 docker compose up -d
-
-# Verify they are running
-docker ps
 ```
 
-MongoDB stores the local Auto Mailer Data Hub on this laptop at `mongodb://localhost:27017/auto-mailer`.
-Redis powers BullMQ email queues; Auto Mailer still falls back to direct batch processing if Redis is unavailable.
-
-### 5. Run the Server
+Run backend:
 
 ```bash
-# Standard start
-node server/server.js
-
-# Or with auto-restart on changes
 npm run dev
 ```
 
-Server starts on **`http://localhost:5001`**.
-
-Verify:
+Run frontend:
 
 ```bash
-curl http://localhost:5001/health
-# → {"status":"ok","service":"auto-mailer","timestamp":"..."}
+npm run dev --prefix frontend
 ```
 
----
+Open the frontend, enter `AUTO_MAILER_API_KEY` on the login screen, then create sender profiles and campaigns.
 
-## Full API Reference
+## Email Provider Setup
 
-### Health & Config
+Resend path:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/config` | Service metadata |
+1. Add `RESEND_API_KEY`.
+2. Set `SYSTEM_VERIFIED_FROM_EMAIL` to a verified sender/domain.
+3. Add Resend webhook URL:
 
-### Campaigns (`/api/mail/campaigns`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/campaigns` | List campaigns |
-| POST | `/api/mail/campaigns` | Create campaign |
-| POST | `/api/mail/campaigns/:id/send` | Send campaign |
-| DELETE | `/api/mail/campaigns/:id` | Delete campaign |
-
-### Campaign API (`/api/mail/campaign-api`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/campaign-api` | List all campaigns |
-| GET | `/api/mail/campaign-api/:id` | Get campaign by ID |
-| GET | `/api/mail/campaign-api/:id/analytics` | Campaign analytics |
-| POST | `/api/mail/campaign-api/:id/dispatch` | **Dispatch campaign send** — triggers batch email sending |
-| POST | `/api/mail/campaign-api/:id/stop` | Stop a sending campaign |
-| POST | `/api/mail/campaign-api` | Create campaign |
-| DELETE | `/api/mail/campaign-api/:id` | Delete campaign |
-
-### Templates (`/api/mail/templates`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/templates` | List templates |
-| GET | `/api/mail/templates/pending` | List pending approval templates |
-| POST | `/api/mail/templates/save-draft` | Save draft template |
-| GET | `/api/mail/templates/:id` | Get template by ID |
-| POST | `/api/mail/templates/:id/submit` | Submit for approval |
-| POST | `/api/mail/templates/:id/approve` | Approve template |
-| POST | `/api/mail/templates/:id/reject` | Reject template |
-| DELETE | `/api/mail/templates/:id` | Delete template |
-
-### Email Profiles (`/api/mail/profiles`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/profiles` | List sender profiles |
-| POST | `/api/mail/profiles` | Create profile |
-| PUT | `/api/mail/profiles/:id` | Update profile |
-| DELETE | `/api/mail/profiles/:id` | Delete profile |
-
-### Analytics (`/api/mail/analytics`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/analytics/stats` | Aggregate campaign stats |
-
-### Email Streams (`/api/mail/streams`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/streams` | List email streams |
-| GET | `/api/mail/streams/:slug` | Get stream details |
-
-### HolySheet Unsubscribe Sync (`/api/mail/holysheet`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mail/holysheet/unsubscribes` | Fetch unsubscribes |
-| POST | `/api/mail/holysheet/unsubscribes` | Push unsubscribe |
-
-### Tracking (Embedded Pixels)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/track/open/:campaignId/:recipientId.gif` | **Open tracking pixel** (returns 1×1 transparent GIF) |
-| GET | `/track/click/:campaignId/:trackingId` | **Click tracking** (redirects to target URL) |
-| GET | `/track/unsubscribe/:campaignId/:trackingId` | Unsubscribe page redirect |
-| POST | `/track/unsubscribe/:campaignId/:trackingId` | Process unsubscribe |
-
-### Webhooks
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/webhooks/resend` | **Resend event webhook** (delivery, bounce, complaint) |
-| GET | `/webhooks/health` | Webhook health check |
-
-### Data Hub (`/api/data-hub`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/data-hub/folders` | List audience folders |
-| GET | `/api/data-hub/people` | List people with search/filter |
-| GET | `/api/data-hub/people/:id` | **Person 360° view** (campaigns, events, timeline) |
-| POST | `/api/data-hub/people/bulk-delete` | Remove people from hub |
-| GET | `/api/data-hub/analytics` | Aggregate hub analytics |
-| GET | `/api/data-hub/analytics/overlap` | Audience overlap analysis |
-| GET | `/api/data-hub/sync-status` | Sync status |
-| POST | `/api/data-hub/reconcile` | **Sync campaign recipients** into EmailLog |
-| POST | `/api/data-hub/rebuild-person-hub` | Rebuild EmailLog from all campaign data |
-| POST | `/api/data-hub/backup/run` | Run an on-demand local MongoDB to online MongoDB backup |
-
----
-
-## Email Sending Pipeline
-
-### How Sending Works
-
-1. **`POST /api/mail/campaign-api/:id/dispatch`** is called
-2. `campaignEmailQueue.js` checks for Redis:
-   - **With Redis (BullMQ)**: Jobs are queued for each recipient, processed concurrently (concurrency: 5)
-   - **Without Redis**: Batch processing is used
-3. **Batch flow (recommended, no Redis):**
-   - `batchSendEmails()` sends ALL pending emails in a loop
-   - Recipient statuses and campaign metrics are updated in-memory only
-   - Campaign is saved **once** after all sends complete
-   - `batchCreateTrackingEvents()` creates all `MailEvent` entries in a single `insertMany`
-4. **Tracking pixels** are embedded in the HTML — opens/clicks fire asynchronously when recipients interact
-
-### Batch Performance
-
-| Recipients | Send Time (1000) | Events Created |
-|------------|------------------|----------------|
-| 1,000      | ~30-60s          | 1 insertMany   |
-| 10,000     | ~5-10 min        | 1 insertMany   |
-| 50,000     | ~25-50 min       | 1 insertMany   |
-
-*Times depend on Resend API latency and network.*
-
----
-
-## Data Hub
-
-The Data Hub provides a unified view of all campaign recipients across `Campaign`, `MailCampaign`, `MailEvent`, and `EmailLog` models.
-
-### Models Used
-
-| Model | Collection | Purpose |
-|-------|-----------|---------|
-| `Campaign` | `campaigns` | Core campaign with recipients array |
-| `MailCampaign` | `mailcampaigns` | Additional mail campaign type |
-| `EmailLog` | `emaillogs` | Unified recipient tracking |
-| `MailEvent` | `mailevents` | Open/click/delivery/bounce events |
-
-### Data Flow
-
-```
-Campaign/MailCampaign recipients
-        │
-        ▼
-  syncAllInlets()  ──►  EmailLog (deduplicated)
-        │
-        ▼
-  MailEvent (tracking)
-        │
-        ▼
-  Data Hub API (360° view, analytics)
+```text
+https://<your-backend-domain>/webhooks/resend
 ```
 
-### Running a Sync
+SMTP path:
+
+1. Add `SMTP_USER` and `SMTP_PASS`.
+2. Or create sender profiles in the UI with SMTP host, port, user, and password.
+
+## UploadThing Setup
+
+1. Create an UploadThing app.
+2. Put the real `UPLOADTHING_TOKEN` in `.env` and in frontend hosting env vars.
+3. Use Campaigns -> New campaign -> Banner.
+4. Choose an image, aspect ratio, and zoom.
+5. Click `Upload banner`.
+
+The UI uploads a cropped JPEG and stores only the returned URL on the campaign.
+
+## Campaign Test Send
+
+The new campaign screen pre-fills these test recipients:
+
+```text
+raghavsobti37@gmail.com
+raghavishaan@gmail.com
+Harshika@theshakticollective.in
+```
+
+Use `Send test` before dispatching. The backend sends one test email addressed to those three recipients through the configured provider.
+
+## Sending And Tracking Behavior
+
+Send path:
+
+1. Campaign dispatch marks the campaign as queued/sending.
+2. Redis/BullMQ sends recipient jobs concurrently when Redis is available.
+3. Without Redis, the direct fallback sends every pending email first, saves campaign status once, then inserts send/bounce events in bulk.
+4. Open and click tracking HTTP responses return immediately.
+5. Open/click DB writes are queued behind the response so sending work gets priority.
+
+Tracking scope:
+
+- Open: pixel loaded or not loaded.
+- Click: clicked or not clicked, with target URL for link tracking.
+- No city, country, IP analytics, or location breakdown.
+
+## Backup
+
+Run compressed online backup:
 
 ```bash
-# Reconcile all campaign recipients into EmailLog
-curl -X POST http://localhost:5001/api/data-hub/reconcile
-
-# Check sync status
-curl http://localhost:5001/api/data-hub/sync-status
-```
-
-### Daily Online Backup
-
-Auto Mailer keeps the Data Hub locally in Docker MongoDB and can mirror it once per day to an online MongoDB server. Set `ONLINE_BACKUP_MONGODB_URI` in `.env`; the app schedules a daily backup at `BACKUP_SCHEDULE_HOUR` and stores run metadata in `_auto_mailer_backup_runs`.
-
-```bash
-# Run a manual backup immediately
 npm run backup:data-hub
-
-# Or trigger it through the local API
-curl -X POST http://localhost:5001/api/data-hub/backup/run
 ```
 
-If `ONLINE_BACKUP_MONGODB_URI` is not set, the backup job is skipped and the API returns a clear configuration message. Do not commit the online MongoDB URI.
+Schedule on Windows:
 
----
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\schedule-sync-task.ps1
+```
 
-## .env Reference
+## Verify
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `MONGODB_URI` | ✅ | `mongodb://localhost:27017/auto-mailer` | MongoDB connection string |
-| `RESEND_API_KEY` | ✅ | — | Resend API key for sending |
-| `PORT` | ❌ | `5001` | Server port |
-| `FRONTEND_URL` | ❌ | `http://localhost:5173` | Frontend URL for unsubscribe redirects |
-| `REDIS_URL` | ❌ | `redis://localhost:6379` | Redis for BullMQ queue |
-| `ONLINE_BACKUP_MONGODB_URI` | ❌ | — | Online MongoDB backup destination |
-| `BACKUP_SCHEDULE_HOUR` | ❌ | `2` | Local-hour daily backup time, 0-23 |
-| `RESEND_WEBHOOK_SECRET` | ❌ | — | Resend webhook verification secret |
-| `SMTP_USER` | ❌ | — | SMTP fallback username |
-| `SMTP_PASS` | ❌ | — | SMTP fallback password |
-| `SYSTEM_VERIFIED_FROM_EMAIL` | ❌ | `onboarding@resend.dev` | Verified sender email |
-| `HOLYSHEET_API_KEY` | ❌ | `Z2BhkUlsA5F-wq2GQ...` | HolySheet unsubscribe sync key |
-| `CORS_ORIGIN` | ❌ | `*` | CORS allowed origin |
-
----
-
-## Deployment
-
-### Docker
-
-The included `docker-compose.yml` runs local MongoDB and Redis:
+Backend:
 
 ```bash
-docker compose up -d
+npm test
 ```
 
-For full deployment, create a separate `docker-compose.prod.yml`:
-
-```yaml
-version: "3.8"
-services:
-  mongodb:
-    image: mongo:7
-    restart: always
-    volumes:
-      - mongo-data:/data/db
-  auto-mailer:
-    build: .
-    ports:
-      - "5001:5001"
-    env_file: .env
-    depends_on:
-      - mongodb
-volumes:
-  mongo-data:
-```
-
-### Render
-
-A `render.yaml` is included — deploy as a Web Service with:
-- **Build Command:** `npm install`
-- **Start Command:** `node server/server.js`
-- **Health Check Path:** `/health`
-
-### Environment Variables (Render)
-
-Set all `.env` values as Render environment variables. MongoDB can be MongoDB Atlas or a Render-managed instance.
-
----
-
-## Development
+Frontend:
 
 ```bash
-# Watch mode
-npm run dev
-
-# Module load check
-node -e "require('./server/server')"
-
-# Full module health check
-node -e "
-['server/config','server/server','server/services/mailService','server/services/emailProcessor',
- 'server/services/campaignEmailQueue','server/routes/index','server/routes/track',
- 'server/webhooks/resendWebhookHandler'].forEach(m => {
-   try { require('./' + m); console.log('OK:', m); }
-   catch(e) { console.log('FAIL:', m, '-', e.message); }
-})"
+npm run lint --prefix frontend
+npm run build --prefix frontend
 ```
 
-### Initial Data Hub Sync
+## Production Checklist
 
-After first startup with a populated MongoDB (campaign data already exists), run the data hub sync once to populate `EmailLog` from existing campaigns:
-
-```bash
-# Sync all campaign recipients into the unified EmailLog
-curl -X POST http://localhost:5001/api/data-hub/reconcile
-
-# Check sync status
-curl http://localhost:5001/api/data-hub/sync-status
-```
-
-### Stress Testing
-
-```bash
-# Dry-run (simulated — no API calls, requires MongoDB)
-node scripts/stress-test.js --count 100 --analytics
-
-# Full suite: create → send → track → verify → cleanup
-node scripts/stress-test.js --count 500 --all
-
-# Live Resend test (SENDS REAL EMAILS)
-node scripts/stress-test.js --count 50 --resend --domain yourdomain.com
-
-# SMTP test
-node scripts/stress-test.js --count 100 --no-dry-run --domain yourdomain.com
-```
-
-Options:
-- `--count <n>` — Recipients (default: 100)
-- `--campaign <id>` — Use existing campaign
-- `--resend` — Send via Resend API
-- `--analytics` — Verify analytics after send
-- `--all` — Full suite
-- `--cleanup` — Delete test data after run
-- `--domain <d>` — Email domain (default: example.com)
-- `--no-dry-run` — Actually call the send API
-
----
-
-## Git Workflow
-
-This project is part of the **TSC Platform** monorepo. To commit auto-mailer changes:
-
-```bash
-# From the TSC Platform root
-cd ..
-
-# Check which branch you're on
-git branch
-
-# Stage all auto-mailer files
-git add auto-mailer/
-
-# Commit with a descriptive message
-git commit -m "feat: standalone auto-mailer service with batch email pipeline and data hub"
-
-# Push to your remote
-# (Use the appropriate remote and branch for your workflow)
-git push origin <your-branch>
-```
-
-> **Note:** If there is no git repository initialized yet, create one first:
-> ```bash
-> git init
-> git remote add origin <your-github-repo-url>
-> ```
-
----
-
----
-
-## File Structure
-
-```
-auto-mailer/
-├── .env.example          # Environment template
-├── docker-compose.yml    # MongoDB and Redis local setup
-├── package.json
-├── render.yaml           # Render deployment config
-├── README.md             # ← You are here
-│
-├── server/
-│   ├── server.js         # Entry point
-│   ├── config.js         # Environment config
-│   │
-│   ├── app/
-│   │   ├── createApp.js        # Express app factory
-│   │   └── registerRoutes.js   # Route registration + health
-│   │
-│   ├── models/
-│   │   ├── Campaign.js         # Campaign schema
-│   │   ├── MailCampaign.js     # Mail campaign schema
-│   │   ├── MailTemplate.js     # Email templates
-│   │   ├── EmailProfile.js     # Sender profiles (SMTP/Resend)
-│   │   ├── EmailLog.js         # Unified recipient log
-│   │   └── MailEvent.js        # Open/click/delivery events
-│   │
-│   ├── routes/
-│   │   ├── index.js            # Mail domain route aggregator
-│   │   ├── campaignsRouter.js  # Campaign CRUD
-│   │   ├── campaignApiRouter.js# Campaign API (dispatch, stop)
-│   │   ├── templatesRouter.js  # Template management + approval
-│   │   ├── profilesRouter.js   # Sender profiles
-│   │   ├── analyticsRouter.js  # Campaign analytics
-│   │   ├── streamsRouter.js    # Email streams
-│   │   ├── holysheetRouter.js  # Unsubscribe sync
-│   │   ├── track.js            # Open/click/unsubscribe tracking
-│   │   └── webhookRoutes.js    # Resend webhooks
-│   │
-│   ├── controllers/
-│   │   ├── campaignsController.js
-│   │   ├── campaignApiController.js
-│   │   ├── templatesController.js
-│   │   ├── profilesController.js
-│   │   ├── analyticsController.js
-│   │   ├── audienceController.js
-│   │   └── holysheetController.js
-│   │
-│   ├── services/
-│   │   ├── mailService.js             # Email sending (Resend/SMTP)
-│   │   ├── mailDriver.js              # Resend + SMTP transport
-│   │   ├── emailProcessor.js          # Per-email + batch processing
-│   │   ├── campaignEmailQueue.js      # Job dispatch + batch flow
-│   │   ├── campaignQueueState.js      # Campaign stop state
-│   │   ├── campaignEngagementService.js # Engagement resolution
-│   │   ├── campaignAudienceService.js # Audience/list queries
-│   │   ├── campaignFacade.js          # Campaign resolution
-│   │   ├── emailStreamService.js      # Stream validation
-│   │   ├── mailEventQueryService.js   # MailEvent queries
-│   │   └── mailMetricsService.js      # Metrics aggregation
-│   │
-│   ├── domains/data-hub/
-│   │   ├── routes.js                  # Data hub routes
-│   │   ├── controllers/dataHubController.js
-│   │   └── services/
-│   │       ├── listService.js         # People listing
-│   │       ├── personDetailService.js # Person 360° view
-│   │       ├── analyticsService.js    # Hub analytics
-│   │       ├── syncService.js         # Campaign → EmailLog sync
-│   │       ├── deletePeopleService.js # Bulk deletion
-│   │       └── repairService.js       # Dedup + rebuild
-│   │
-│   ├── workers/
-│   │   └── campaignEmailWorker.js     # BullMQ worker
-│   │
-│   ├── webhooks/
-│   │   └── resendWebhookHandler.js    # Resend event handler
-│   │
-│   └── utils/
-│       ├── emailValidation.js
-│       ├── emailTracker.js
-│       ├── emailSignature.js
-│       ├── emailContentUtils.js
-│       ├── emailStreamUnsubscribe.js
-│       ├── buildFinalEmailHtml.js
-│       ├── normalizeOutboundEmailHtml.js
-│       ├── campaignStats.js
-│       └── ...
-│
-└── scripts/
-    └── stress-test.js     # Bulk email + analytics stress test
-```
+- Repo visibility is private.
+- `.env` is not committed.
+- `AUTO_MAILER_API_KEY` is long and unique.
+- `FRONTEND_URL` points to the public backend URL used in email links.
+- Resend sender/domain is verified.
+- UploadThing token is set in frontend hosting.
+- MongoDB Atlas IP/network access is restricted where possible.
+- Test campaign succeeds before bulk dispatch.

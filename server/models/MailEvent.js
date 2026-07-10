@@ -10,16 +10,10 @@ const MailEventSchema = new mongoose.Schema({
   senderProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'EmailProfile', index: true },
   rotationProvider: { type: String, index: true },
   linkClicked: { type: String },
-  ipAddress: { type: String },
   userAgent: { type: String },
-  location: {
-    country: { type: String },
-    city: { type: String }
-  }
 }, { timestamps: true });
 
 MailEventSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
-MailEventSchema.index({ 'location.country': 1, 'location.city': 1 });
 MailEventSchema.index({ campaignId: 1, timestamp: -1 });
 MailEventSchema.index({ campaignId: 1, eventType: 1, timestamp: -1 });
 MailEventSchema.index(

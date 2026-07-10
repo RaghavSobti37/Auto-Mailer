@@ -7,3 +7,4 @@ reports/
 dist/
 .tmp/
 frontend/.next/
+.vercel

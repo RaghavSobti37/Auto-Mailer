@@ -2,6 +2,7 @@ const Campaign = require('../models/Campaign');
 const EmailProfile = require('../models/EmailProfile');
 const MailEvent = require('../models/MailEvent');
 const mailService = require('./mailService');
+const { enqueueEngagementWrite, recordMailEvent } = require('./engagementWriteQueue');
 
 const config = require('../config');
 
@@ -57,19 +58,13 @@ async function processEmailJob(job) {
 
   await campaign.save();
 
-  // Create MailEvent for this individual job (BullMQ path: tracking per job is fine)
-  try {
-    await MailEvent.create({
-      eventType: result.status === 'Sent' ? 'Send' : 'Bounce',
-      email: recipient.email,
-      timestamp: new Date(),
-      campaignId: campaign._id,
-      messageId: result.messageId || undefined,
-      metadata: { recipientIndex, error: result.error },
-    });
-  } catch (err) {
-    console.error('[EmailProcessor] Failed to log event:', err.message);
-  }
+  enqueueEngagementWrite(() => recordMailEvent({
+    eventType: result.status === 'Sent' ? 'Send' : 'Bounce',
+    email: recipient.email,
+    campaignKey: String(campaign._id),
+    messageId: result.messageId,
+    metadata: { recipientIndex, error: result.error },
+  }));
 
   return {
     email: recipient.email,

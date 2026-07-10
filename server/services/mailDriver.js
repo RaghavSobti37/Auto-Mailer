@@ -33,6 +33,9 @@ async function sendViaResend({ to, subject, html, from }) {
     subject,
     html,
   });
+  if (response?.error) {
+    throw new Error(response.error.message || 'Resend send failed');
+  }
   return response;
 }
 

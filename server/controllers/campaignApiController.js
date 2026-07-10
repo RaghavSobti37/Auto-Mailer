@@ -41,7 +41,7 @@ exports.create = async (req, res) => {
   try {
     const {
       title, subject, content, senderProfileId, senderMode, senderProfileIds,
-      systemProvider, resendFromEmail, emailStreamSlug, includeSignature, signature, attachments,
+      systemProvider, resendFromEmail, emailStreamSlug, includeSignature, signature, removeUnsubscribe, attachments,
       mailTemplateId, variableMapping, customRecipients, action,
     } = req.body;
     const dispatchNow = action === 'dispatch';
@@ -92,6 +92,7 @@ exports.create = async (req, res) => {
       senderProfileIds: senderProfileIds || [],
       includeSignature: includeSignature !== false,
       signature: typeof signature === 'string' ? signature : '',
+      removeUnsubscribe: removeUnsubscribe === true,
       attachments: (attachments || []).map((a) => ({
         filename: a.filename, contentType: a.contentType, storageKey: a.storageKey, storageUrl: a.storageUrl,
       })),
@@ -174,7 +175,6 @@ exports.getAnalytics = async (req, res) => {
   try {
     const events = await MailEvent.find({ campaignId: req.params.id }).sort({ timestamp: -1 }).limit(1000).lean();
     const timeSeries = [];
-    const locationBreakdown = {};
     for (const event of events) {
       const hour = event.timestamp ? `${new Date(event.timestamp).toISOString().slice(0, 13)}:00` : 'unknown';
       if (!timeSeries.find((t) => t.time === hour)) {
@@ -183,16 +183,10 @@ exports.getAnalytics = async (req, res) => {
       const ts = timeSeries.find((t) => t.time === hour);
       if (event.eventType === 'Open') ts.opens++;
       if (event.eventType === 'Click') ts.clicks++;
-
-      const loc = event.location?.city || 'Unknown';
-      if (!locationBreakdown[loc]) locationBreakdown[loc] = { opens: 0, clicks: 0 };
-      if (event.eventType === 'Open') locationBreakdown[loc].opens++;
-      if (event.eventType === 'Click') locationBreakdown[loc].clicks++;
     }
 
     res.json({
       timeSeries: timeSeries.sort((a, b) => a.time.localeCompare(b.time)),
-      locationBreakdown,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

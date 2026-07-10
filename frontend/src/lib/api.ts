@@ -77,6 +77,10 @@ export const live = {
   stats: {
     get: () => request<{ totalCampaigns: number; totalSent: number; totalOpened: number; totalClicked: number; totalBounced: number }>('/api/mail/analytics/stats', { source: 'live' }),
   },
+  mail: {
+    preview: (data: any) => request<{ html: string; subject: string }>('/api/mail/preview', { source: 'live', method: 'POST', body: JSON.stringify(data) }),
+    testCampaign: (data: any) => request<any>('/api/mail/test-campaign', { source: 'live', method: 'POST', body: JSON.stringify(data) }),
+  },
   system: {
     health: () => request<{ status: string; service: string; timestamp: string }>('/api/system/health', { source: 'live' }),
   },

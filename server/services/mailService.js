@@ -4,6 +4,7 @@ const MailCampaign = require('../models/MailCampaign');
 const MailEvent = require('../models/MailEvent');
 const EmailProfile = require('../models/EmailProfile');
 const { dispatchEmailPayload } = require('./mailDriver');
+const { applySignature } = require('../utils/emailSignature');
 
 /**
  * Build final HTML with tracking pixel, unsubscribe link, etc.
@@ -12,8 +13,9 @@ function buildCampaignHtml({ html, campaignId, recipientId, email, trackingBaseU
   const baseUrl = trackingBaseUrl || '';
   const unsubUrl = `${baseUrl}/track/unsubscribe/${campaignId}/${recipientId}?email=${encodeURIComponent(email || '')}`;
   const pixelUrl = `${baseUrl}/track/open/${campaignId}/${recipientId}.gif?email=${encodeURIComponent(email || '')}`;
+  const clickBaseUrl = `${baseUrl}/track/click/${campaignId}/${recipientId}`;
 
-  let finalHtml = html;
+  let finalHtml = rewriteTrackedLinks(html, clickBaseUrl, email);
 
   // Add tracking pixel
   const pixelTag = `<img src="${pixelUrl}" width="1" height="1" style="display:none !important;" border="0" />`;
@@ -30,6 +32,16 @@ function buildCampaignHtml({ html, campaignId, recipientId, email, trackingBaseU
   return finalHtml;
 }
 
+function rewriteTrackedLinks(html, clickBaseUrl, email) {
+  return String(html || '').replace(/\bhref=(["'])(.*?)\1/gi, (match, quote, href) => {
+    const rawHref = String(href || '').trim();
+    if (!/^https?:\/\//i.test(rawHref)) return match;
+    if (rawHref.includes('/track/click/') || rawHref.includes('/track/unsubscribe/')) return match;
+    const tracked = `${clickBaseUrl}?url=${encodeURIComponent(rawHref)}&email=${encodeURIComponent(email || '')}`;
+    return `href=${quote}${tracked}${quote}`;
+  });
+}
+
 /**
  * Send a single campaign email.
  */
@@ -39,8 +51,12 @@ async function sendCampaignEmail({ campaign, recipient, profile, trackingBaseUrl
     return { status: 'Invalid', error: 'Invalid email address' };
   }
 
+  const bodyHtml = campaign.includeSignature === false
+    ? (campaign.content || '')
+    : applySignature(campaign.content || '', campaign.signature || profile?.signature || '');
+
   const html = buildCampaignHtml({
-    html: campaign.content || '',
+    html: bodyHtml,
     campaignId: campaign.campaignId || String(campaign._id),
     recipientId: String(recipientId),
     email,
@@ -119,4 +135,5 @@ module.exports = {
   updateEmailTags,
   sendTestEmail,
   buildCampaignHtml,
+  rewriteTrackedLinks,
 };

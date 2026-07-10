@@ -65,9 +65,9 @@ exports.analytics = async (req, res) => {
   try {
     const { id } = req.params;
 
-    let campaign = await Campaign.findById(id).select('recipients metrics stats timeSeries locationBreakdown').lean();
+    let campaign = await Campaign.findById(id).select('recipients metrics stats timeSeries').lean();
     if (!campaign) {
-      campaign = await MailCampaign.findById(id).select('recipients stats timeSeries locationBreakdown').lean();
+      campaign = await MailCampaign.findById(id).select('recipients stats timeSeries').lean();
     }
 
     if (!campaign) {
@@ -90,7 +90,6 @@ exports.analytics = async (req, res) => {
     res.json({
       ...stats,
       timeSeries: campaign.timeSeries || [],
-      locationBreakdown: campaign.locationBreakdown || {},
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
