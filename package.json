@@ -1,31 +1,32 @@
 {
-  "name": "auto-mailer",
-  "version": "1.0.0",
-  "description": "Email campaign and automation service",
-  "main": "server/server.js",
-  "scripts": {
-    "start": "node server/server.js",
-    "dev": "node --watch server/server.js",
-    "backup:data-hub": "node scripts/backup-data-hub.js",
-    "test": "node scripts/backup-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js"
-  },
-  "dependencies": {
-    "express": "^4.21.0",
-    "mongoose": "^8.8.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "helmet": "^8.0.0",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16",
-    "bullmq": "^5.34.0",
-    "ioredis": "^5.4.1",
-    "resend": "^4.0.0",
-    "geoip-lite": "^1.4.10",
-    "imap-simple": "^5.1.0",
-    "mailparser": "^3.7.1",
-    "crypto": "^1.0.1",
-    "uuid": "^10.0.0",
-    "express-rate-limit": "^7.4.1"
-  }
+    "name":  "auto-mailer",
+    "version":  "1.0.0",
+    "description":  "Email campaign and automation service",
+    "main":  "server/server.js",
+    "scripts":  {
+                    "start":  "node server/server.js",
+                    "dev":  "node --watch server/server.js",
+                    "backup:data-hub":  "node scripts/backup-data-hub.js",
+                    "test":  "node scripts/backup-self-check.js \u0026\u0026 node --check server/server.js \u0026\u0026 node --check server/services/dataHubBackupService.js",
+                    "vercel-build":  "npm run build --prefix frontend"
+                },
+    "dependencies":  {
+                         "express":  "^4.21.0",
+                         "mongoose":  "^8.8.0",
+                         "cors":  "^2.8.5",
+                         "dotenv":  "^16.4.5",
+                         "helmet":  "^8.0.0",
+                         "morgan":  "^1.10.0",
+                         "multer":  "^1.4.5-lts.1",
+                         "nodemailer":  "^6.9.16",
+                         "bullmq":  "^5.34.0",
+                         "ioredis":  "^5.4.1",
+                         "resend":  "^4.0.0",
+                         "geoip-lite":  "^1.4.10",
+                         "imap-simple":  "^5.1.0",
+                         "mailparser":  "^3.7.1",
+                         "crypto":  "^1.0.1",
+                         "uuid":  "^10.0.0",
+                         "express-rate-limit":  "^7.4.1"
+                     }
 }
