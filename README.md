@@ -60,10 +60,10 @@ UPLOADTHING_TOKEN=eyJhcGlLZXkiOi...
 
 AUTO_MAILER_API_KEY=<long-random-local-password>
 PORT=5001
-FRONTEND_URL=http://localhost:5001
-TRACKING_BASE_URL=http://localhost:5001
-NEXT_PUBLIC_LIVE_API_URL=http://localhost:5001
-NEXT_PUBLIC_MIRROR_API_URL=http://localhost:5001
+FRONTEND_URL=https://auto-mailer-blue.vercel.app
+TRACKING_BASE_URL=https://tsc-auto-mailer-api.loca.lt
+NEXT_PUBLIC_LIVE_API_URL=https://tsc-auto-mailer-api.loca.lt
+NEXT_PUBLIC_MIRROR_API_URL=https://tsc-auto-mailer-api.loca.lt
 ```
 
 Start local services:
@@ -85,6 +85,18 @@ npm run dev --prefix frontend
 ```
 
 Open the frontend, enter `AUTO_MAILER_API_KEY` on the login screen, then create sender profiles and campaigns.
+
+Production frontend:
+
+```text
+https://auto-mailer-blue.vercel.app
+```
+
+Production API tunnel for local Data Hub:
+
+```text
+https://tsc-auto-mailer-api.loca.lt
+```
 
 ## Email Provider Setup
 

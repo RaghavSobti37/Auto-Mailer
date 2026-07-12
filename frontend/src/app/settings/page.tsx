@@ -4,6 +4,14 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { live } from '@/lib/api';
 import { useState } from 'react';
 
+function displayApiUrl() {
+  if (process.env.NEXT_PUBLIC_LIVE_API_URL) return process.env.NEXT_PUBLIC_LIVE_API_URL;
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://tsc-auto-mailer-api.loca.lt';
+  }
+  return 'http://localhost:5001';
+}
+
 export default function SettingsPage() {
   const [backupStatus, setBackupStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [backupMessage, setBackupMessage] = useState('');
@@ -36,7 +44,7 @@ export default function SettingsPage() {
           <div className="card">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Connection</h3>
             <div className="space-y-3 text-sm">
-              <div><label className="label">Local API URL</label><input className="input" defaultValue={process.env.NEXT_PUBLIC_LIVE_API_URL || 'http://localhost:5001'} readOnly /></div>
+              <div><label className="label">Local API URL</label><input className="input" defaultValue={displayApiUrl()} readOnly /></div>
               <div className="flex items-center gap-2 text-xs text-green-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 <span>Local data source</span>

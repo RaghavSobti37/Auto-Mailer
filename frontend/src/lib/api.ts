@@ -1,10 +1,15 @@
-/**
- * Dual API Client — Auto-Mailer Frontend
- * Two read paths: live (Render/Atlas) and mirror (local Mongo)
- */
+const PRODUCTION_API_URL = 'https://tsc-auto-mailer-api.loca.lt';
 
-const LIVE_API_URL = process.env.NEXT_PUBLIC_LIVE_API_URL || 'http://localhost:5001';
-const MIRROR_API_URL = process.env.NEXT_PUBLIC_MIRROR_API_URL || 'http://localhost:5001';
+function defaultApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5001';
+  }
+  return PRODUCTION_API_URL;
+}
+
+const LIVE_API_URL = process.env.NEXT_PUBLIC_LIVE_API_URL || defaultApiUrl();
+const MIRROR_API_URL = process.env.NEXT_PUBLIC_MIRROR_API_URL || LIVE_API_URL;
 
 export type DataSource = 'live' | 'mirror';
 
