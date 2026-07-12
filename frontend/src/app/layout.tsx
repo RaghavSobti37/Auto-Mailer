@@ -1,10 +1,10 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import './globals.css';
 
 const NAV_ITEMS = [
@@ -25,15 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }));
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
-  const router = useRouter();
-
-  useEffect(() => {
-    const hasKey = !!localStorage.getItem('auto_mailer_api_key');
-    if (!hasKey && pathname !== '/login') router.push('/login');
-    if (hasKey && pathname === '/login') router.push('/');
-  }, [pathname, router]);
-
-  if (pathname === '/login') return <>{children}</>;
 
   return (
     <html lang="en">

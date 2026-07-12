@@ -20,8 +20,6 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
-      - key: AUTO_MAILER_API_KEY
-        sync: false
       - key: TRACKING_BASE_URL
         sync: false
       - key: ONLINE_BACKUP_MONGODB_URI

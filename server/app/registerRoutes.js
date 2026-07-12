@@ -11,15 +11,6 @@ const campaignApiController = require('../controllers/campaignApiController');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 function registerRoutes(app) {
-  // Auth
-  app.post('/api/auth/verify', (req, res) => {
-    const { apiKey } = req.body || {};
-    // ponytail: Render still has legacy API_KEY env var
-    const configuredKey = process.env.AUTO_MAILER_API_KEY || process.env.API_KEY || 'dev-key-123';
-    if (apiKey === configuredKey) return res.json({ success: true });
-    res.status(401).json({ error: 'Invalid API key' });
-  });
-
   // Health check
   app.get('/health', (req, res) => res.json({ status: 'ok', service: 'auto-mailer', timestamp: new Date().toISOString() }));
 

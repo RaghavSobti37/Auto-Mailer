@@ -58,7 +58,9 @@ SMTP_PASS=
 
 UPLOADTHING_TOKEN=eyJhcGlLZXkiOi...
 
-AUTO_MAILER_API_KEY=<long-random-local-password>
+AUTO_MAILER_API_KEY=
+
+# Optional — legacy; personal single-user deploy has no frontend login gate.
 PORT=5001
 FRONTEND_URL=https://auto-mailer-blue.vercel.app
 TRACKING_BASE_URL=https://auto-mailer-5e54.onrender.com
@@ -84,7 +86,7 @@ Run frontend:
 npm run dev --prefix frontend
 ```
 
-Open the frontend, enter `AUTO_MAILER_API_KEY` on the login screen, then create sender profiles and campaigns.
+Open the frontend and create sender profiles and campaigns. No login screen — personal single-tenant use only; keep the repo private.
 
 Production frontend:
 
@@ -190,7 +192,6 @@ npm run build --prefix frontend
 
 - Repo visibility is private.
 - `.env` is not committed.
-- `AUTO_MAILER_API_KEY` is long and unique.
 - `FRONTEND_URL` points to the public backend URL used in email links.
 - `TRACKING_BASE_URL` points to the public backend/API URL used in open, click, and unsubscribe links.
 - Resend sender/domain is verified.
