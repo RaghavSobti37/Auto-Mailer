@@ -7,7 +7,7 @@ const { enqueueEngagementWrite, recordMailEvent } = require('./engagementWriteQu
 const config = require('../config');
 
 function resolveTrackingBaseUrl() {
-  return config.frontendUrl || `http://localhost:${config.port}`;
+  return config.trackingBaseUrl || `http://localhost:${config.port}`;
 }
 
 /**
@@ -52,14 +52,14 @@ async function processEmailJob(job) {
   // Update campaign metrics
   if (result.status === 'Sent') {
     campaign.metrics.totalSent = (campaign.metrics.totalSent || 0) + 1;
-  } else if (result.status === 'Failed' || result.status === 'Invalid') {
+  } else if (result.status === 'Failed' || result.status === 'Invalid' || result.status === 'Bounced') {
     campaign.metrics.bounced = (campaign.metrics.bounced || 0) + 1;
   }
 
   await campaign.save();
 
   enqueueEngagementWrite(() => recordMailEvent({
-    eventType: result.status === 'Sent' ? 'Send' : 'Bounce',
+    eventType: result.status === 'Sent' ? 'Send' : result.status === 'Unsubscribed' ? 'Skipped' : 'Bounce',
     email: recipient.email,
     campaignKey: String(campaign._id),
     messageId: result.messageId,
@@ -107,7 +107,7 @@ async function batchSendEmails(campaign) {
     // Update metrics in-memory
     if (result.status === 'Sent') {
       campaign.metrics.totalSent = (campaign.metrics.totalSent || 0) + 1;
-    } else if (result.status === 'Failed' || result.status === 'Invalid') {
+    } else if (result.status === 'Failed' || result.status === 'Invalid' || result.status === 'Bounced') {
       campaign.metrics.bounced = (campaign.metrics.bounced || 0) + 1;
     }
 
@@ -132,9 +132,9 @@ async function batchCreateTrackingEvents(results) {
   if (!results || !results.length) return 0;
 
   const events = results
-    .filter((r) => r.status === 'Sent' || r.status === 'Failed' || r.status === 'Invalid')
+    .filter((r) => r.status === 'Sent' || r.status === 'Failed' || r.status === 'Invalid' || r.status === 'Bounced' || r.status === 'Unsubscribed')
     .map((r) => ({
-      eventType: r.status === 'Sent' ? 'Send' : 'Bounce',
+      eventType: r.status === 'Sent' ? 'Send' : r.status === 'Unsubscribed' ? 'Skipped' : 'Bounce',
       email: r.email,
       timestamp: new Date(),
       campaignId: r.campaignId,

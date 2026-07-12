@@ -67,6 +67,7 @@ router.post('/unsubscribe/:campaignId/:trackingId', async (req, res) => {
       { $set: { opened: false, clicked: false } },
       { upsert: true },
     );
+    await updateEmailTags(email, reason || 'unsubscribed', 'Unsubscribed');
 
     res.json({ success: true, message: 'Unsubscribed successfully' });
   } catch (err) {

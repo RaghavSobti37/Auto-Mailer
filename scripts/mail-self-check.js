@@ -1,5 +1,6 @@
 const assert = require('assert');
-const { buildCampaignHtml, rewriteTrackedLinks } = require('../server/services/mailService');
+const { buildCampaignHtml, getPersonSuppression, normalizeEmail, rewriteTrackedLinks } = require('../server/services/mailService');
+const { personalizeEmailContent } = require('../server/utils/emailPersonalization');
 
 function run() {
   const linked = rewriteTrackedLinks(
@@ -31,6 +32,26 @@ function run() {
     removeUnsubscribe: true,
   });
   assert(!withoutUnsub.includes('/track/unsubscribe/camp/recip'));
+
+  assert.strictEqual(normalizeEmail(' PERSON@Example.COM '), 'person@example.com');
+  assert.deepStrictEqual(
+    getPersonSuppression({ suppressed: true, suppressionReason: 'unsubscribed' }),
+    { status: 'Unsubscribed', error: 'Local data hub marks recipient unsubscribed' },
+  );
+  assert.deepStrictEqual(
+    getPersonSuppression({ bounced: true, emailStats: { bounced: 1 } }),
+    { status: 'Bounced', error: 'Local data hub marks recipient bounced' },
+  );
+  assert.strictEqual(getPersonSuppression({ suppressed: false, bounced: false }), null);
+
+  const personalized = personalizeEmailContent({
+    html: '<p>Hi {{name}}, your city is {city}</p>',
+    subject: 'Hello {{name}}',
+    recipient: { name: 'Raghav', rowData: { city: 'Delhi' } },
+    variableMapping: { name: 'name', city: 'city' },
+  });
+  assert.strictEqual(personalized.html, '<p>Hi Raghav, your city is Delhi</p>');
+  assert.strictEqual(personalized.subject, 'Hello Raghav');
 }
 
 run();

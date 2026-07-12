@@ -1,6 +1,6 @@
 # Auto-Mailer
 
-Single-tenant email campaign tool for local audience data, simple campaign tracking, banner uploads, and optional online MongoDB backup.
+Single-tenant email campaign tool for local audience data, simple campaign tracking, banner uploads, and manual compressed online MongoDB backup.
 
 ## What It Does
 
@@ -10,7 +10,7 @@ Single-tenant email campaign tool for local audience data, simple campaign track
 - Track opens with a pixel and clicks with redirected links.
 - Track only engagement state and link target. City/location tracking is not collected.
 - Keep campaign analytics plain: sent, opened, clicked, bounced, and hourly engagement rows.
-- Store working data locally in MongoDB, with optional compressed backup to online MongoDB.
+- Store working data locally in MongoDB, with manual compressed backup to online MongoDB.
 
 ## Safety Notes
 
@@ -47,8 +47,6 @@ Edit `.env` with real values:
 
 ```bash
 MONGODB_URI=mongodb://localhost:27017/auto-mailer
-LOCAL_MONGODB_URI=mongodb://localhost:27017/auto-mailer-mirror
-ATLAS_MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/auto-mailer
 ONLINE_BACKUP_MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/auto-mailer-backup
 
 REDIS_URL=redis://localhost:6379
@@ -63,6 +61,7 @@ UPLOADTHING_TOKEN=eyJhcGlLZXkiOi...
 AUTO_MAILER_API_KEY=<long-random-local-password>
 PORT=5001
 FRONTEND_URL=http://localhost:5001
+TRACKING_BASE_URL=http://localhost:5001
 NEXT_PUBLIC_LIVE_API_URL=http://localhost:5001
 NEXT_PUBLIC_MIRROR_API_URL=http://localhost:5001
 ```
@@ -142,19 +141,21 @@ Tracking scope:
 - Click: clicked or not clicked, with target URL for link tracking.
 - No city, country, IP analytics, or location breakdown.
 
+Tracking link format:
+
+- Opens: `${TRACKING_BASE_URL}/track/open/:campaignId/:recipientId.gif?email=:recipientEmail`
+- Clicks: `${TRACKING_BASE_URL}/track/click/:campaignId/:recipientId?url=:encodedTargetUrl&email=:recipientEmail`
+- Unsubscribe: `${TRACKING_BASE_URL}/track/unsubscribe/:campaignId/:recipientId?email=:recipientEmail`
+
 ## Backup
 
-Run compressed online backup:
+Run compressed online backup from the Settings page with **Back up now**, or from CLI:
 
 ```bash
 npm run backup:data-hub
 ```
 
-Schedule on Windows:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\schedule-sync-task.ps1
-```
+Backups are manual-only. The local MongoDB database stays the source of truth; the online MongoDB database stores gzip-compressed Extended JSON chunks in `_auto_mailer_backup_chunks`, with run metadata in `_auto_mailer_backup_runs`.
 
 ## Verify
 
@@ -177,6 +178,7 @@ npm run build --prefix frontend
 - `.env` is not committed.
 - `AUTO_MAILER_API_KEY` is long and unique.
 - `FRONTEND_URL` points to the public backend URL used in email links.
+- `TRACKING_BASE_URL` points to the public backend/API URL used in open, click, and unsubscribe links.
 - Resend sender/domain is verified.
 - UploadThing token is set in frontend hosting.
 - MongoDB Atlas IP/network access is restricted where possible.

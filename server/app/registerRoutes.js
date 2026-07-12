@@ -114,7 +114,9 @@ function registerRoutes(app) {
       const { email } = req.body;
       if (!email) return res.status(400).json({ error: 'Email required' });
       const Campaign = require('../models/Campaign');
+      const { updateEmailTags } = require('../services/mailService');
       await Campaign.updateMany({ 'recipients.email': email.toLowerCase().trim() }, { $set: { 'recipients.$.status': 'Unsubscribed' } });
+      await updateEmailTags(email, 'unsubscribed', 'Unsubscribed');
       res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
   });

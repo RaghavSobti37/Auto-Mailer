@@ -1,8 +1,32 @@
 'use client';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { live } from '@/lib/api';
+import { useState } from 'react';
 
 export default function SettingsPage() {
+  const [backupStatus, setBackupStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [backupMessage, setBackupMessage] = useState('');
+
+  async function runBackup() {
+    setBackupStatus('running');
+    setBackupMessage('');
+    try {
+      const result = await live.dataHub.backup();
+      if (result.skipped) {
+        setBackupStatus('error');
+        setBackupMessage(result.reason || 'Backup skipped');
+        return;
+      }
+      const sizeMb = ((result.compressedBytes || 0) / (1024 * 1024)).toFixed(2);
+      setBackupStatus('success');
+      setBackupMessage(`Backed up ${result.documentCount || 0} documents into ${result.chunkCount || 0} compressed chunks (${sizeMb} MB).`);
+    } catch (error) {
+      setBackupStatus('error');
+      setBackupMessage(error instanceof Error ? error.message : 'Backup failed');
+    }
+  }
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
@@ -12,11 +36,10 @@ export default function SettingsPage() {
           <div className="card">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Connection</h3>
             <div className="space-y-3 text-sm">
-              <div><label className="label">Live API URL</label><input className="input" defaultValue={process.env.NEXT_PUBLIC_LIVE_API_URL || 'http://localhost:5001'} readOnly /></div>
-              <div><label className="label">Mirror API URL</label><input className="input" defaultValue={process.env.NEXT_PUBLIC_MIRROR_API_URL || 'http://localhost:5001'} readOnly /></div>
+              <div><label className="label">Local API URL</label><input className="input" defaultValue={process.env.NEXT_PUBLIC_LIVE_API_URL || 'http://localhost:5001'} readOnly /></div>
               <div className="flex items-center gap-2 text-xs text-green-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <span>Both endpoints reachable</span>
+                <span>Local data source</span>
               </div>
             </div>
           </div>
@@ -24,9 +47,22 @@ export default function SettingsPage() {
           <div className="card">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Sync Configuration</h3>
             <div className="space-y-3 text-sm">
-              <div><label className="label">Method</label><div className="text-gray-700">Option B (scheduled mongodump)</div></div>
-              <div><label className="label">Sync interval</label><div className="text-gray-700">Every 10 minutes</div></div>
+              <div><label className="label">Method</label><div className="text-gray-700">Local MongoDB primary</div></div>
+              <div><label className="label">Backup</label><div className="text-gray-700">Manual compressed online Mongo copy</div></div>
               <div><label className="label">Collections</label><div className="text-gray-700">Campaign, MailEvent, EmailLog, EmailProfile, MailTemplate, MailCampaign, WhatsAppEvent, Person</div></div>
+              <button
+                type="button"
+                onClick={runBackup}
+                disabled={backupStatus === 'running'}
+                className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {backupStatus === 'running' ? 'Backing up...' : 'Back up now'}
+              </button>
+              {backupMessage && (
+                <p className={backupStatus === 'error' ? 'text-xs text-red-600' : 'text-xs text-green-600'}>
+                  {backupMessage}
+                </p>
+              )}
             </div>
           </div>
 

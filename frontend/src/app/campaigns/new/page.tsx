@@ -35,7 +35,11 @@ function splitRecipients(value: string) {
     .split(/\r?\n|,/)
     .map((email) => email.trim())
     .filter(Boolean)
-    .map((email) => ({ email }));
+    .map((email) => ({
+      email,
+      name: email.split('@')[0]?.replace(/[._-]+/g, ' ') || email,
+      rowData: { name: email.split('@')[0]?.replace(/[._-]+/g, ' ') || email, email },
+    }));
 }
 
 function bannerHtml(asset: BannerAsset | null) {
@@ -136,6 +140,7 @@ export default function NewCampaignPage() {
       includeSignature,
       signature,
       removeUnsubscribe: !includeUnsubscribe,
+      variableMapping: { name: 'name' },
       attachments: bannerAsset ? [bannerAsset] : [],
     }),
     onSuccess: (data) => router.push('/campaigns/' + data._id),
@@ -148,7 +153,7 @@ export default function NewCampaignPage() {
       format,
       includeSignature,
       signature,
-      sampleRecipient: { email: recipients[0]?.email || 'preview@example.com', name: 'Raghav', rowData: { name: 'Raghav' } },
+      sampleRecipient: recipients[0] || { email: 'preview@example.com', name: 'Raghav', rowData: { name: 'Raghav' } },
       variableMapping: { name: 'name' },
     }),
     onSuccess: (data) => setPreviewHtml(data.html),
@@ -164,6 +169,8 @@ export default function NewCampaignPage() {
       senderMode,
       includeSignature,
       signature,
+      sampleRecipient: recipients[0] || { email: 'preview@example.com', name: 'Raghav', rowData: { name: 'Raghav' } },
+      variableMapping: { name: 'name' },
     }),
   });
 

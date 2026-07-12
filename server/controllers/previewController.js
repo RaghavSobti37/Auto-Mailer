@@ -5,6 +5,7 @@
 const EmailProfile = require('../models/EmailProfile');
 const { dispatchEmailPayload } = require('../services/mailDriver');
 const { applySignature } = require('../utils/emailSignature');
+const { personalizeEmailContent } = require('../utils/emailPersonalization');
 const { wrapPreviewDocument } = require('../utils/buildFinalEmailHtml');
 
 /**
@@ -22,17 +23,12 @@ exports.preview = async (req, res) => {
       return res.status(400).json({ error: 'sampleRecipient with email is required' });
     }
 
-    let html = content || '';
-
-    // Substitute variables from sample recipient
-    if (variableMapping && typeof variableMapping === 'object') {
-      Object.entries(variableMapping).forEach(([idx, col]) => {
-        const val = sampleRecipient.rowData?.[col] || sampleRecipient[col] || '';
-        const pattern = new RegExp(`\\{${idx}\\}`, 'g');
-        const patternNamed = new RegExp(`\\{\\{${idx}\\}\\}`, 'g');
-        html = html.replace(pattern, val).replace(patternNamed, val);
-      });
-    }
+    let { html, subject: previewSubject } = personalizeEmailContent({
+      html: content || '',
+      subject: subject || '',
+      recipient: sampleRecipient,
+      variableMapping,
+    });
 
     // Apply signature
     if (includeSignature && signature) {
@@ -44,7 +40,7 @@ exports.preview = async (req, res) => {
       ? html
       : wrapPreviewDocument(html, { theme: theme || 'light' });
 
-    res.json({ html: previewHtml, subject: subject || '' });
+    res.json({ html: previewHtml, subject: previewSubject || '' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -66,17 +62,12 @@ exports.testCampaign = async (req, res) => {
       return res.status(400).json({ error: 'Valid test email is required' });
     }
 
-    let html = content || '';
-
-    // Substitute variables from sample recipient if provided
-    if (variableMapping && typeof variableMapping === 'object' && sampleRecipient) {
-      Object.entries(variableMapping).forEach(([idx, col]) => {
-        const val = sampleRecipient.rowData?.[col] || sampleRecipient[col] || '';
-        const pattern = new RegExp(`\\{${idx}\\}`, 'g');
-        const patternNamed = new RegExp(`\\{\\{${idx}\\}\\}`, 'g');
-        html = html.replace(pattern, val).replace(patternNamed, val);
-      });
-    }
+    let { html, subject: personalizedSubject } = personalizeEmailContent({
+      html: content || '',
+      subject: subject || '',
+      recipient: sampleRecipient,
+      variableMapping,
+    });
 
     // Apply signature
     if (includeSignature && signature) {
@@ -102,7 +93,7 @@ exports.testCampaign = async (req, res) => {
 
     const result = await dispatchEmailPayload({
       to: testEmail,
-      subject: subject || 'Test Campaign',
+      subject: personalizedSubject || 'Test Campaign',
       html: finalHtml,
       from,
     });

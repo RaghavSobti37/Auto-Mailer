@@ -20,5 +20,9 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: TRACKING_BASE_URL
+        sync: false
+      - key: ONLINE_BACKUP_MONGODB_URI
+        sync: false
     healthCheckPath: /health
     autoDeploy: true

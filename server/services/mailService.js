@@ -3,8 +3,31 @@ const Campaign = require('../models/Campaign');
 const MailCampaign = require('../models/MailCampaign');
 const MailEvent = require('../models/MailEvent');
 const EmailProfile = require('../models/EmailProfile');
+const Person = require('../models/Person');
 const { dispatchEmailPayload } = require('./mailDriver');
 const { applySignature } = require('../utils/emailSignature');
+const { personalizeEmailContent } = require('../utils/emailPersonalization');
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function getPersonSuppression(person) {
+  if (!person) return null;
+  if (person.suppressed || person.suppressionReason === 'unsubscribed') {
+    return { status: 'Unsubscribed', error: 'Local data hub marks recipient unsubscribed' };
+  }
+  if (person.bounced || person.suppressionReason === 'bounced' || (person.emailStats?.bounced || 0) > 0) {
+    return { status: 'Bounced', error: 'Local data hub marks recipient bounced' };
+  }
+  return null;
+}
+
+async function findPersonByEmail(email) {
+  const cleanEmail = normalizeEmail(email);
+  if (!cleanEmail) return null;
+  return Person.findOne({ email: cleanEmail });
+}
 
 /**
  * Build final HTML with tracking pixel, unsubscribe link, etc.
@@ -51,9 +74,21 @@ async function sendCampaignEmail({ campaign, recipient, profile, trackingBaseUrl
     return { status: 'Invalid', error: 'Invalid email address' };
   }
 
+  const cleanEmail = normalizeEmail(email);
+  const suppression = getPersonSuppression(await findPersonByEmail(cleanEmail));
+  if (suppression) return suppression;
+
+  const personalized = personalizeEmailContent({
+    html: campaign.content || '',
+    subject: campaign.subject || '',
+    recipient,
+    variableMapping: campaign.variableMapping,
+    variableFallbacks: campaign.variableFallbacks,
+  });
+
   const bodyHtml = campaign.includeSignature === false
-    ? (campaign.content || '')
-    : applySignature(campaign.content || '', campaign.signature || profile?.signature || '');
+    ? personalized.html
+    : applySignature(personalized.html, campaign.signature || profile?.signature || '');
 
   const html = buildCampaignHtml({
     html: bodyHtml,
@@ -64,7 +99,7 @@ async function sendCampaignEmail({ campaign, recipient, profile, trackingBaseUrl
     removeUnsubscribe: campaign.removeUnsubscribe,
   });
 
-  const subject = campaign.subject || '';
+  const subject = personalized.subject || campaign.subject || '';
 
   // Determine sender details
   let from = null;
@@ -100,8 +135,35 @@ async function sendCampaignEmail({ campaign, recipient, profile, trackingBaseUrl
  * Update email tags / status
  */
 async function updateEmailTags(email, tag, status) {
-  // In single-tenant mode, just log the tag update
-  console.log(`[MailService] Tag update: ${email} → tag=${tag}, status=${status}`);
+  const cleanEmail = normalizeEmail(email);
+  if (!cleanEmail) return;
+
+  const patch = {};
+  const inc = {};
+  const unset = {};
+
+  if (status === 'Unsubscribed') {
+    patch.suppressed = true;
+    patch.suppressionReason = 'unsubscribed';
+  } else if (status === 'Invalid' || status === 'Bounced') {
+    patch.suppressed = true;
+    patch.suppressionReason = 'bounced';
+    patch.bounced = true;
+    inc['emailStats.bounced'] = 1;
+  } else if (status === 'Active') {
+    patch.suppressed = false;
+    patch.bounced = false;
+    unset.suppressionReason = '';
+  }
+
+  if (!Object.keys(patch).length && !Object.keys(inc).length && !Object.keys(unset).length) return;
+
+  const update = {};
+  if (Object.keys(patch).length) update.$set = patch;
+  if (Object.keys(inc).length) update.$inc = inc;
+  if (Object.keys(unset).length) update.$unset = unset;
+
+  await Person.updateOne({ email: cleanEmail }, update);
 }
 
 /**
@@ -136,4 +198,6 @@ module.exports = {
   sendTestEmail,
   buildCampaignHtml,
   rewriteTrackedLinks,
+  getPersonSuppression,
+  normalizeEmail,
 };

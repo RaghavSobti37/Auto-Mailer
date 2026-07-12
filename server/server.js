@@ -51,12 +51,7 @@ async function startServer() {
       console.warn('[Auto-Mailer] Campaign worker not available:', err.message);
     }
 
-    try {
-      const { scheduleDailyBackup } = require('./services/dataHubBackupService');
-      scheduleDailyBackup();
-    } catch (err) {
-      console.warn('[Auto-Mailer] Daily backup scheduler unavailable:', err.message);
-    }
+    console.log('[Auto-Mailer] Online Mongo backup is manual-only. Use Settings -> Back up now.');
   });
 }
 

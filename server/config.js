@@ -8,6 +8,7 @@ module.exports = {
   resendApiKey: process.env.RESEND_API_KEY || '',
   resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET || '',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5001',
+  trackingBaseUrl: process.env.TRACKING_BASE_URL || process.env.API_PUBLIC_URL || process.env.FRONTEND_URL || 'http://localhost:5001',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   systemFromEmail: process.env.SYSTEM_VERIFIED_FROM_EMAIL || 'onboarding@resend.dev',
   smtpUser: process.env.SMTP_USER || '',

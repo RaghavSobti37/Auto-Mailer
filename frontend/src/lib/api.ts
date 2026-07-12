@@ -84,6 +84,9 @@ export const live = {
   system: {
     health: () => request<{ status: string; service: string; timestamp: string }>('/api/system/health', { source: 'live' }),
   },
+  dataHub: {
+    backup: () => request<{ skipped: boolean; collections?: number; documentCount?: number; chunkCount?: number; compressedBytes?: number; reason?: string }>('/api/data-hub/backup/run', { source: 'live', method: 'POST' }),
+  },
   whatsapp: {
     import: async (fd: FormData) => {
       const res = await fetch(`${LIVE_API_URL}/api/whatsapp/import`, {

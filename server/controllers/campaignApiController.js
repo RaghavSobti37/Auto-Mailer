@@ -69,7 +69,17 @@ exports.create = async (req, res) => {
       .map((r) => {
         const email = r?.email?.trim().toLowerCase();
         if (!email || !/[^\s@]+@[^\s@]+/.test(email)) return null;
-        return { email, name: (r?.name || '').trim(), status: 'Pending' };
+        const name = (r?.name || '').trim();
+        return {
+          email,
+          name,
+          rowData: {
+            ...(r?.rowData || {}),
+            email,
+            name: r?.rowData?.name || name,
+          },
+          status: 'Pending',
+        };
       })
       .filter(Boolean);
 
