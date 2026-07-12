@@ -1,8 +1,8 @@
 'use client';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { live } from '@/lib/api';
-import { useState } from 'react';
+import { live, type BackupJobStatus } from '@/lib/api';
+import { useEffect, useState } from 'react';
 
 function displayApiUrl() {
   if (process.env.NEXT_PUBLIC_LIVE_API_URL) return process.env.NEXT_PUBLIC_LIVE_API_URL;
@@ -13,61 +13,80 @@ function displayApiUrl() {
 }
 
 export default function SettingsPage() {
-  const [backupStatus, setBackupStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [backupStatus, setBackupStatus] = useState<BackupJobStatus>({ status: 'idle' });
   const [backupMessage, setBackupMessage] = useState('');
+  const polling = backupStatus.status === 'running';
+
+  useEffect(() => {
+    live.backup.status().then(setBackupStatus).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!polling) return;
+    const id = setInterval(async () => {
+      try {
+        const status = await live.backup.status();
+        setBackupStatus(status);
+        if (status.status === 'completed' && status.result) {
+          const sizeMb = ((status.result.compressedBytes || 0) / (1024 * 1024)).toFixed(2);
+          setBackupMessage(`Backed up ${status.result.documentCount || 0} docs → ${status.result.chunkCount || 0} chunks (${sizeMb} MB).`);
+        }
+        if (status.status === 'failed') {
+          setBackupMessage(status.error || 'Backup failed');
+        }
+      } catch (error) {
+        setBackupMessage(error instanceof Error ? error.message : 'Backup status unavailable');
+      }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [polling]);
 
   async function runBackup() {
-    setBackupStatus('running');
     setBackupMessage('');
     try {
-      const result = await live.dataHub.backup();
-      if (result.skipped) {
-        setBackupStatus('error');
-        setBackupMessage(result.reason || 'Backup skipped');
-        return;
-      }
-      const sizeMb = ((result.compressedBytes || 0) / (1024 * 1024)).toFixed(2);
-      setBackupStatus('success');
-      setBackupMessage(`Backed up ${result.documentCount || 0} documents into ${result.chunkCount || 0} compressed chunks (${sizeMb} MB).`);
+      const { status } = await live.backup.start();
+      setBackupStatus(status);
     } catch (error) {
-      setBackupStatus('error');
+      setBackupStatus({ status: 'failed', error: error instanceof Error ? error.message : 'Backup failed' });
       setBackupMessage(error instanceof Error ? error.message : 'Backup failed');
     }
   }
 
+  const running = backupStatus.status === 'running';
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <div><h1 className="text-2xl font-bold tracking-tight">Settings</h1><p className="text-sm text-gray-500 mt-1">Environment and connection configuration</p></div>
-        
+        <div><h1 className="text-2xl font-bold tracking-tight">Settings</h1><p className="text-sm text-gray-500 mt-1">Local Mongo primary · online Mongo compressed backup</p></div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="card">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Connection</h3>
             <div className="space-y-3 text-sm">
-              <div><label className="label">Local API URL</label><input className="input" defaultValue={displayApiUrl()} readOnly /></div>
+              <div><label className="label">API URL</label><input className="input" defaultValue={displayApiUrl()} readOnly /></div>
               <div className="flex items-center gap-2 text-xs text-green-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <span>Local data source</span>
+                <span>Auto-Mailer owns all mail data (not CoreKnot)</span>
               </div>
             </div>
           </div>
 
           <div className="card">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Sync Configuration</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Online backup</h3>
             <div className="space-y-3 text-sm">
-              <div><label className="label">Method</label><div className="text-gray-700">Local MongoDB primary</div></div>
-              <div><label className="label">Backup</label><div className="text-gray-700">Manual compressed online Mongo copy</div></div>
-              <div><label className="label">Collections</label><div className="text-gray-700">Campaign, MailEvent, EmailLog, EmailProfile, MailTemplate, MailCampaign, WhatsAppEvent, Person</div></div>
+              <div><label className="label">Primary</label><div className="text-gray-700">Local / Render MongoDB</div></div>
+              <div><label className="label">Archive</label><div className="text-gray-700">gzip EJSON chunks → ONLINE_BACKUP_MONGODB_URI</div></div>
+              <div><label className="label">Worker</label><div className="text-gray-700 capitalize">{backupStatus.status}</div></div>
               <button
                 type="button"
                 onClick={runBackup}
-                disabled={backupStatus === 'running'}
+                disabled={running}
                 className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {backupStatus === 'running' ? 'Backing up...' : 'Back up now'}
+                {running ? 'Backing up in background…' : 'Back up to online Mongo'}
               </button>
               {backupMessage && (
-                <p className={backupStatus === 'error' ? 'text-xs text-red-600' : 'text-xs text-green-600'}>
+                <p className={backupStatus.status === 'failed' ? 'text-xs text-red-600' : 'text-xs text-green-600'}>
                   {backupMessage}
                 </p>
               )}

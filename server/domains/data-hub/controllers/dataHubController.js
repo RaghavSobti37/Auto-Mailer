@@ -4,7 +4,6 @@ const { getSyncState, syncAllInlets } = require('../services/syncService');
 const { findHubContact, getPersonBase, getPersonSection, getPerson360 } = require('../services/personDetailService');
 const { deletePeopleByIds } = require('../services/deletePeopleService');
 const { rebuildPersonHubFromIndex } = require('../services/repairService');
-const { runMongoBackup } = require('../../../services/dataHubBackupService');
 
 exports.getFolders = async (req, res) => {
   try {
@@ -133,10 +132,22 @@ exports.bulkDeletePeople = async (req, res) => {
 
 exports.runBackup = async (_req, res) => {
   try {
-    const result = await runMongoBackup();
-    if (result.skipped) return res.status(400).json(result);
-    res.json(result);
+    const { startBackupRun, getBackupStatus } = require('../../../services/backupWorker');
+    const started = startBackupRun();
+    if (!started.started) {
+      return res.status(409).json({ error: started.reason, status: started.status });
+    }
+    res.status(202).json({ message: 'Backup started', status: getBackupStatus() });
   } catch (error) {
     res.status(500).json({ error: error.message || 'Backup failed' });
+  }
+};
+
+exports.getBackupStatus = async (_req, res) => {
+  try {
+    const { getBackupStatus } = require('../../../services/backupWorker');
+    res.json(getBackupStatus());
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to read backup status' });
   }
 };

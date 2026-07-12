@@ -2,8 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { mirror } from '@/lib/api';
-import { SyncStatusChip } from '@/components/SyncStatusChip';
+import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
 
@@ -12,10 +11,9 @@ export default function AudiencePage() {
   const [page, setPage] = useState(0);
   const pageSize = 50;
 
-  const { data: syncStatus } = useQuery({ queryKey: ['sync-status'], queryFn: () => mirror.sync.status(), refetchInterval: 15_000 });
   const { data: audience, isLoading } = useQuery({
     queryKey: ['audience', page, search],
-    queryFn: () => mirror.audience.list({ page, limit: pageSize, search: search || undefined }),
+    queryFn: () => live.audience.list({ page, limit: pageSize, search: search || undefined }),
   });
 
   return (
@@ -24,13 +22,9 @@ export default function AudiencePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Audience</h1>
-            <p className="text-sm text-muted-ledger mt-1">Data Hub - mirror path</p>
+            <p className="text-sm text-muted-ledger mt-1">Local MongoDB contacts — independent of CoreKnot</p>
           </div>
-          {syncStatus && (
-            <SyncStatusChip lastSyncAt={syncStatus.lastSyncAt}
-              stalenessMinutes={syncStatus.lastSyncAt ? Math.floor((Date.now() - new Date(syncStatus.lastSyncAt).getTime()) / 60000) : 0}
-              isHealthy={syncStatus.isHealthy} />
-          )}
+          <span className="text-xs text-muted-ledger">{audience?.total?.toLocaleString() ?? '…'} people</span>
         </div>
 
         <div className="flex gap-3">
@@ -40,7 +34,7 @@ export default function AudiencePage() {
         {isLoading ? (
           <div className="text-center py-12 text-muted-ledger">Loading audience...</div>
         ) : !audience?.items?.length ? (
-          <div className="text-center py-12 text-muted-ledger">No audience data found</div>
+          <div className="text-center py-12 text-muted-ledger">No audience data yet. Run migration or import contacts.</div>
         ) : (
           <>
             <div className="ledger-shell">
@@ -73,7 +67,7 @@ export default function AudiencePage() {
               </table>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Page {page + 1} / {Math.ceil((audience.total || 0) / pageSize)}</span>
+              <span className="text-gray-500">Page {page + 1} / {Math.max(1, Math.ceil((audience.total || 0) / pageSize))}</span>
               <div className="flex gap-2">
                 <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="btn-secondary text-xs">Previous</button>
                 <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= (audience.total || 0)} className="btn-secondary text-xs">Next</button>

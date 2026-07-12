@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { live, mirror } from '@/lib/api';
+import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
 
@@ -9,17 +9,21 @@ export default function SystemPage() {
   const queryClient = useQueryClient();
 
   const { data: health } = useQuery({ queryKey: ['system-health'], queryFn: () => live.system.health(), refetchInterval: 30_000 });
-  const { data: syncStatus } = useQuery({ queryKey: ['sync-status'], queryFn: () => mirror.sync.status(), refetchInterval: 15_000 });
+  const { data: backupStatus } = useQuery({ queryKey: ['backup-status'], queryFn: () => live.backup.status(), refetchInterval: 3_000 });
 
-  const syncMutation = useMutation({ mutationFn: () => mirror.sync.trigger(), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sync-status'] }) });
+  const backupMutation = useMutation({
+    mutationFn: () => live.backup.start(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['backup-status'] }),
+  });
+
+  const result = backupStatus?.result;
 
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <div><h1 className="text-2xl font-bold tracking-tight">System</h1><p className="text-sm text-muted-ledger mt-1">Infrastructure health and status</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">System</h1><p className="text-sm text-muted-ledger mt-1">Infrastructure health and online backup</p></div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* API Health */}
           <div className="card">
             <div className="flex items-center gap-2 mb-3"><PostmarkBadge status={health ? 'healthy' : 'offline'} size="sm" /><h3 className="text-sm font-semibold">API Status</h3></div>
             <div className="text-sm text-muted-ledger">
@@ -29,39 +33,39 @@ export default function SystemPage() {
             </div>
           </div>
 
-          {/* Sync Status */}
           <div className="card">
             <div className="flex items-center gap-2 mb-3">
-              <PostmarkBadge status={syncStatus?.isHealthy ? 'healthy' : 'degraded'} size="sm" />
-              <h3 className="text-sm font-semibold">Mirror Sync</h3>
+              <PostmarkBadge status={backupStatus?.status === 'running' ? 'queued' : backupStatus?.status === 'completed' ? 'healthy' : backupStatus?.status === 'failed' ? 'degraded' : 'offline'} size="sm" />
+              <h3 className="text-sm font-semibold">Online Mongo backup</h3>
             </div>
             <div className="text-sm text-muted-ledger">
-              <div className="flex justify-between py-1"><span>Method</span><span className="font-medium">{syncStatus?.method || 'scheduled'}</span></div>
-              <div className="flex justify-between py-1"><span>Last sync</span><span className="font-medium">{syncStatus?.lastSyncAt ? new Date(syncStatus.lastSyncAt).toLocaleString() : 'never'}</span></div>
-              <div className="flex justify-between py-1"><span>Rows synced</span><span className="font-medium">{syncStatus?.rowsSynced || 0}</span></div>
-              <div className="flex justify-between py-1">
-                <span>Health</span>
-                <span className="font-medium">{syncStatus?.isHealthy ? 'Healthy' : 'Degraded'}</span>
-              </div>
+              <div className="flex justify-between py-1"><span>Worker</span><span className="font-medium capitalize">{backupStatus?.status || 'idle'}</span></div>
+              <div className="flex justify-between py-1"><span>Last run</span><span className="font-medium">{backupStatus?.finishedAt ? new Date(backupStatus.finishedAt).toLocaleString() : 'never'}</span></div>
+              {result && (
+                <>
+                  <div className="flex justify-between py-1"><span>Documents</span><span className="font-medium">{result.documentCount ?? 0}</span></div>
+                  <div className="flex justify-between py-1"><span>Compressed</span><span className="font-medium">{((result.compressedBytes || 0) / (1024 * 1024)).toFixed(2)} MB</span></div>
+                </>
+              )}
+              {backupStatus?.error && <p className="text-xs text-red-600 mt-2">{backupStatus.error}</p>}
             </div>
-            <button onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending} className="mt-3 btn-secondary w-full">
-              {syncMutation.isPending ? 'Syncing...' : 'Sync now'}
+            <button onClick={() => backupMutation.mutate()} disabled={backupMutation.isPending || backupStatus?.status === 'running'} className="mt-3 btn-secondary w-full">
+              {backupStatus?.status === 'running' ? 'Backup running…' : 'Back up to online Mongo'}
             </button>
           </div>
 
-          {/* Redis / Queue */}
           <div className="card">
             <div className="flex items-center gap-2 mb-3">
               <PostmarkBadge status="healthy" size="sm" />
-              <h3 className="text-sm font-semibold">Queue / Redis</h3>
+              <h3 className="text-sm font-semibold">Data ownership</h3>
             </div>
-            <div className="text-sm text-muted-ledger">
-              <div className="flex justify-between py-1"><span>Status</span><span className="font-medium">Available</span></div>
-              <div className="flex justify-between py-1"><span>Pending jobs</span><span className="font-medium">{syncStatus?.rowsSynced || 0}</span></div>
+            <div className="text-sm text-muted-ledger space-y-1">
+              <p>Primary: Auto-Mailer MongoDB (local or Render)</p>
+              <p>Archive: compressed chunks in online backup DB</p>
+              <p>CoreKnot data-hub / mail tracking: removed</p>
             </div>
           </div>
 
-          {/* Webhook */}
           <div className="card">
             <div className="flex items-center gap-2 mb-3">
               <PostmarkBadge status="healthy" size="sm" />
@@ -69,7 +73,6 @@ export default function SystemPage() {
             </div>
             <div className="text-sm text-muted-ledger">
               <div className="flex justify-between py-1"><span>Resend webhook</span><span className="font-medium">Active</span></div>
-              <div className="flex justify-between py-1"><span>Signature failures</span><span className="font-medium">0</span></div>
             </div>
           </div>
         </div>

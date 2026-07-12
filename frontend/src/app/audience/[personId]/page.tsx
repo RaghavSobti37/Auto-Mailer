@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { mirror } from '@/lib/api';
+import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ContactTimelinePage() {
@@ -12,7 +12,7 @@ export default function ContactTimelinePage() {
 
   const { data: person, isLoading } = useQuery({
     queryKey: ['person', personId],
-    queryFn: () => mirror.audience.getById(personId),
+    queryFn: () => live.audience.getById(personId),
   });
 
   return (

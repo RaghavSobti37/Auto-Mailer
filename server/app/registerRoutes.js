@@ -122,39 +122,24 @@ function registerRoutes(app) {
   app.use('/track', trackRoutes);
   app.use('/webhooks', webhookRoutes);
 
-  // Audience API (Person collection)
+  // Audience API (PersonHubView read model — no CoreKnot sync worker)
   app.get('/api/audience', async (req, res) => {
     try {
-      const Person = require('../models/Person');
+      const { listAudienceFromHub } = require('../services/audienceReadService');
       const q = req.query;
-      const page = Math.max(parseInt(q.page) || 0, 0);
-      const limit = Math.min(parseInt(q.limit) || 50, 200);
-      const filter = {};
-
-      if (q.search) {
-        const searchStr = String(q.search).slice(0, 100);
-        const esc = searchStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        filter.$or = [
-          { email: { $regex: esc, $options: 'i' } },
-          { name: { $regex: esc, $options: 'i' } },
-          { phone: { $regex: esc, $options: 'i' } },
-          { normalizedPhone: { $regex: esc, $options: 'i' } },
-        ];
-      }
-
-      const [items, total] = await Promise.all([
-        Person.find(filter).sort({ createdAt: -1 }).skip(page * limit).limit(limit).lean(),
-        Person.countDocuments(filter),
-      ]);
-
-      res.json({ items, total, page, limit });
+      const result = await listAudienceFromHub({
+        page: q.page,
+        limit: q.limit,
+        search: q.search,
+      });
+      res.json(result);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
   app.get('/api/audience/:id', async (req, res) => {
     try {
-      const Person = require('../models/Person');
-      const person = await Person.findById(req.params.id).lean();
+      const { getAudiencePersonFromHub } = require('../services/audienceReadService');
+      const person = await getAudiencePersonFromHub(req.params.id);
       if (!person) return res.status(404).json({ error: 'Person not found' });
       res.json(person);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -237,32 +222,19 @@ function registerRoutes(app) {
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
-  // Mirror Sync
-  app.get('/api/mirror/sync-status', async (req, res) => {
+  // Online backup (background worker)
+  app.post('/api/backup/run', (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const stateFile = path.join(__dirname, '..', '..', '.sync-state.json');
-      if (fs.existsSync(stateFile)) {
-        const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-        const stalenessMinutes = state.lastSyncAt ? Math.floor((Date.now() - new Date(state.lastSyncAt).getTime()) / 60000) : 0;
-        res.json({ lastSyncAt: state.lastSyncAt, rowsSynced: state.rowsSynced || 0, method: 'scheduled', isHealthy: !state.lastErrorAt || stalenessMinutes < 60, stalenessMinutes });
-      } else {
-        res.json({ lastSyncAt: null, rowsSynced: 0, method: 'scheduled', isHealthy: false, stalenessMinutes: 0 });
-      }
+      const { startBackupRun, getBackupStatus } = require('../services/backupWorker');
+      const started = startBackupRun();
+      if (!started.started) return res.status(409).json({ error: started.reason, status: started.status });
+      res.status(202).json({ message: 'Backup started', status: getBackupStatus() });
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
-  app.post('/api/mirror/sync-now', async (req, res) => {
+  app.get('/api/backup/status', (req, res) => {
     try {
-      const { spawn } = require('child_process');
-      const path = require('path');
-      const script = path.join(__dirname, '..', '..', 'scripts', 'sync-worker.js');
-      spawn(process.execPath, [script], {
-        cwd: path.join(__dirname, '..', '..'),
-        detached: true,
-        stdio: 'ignore',
-      }).unref();
-      res.json({ message: 'Sync started' });
+      const { getBackupStatus } = require('../services/backupWorker');
+      res.json(getBackupStatus());
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 

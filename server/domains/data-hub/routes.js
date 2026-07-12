@@ -12,5 +12,6 @@ router.get('/sync-status', controller.getSyncStatus);
 router.post('/reconcile', controller.reconcile);
 router.post('/rebuild-person-hub', controller.rebuildPersonHub);
 router.post('/backup/run', controller.runBackup);
+router.get('/backup/status', controller.getBackupStatus);
 
 module.exports = router;

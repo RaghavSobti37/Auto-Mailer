@@ -23,4 +23,5 @@ const PersonSchema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Person', PersonSchema);
+// ponytail: own collection — never share CoreKnot `people` identity docs
+module.exports = mongoose.model('Person', PersonSchema, 'automailer_people');

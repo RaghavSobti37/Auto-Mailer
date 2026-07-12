@@ -7,7 +7,8 @@
         "start": "node server/server.js",
         "dev": "node --watch server/server.js",
         "backup:data-hub": "node scripts/backup-data-hub.js",
-        "test": "node scripts/backup-self-check.js && node scripts/mail-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js",
+        "migrate:from-coreknot": "node scripts/migrate-from-coreknot.mjs",
+        "test": "node scripts/backup-self-check.js && node scripts/mail-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js && node --check server/services/backupWorker.js && node --check server/services/audienceReadService.js",
         "vercel-build": "npm run build --prefix frontend"
     },
     "dependencies": {

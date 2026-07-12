@@ -102,6 +102,40 @@ https://auto-mailer-5e54.onrender.com
 
 Local dev can still tunnel the API if needed, but production should use the Render URL above.
 
+## Data ownership (CoreKnot decoupled)
+
+- **Auto-Mailer** owns campaigns, templates, tracking, audience, analytics.
+- **Audience** reads `personhubviews` in Mongo (legacy CoreKnot hub shape) — no mirror/sync worker.
+- **Primary DB:** `MONGODB_URI` (local Docker or Render Atlas).
+- **Online backup:** gzip EJSON chunks via Settings → **Back up to online Mongo** (`ONLINE_BACKUP_MONGODB_URI`; can match primary DB on Atlas M0).
+- CoreKnot `/api/data-hub`, `/api/campaigns`, `/api/track` return **410 Gone** → use Auto-Mailer.
+
+Migration (when Atlas has collection headroom):
+
+```bash
+npm run migrate:from-coreknot
+```
+
+
+Service: `Auto-Mailer` (`srv-d7istknaqgkc73a4rv70`) — repo root, **not** CoreKnot `Taskmaster/server`.
+
+**Warning:** Render `PUT /v1/services/{id}/env-vars` **replaces the entire env set**. Never send a single key; always send the full list.
+
+1. Keep secrets in gitignored `.env.render-backup.json` (see `.env.render-backup.json.example`).
+2. Restore env + redeploy:
+
+```bash
+node scripts/restore-render-env.mjs
+```
+
+3. If builds fail with missing `Taskmaster/server`, reset service paths:
+
+```bash
+node scripts/fix-render-service-config.mjs
+```
+
+Requires `RENDER_API_KEY` (see `coreknot/.cursor/render-api.local.env`).
+
 ## Email Provider Setup
 
 Resend path:

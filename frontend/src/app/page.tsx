@@ -1,8 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { live, mirror } from '@/lib/api';
-import { SyncStatusChip } from '@/components/SyncStatusChip';
+import { live } from '@/lib/api';
 import { FlatMetricTile } from '@/components/FlatMetricTile';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
 
@@ -27,32 +26,22 @@ export default function OverviewPage() {
     refetchInterval: 30_000,
   });
 
-  const { data: syncStatus } = useQuery({
-    queryKey: ['sync-status'],
-    queryFn: () => mirror.sync.status(),
+  const { data: backupStatus } = useQuery({
+    queryKey: ['backup-status'],
+    queryFn: () => live.backup.status(),
     refetchInterval: 15_000,
   });
-
-  const isDegraded = syncStatus && (!syncStatus.isHealthy
-    || (syncStatus.lastSyncAt && (Date.now() - new Date(syncStatus.lastSyncAt).getTime()) > 30 * 60 * 1000));
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
-          <p className="mt-1 text-sm text-muted-ledger">Dispatch ledger, live from Atlas</p>
+          <p className="mt-1 text-sm text-muted-ledger">Auto-Mailer dispatch ledger (local Mongo)</p>
         </div>
-        {syncStatus && (
-          <SyncStatusChip
-            lastSyncAt={syncStatus.lastSyncAt}
-            stalenessMinutes={syncStatus.lastSyncAt
-              ? Math.floor((Date.now() - new Date(syncStatus.lastSyncAt).getTime()) / 60000)
-              : 0}
-            isHealthy={syncStatus.isHealthy}
-            compact
-          />
-        )}
+        <a href="/settings" className="text-xs font-semibold text-postmark">
+          Backup: {backupStatus?.status ?? '…'}
+        </a>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
@@ -72,18 +61,13 @@ export default function OverviewPage() {
         </div>
         <div className="flex flex-wrap items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <PostmarkBadge status={syncStatus?.isHealthy ? 'synced' : 'offline'} size="sm" />
-            <span className="text-muted-ledger">Sync</span>
-          </div>
-          <div className="flex items-center gap-2">
             <PostmarkBadge status="healthy" size="sm" />
             <span className="text-muted-ledger">API</span>
           </div>
-          {isDegraded && (
-            <span className="ml-auto text-xs font-medium" style={{ color: 'var(--manila)' }}>
-              Mirror may be stale <a href="/system" className="underline">check system</a>
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <PostmarkBadge status={backupStatus?.status === 'running' ? 'queued' : 'synced'} size="sm" />
+            <span className="text-muted-ledger">Online backup</span>
+          </div>
         </div>
       </div>
 
