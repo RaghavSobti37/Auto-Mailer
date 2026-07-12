@@ -61,9 +61,9 @@ UPLOADTHING_TOKEN=eyJhcGlLZXkiOi...
 AUTO_MAILER_API_KEY=<long-random-local-password>
 PORT=5001
 FRONTEND_URL=https://auto-mailer-blue.vercel.app
-TRACKING_BASE_URL=https://tsc-auto-mailer-api.loca.lt
-NEXT_PUBLIC_LIVE_API_URL=https://tsc-auto-mailer-api.loca.lt
-NEXT_PUBLIC_MIRROR_API_URL=https://tsc-auto-mailer-api.loca.lt
+TRACKING_BASE_URL=https://auto-mailer-5e54.onrender.com
+NEXT_PUBLIC_LIVE_API_URL=https://auto-mailer-5e54.onrender.com
+NEXT_PUBLIC_MIRROR_API_URL=https://auto-mailer-5e54.onrender.com
 ```
 
 Start local services:
@@ -92,11 +92,13 @@ Production frontend:
 https://auto-mailer-blue.vercel.app
 ```
 
-Production API tunnel for local Data Hub:
+Production API (Render):
 
 ```text
-https://tsc-auto-mailer-api.loca.lt
+https://auto-mailer-5e54.onrender.com
 ```
+
+Local dev can still tunnel the API if needed, but production should use the Render URL above.
 
 ## Email Provider Setup
 

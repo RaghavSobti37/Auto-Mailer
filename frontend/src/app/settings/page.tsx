@@ -7,7 +7,7 @@ import { useState } from 'react';
 function displayApiUrl() {
   if (process.env.NEXT_PUBLIC_LIVE_API_URL) return process.env.NEXT_PUBLIC_LIVE_API_URL;
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://tsc-auto-mailer-api.loca.lt';
+    return 'https://auto-mailer-5e54.onrender.com';
   }
   return 'http://localhost:5001';
 }

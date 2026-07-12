@@ -1,4 +1,4 @@
-const PRODUCTION_API_URL = 'https://tsc-auto-mailer-api.loca.lt';
+const PRODUCTION_API_URL = 'https://auto-mailer-5e54.onrender.com';
 
 function defaultApiUrl(): string {
   if (typeof window !== 'undefined') {
