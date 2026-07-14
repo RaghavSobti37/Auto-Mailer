@@ -5,6 +5,7 @@ const config = require('../config');
 
 const BACKUP_META_COLLECTION = '_auto_mailer_backup_runs';
 const BACKUP_CHUNKS_COLLECTION = '_auto_mailer_backup_chunks';
+const FALLBACK_ARCHIVE_COLLECTION = 'logarchives';
 const MAX_UNCOMPRESSED_CHUNK_BYTES = 4 * 1024 * 1024;
 
 function redactMongoUri(uri = '') {
@@ -33,13 +34,20 @@ function gzipPayload(text) {
   return zlib.gzipSync(Buffer.from(text, 'utf8'));
 }
 
-async function insertCompressedChunk(targetDb, { runId, collectionName, sequence, docs }) {
-  if (!docs.length) return { documents: 0, uncompressedBytes: 0, compressedBytes: 0 };
+function isCollectionCapError(err) {
+  return /cannot create a new collection|already using 500 collections/i.test(err?.message || '');
+}
 
+async function insertBackupRecord(targetDb, collectionName, doc) {
+  await targetDb.collection(collectionName).insertOne(doc);
+}
+
+function chunkRecord({ runId, collectionName, sequence, docs, targetCollection }) {
   const payload = `${docs.map(serializeBackupDoc).join('\n')}\n`;
   const compressed = gzipPayload(payload);
-  await targetDb.collection(BACKUP_CHUNKS_COLLECTION).insertOne({
+  const record = {
     runId,
+    recordType: 'auto_mailer_backup_chunk',
     collectionName,
     sequence,
     documentCount: docs.length,
@@ -49,16 +57,28 @@ async function insertCompressedChunk(targetDb, { runId, collectionName, sequence
     format: 'ejsonl',
     data: compressed,
     createdAt: new Date(),
-  });
+  };
+  if (targetCollection === FALLBACK_ARCHIVE_COLLECTION) {
+    record.archiveType = 'auto_mailer_backup';
+    record.source = 'auto-mailer';
+  }
+  return { record, payload };
+}
+
+async function insertCompressedChunk(targetDb, { runId, collectionName, sequence, docs, targetCollection = BACKUP_CHUNKS_COLLECTION }) {
+  if (!docs.length) return { documents: 0, uncompressedBytes: 0, compressedBytes: 0 };
+
+  const { record, payload } = chunkRecord({ runId, collectionName, sequence, docs, targetCollection });
+  await insertBackupRecord(targetDb, targetCollection, record);
 
   return {
     documents: docs.length,
     uncompressedBytes: Buffer.byteLength(payload),
-    compressedBytes: compressed.length,
+    compressedBytes: record.compressedBytes,
   };
 }
 
-async function copyCollection(sourceDb, targetDb, collectionName, startedAt, runId = new mongoose.Types.ObjectId()) {
+async function copyCollection(sourceDb, targetDb, collectionName, startedAt, runId = new mongoose.Types.ObjectId(), backupCollections = {}) {
   const source = sourceDb.collection(collectionName);
 
   let copied = 0;
@@ -75,6 +95,7 @@ async function copyCollection(sourceDb, targetDb, collectionName, startedAt, run
       collectionName,
       sequence,
       docs: chunkDocs,
+      targetCollection: backupCollections.chunks || BACKUP_CHUNKS_COLLECTION,
     });
     if (result.documents > 0) sequence += 1;
     copied += result.documents;
@@ -95,8 +116,11 @@ async function copyCollection(sourceDb, targetDb, collectionName, startedAt, run
   }
   await flushChunk();
 
-  await targetDb.collection(BACKUP_META_COLLECTION).insertOne({
+  await insertBackupRecord(targetDb, backupCollections.meta || BACKUP_META_COLLECTION, {
     runId,
+    recordType: 'auto_mailer_backup_collection',
+    archiveType: backupCollections.meta === FALLBACK_ARCHIVE_COLLECTION ? 'auto_mailer_backup' : undefined,
+    source: backupCollections.meta === FALLBACK_ARCHIVE_COLLECTION ? 'auto-mailer' : undefined,
     collectionName,
     copied,
     chunks: sequence,
@@ -110,6 +134,46 @@ async function copyCollection(sourceDb, targetDb, collectionName, startedAt, run
   });
 
   return { copied, chunks: sequence, uncompressedBytes, compressedBytes };
+}
+
+async function resolveBackupDestination({ sourceDb, targetDb, startedAt, runId }) {
+  const startRecord = {
+    runId,
+    recordType: 'auto_mailer_backup_run',
+    status: 'started',
+    compression: 'gzip',
+    format: 'ejsonl',
+    sourceDatabase: sourceDb.databaseName,
+    backupDatabase: targetDb.databaseName,
+    sourceUri: redactMongoUri(config.mongoUri),
+    startedAt,
+  };
+
+  try {
+    await insertBackupRecord(targetDb, BACKUP_META_COLLECTION, startRecord);
+    return {
+      db: targetDb,
+      collections: { meta: BACKUP_META_COLLECTION, chunks: BACKUP_CHUNKS_COLLECTION },
+      mode: 'dedicated',
+    };
+  } catch (err) {
+    if (!isCollectionCapError(err)) throw err;
+    const existing = await sourceDb.listCollections({ name: FALLBACK_ARCHIVE_COLLECTION }, { nameOnly: true }).toArray();
+    if (!existing.length) throw err;
+    await insertBackupRecord(sourceDb, FALLBACK_ARCHIVE_COLLECTION, {
+      ...startRecord,
+      archiveType: 'auto_mailer_backup',
+      source: 'auto-mailer',
+      backupDatabase: sourceDb.databaseName,
+      fallbackReason: 'Atlas collection cap blocked dedicated backup collections',
+    });
+    return {
+      db: sourceDb,
+      collections: { meta: FALLBACK_ARCHIVE_COLLECTION, chunks: FALLBACK_ARCHIVE_COLLECTION },
+      mode: 'fallback_existing_archive_collection',
+      fallbackReason: 'Atlas collection cap blocked dedicated backup collections',
+    };
+  }
 }
 
 async function runMongoBackup({
@@ -132,32 +196,28 @@ async function runMongoBackup({
 
   try {
     const sourceDb = sourceConnection.db;
-    const targetDb = targetConnection.db;
+    let targetDb = targetConnection.db;
     const collections = await listSourceCollections(sourceDb);
     const copied = {};
-
-    await targetDb.collection(BACKUP_META_COLLECTION).insertOne({
-      runId,
-      status: 'started',
-      compression: 'gzip',
-      format: 'ejsonl',
-      sourceDatabase: sourceDb.databaseName,
-      backupDatabase: targetDb.databaseName,
-      sourceUri: redactMongoUri(config.mongoUri),
-      startedAt,
-    });
+    const destination = await resolveBackupDestination({ sourceDb, targetDb, startedAt, runId });
+    targetDb = destination.db;
 
     for (const collectionName of collections) {
-      copied[collectionName] = await copyCollection(sourceDb, targetDb, collectionName, startedAt, runId);
+      copied[collectionName] = await copyCollection(sourceDb, targetDb, collectionName, startedAt, runId, destination.collections);
     }
     const documentCount = Object.values(copied).reduce((sum, row) => sum + row.copied, 0);
     const chunkCount = Object.values(copied).reduce((sum, row) => sum + row.chunks, 0);
     const uncompressedBytes = Object.values(copied).reduce((sum, row) => sum + row.uncompressedBytes, 0);
     const compressedBytes = Object.values(copied).reduce((sum, row) => sum + row.compressedBytes, 0);
 
-    await targetDb.collection(BACKUP_META_COLLECTION).insertOne({
+    await insertBackupRecord(targetDb, destination.collections.meta, {
       runId,
+      recordType: 'auto_mailer_backup_run',
+      archiveType: destination.collections.meta === FALLBACK_ARCHIVE_COLLECTION ? 'auto_mailer_backup' : undefined,
+      source: destination.collections.meta === FALLBACK_ARCHIVE_COLLECTION ? 'auto-mailer' : undefined,
       status: 'completed',
+      backupMode: destination.mode,
+      fallbackReason: destination.fallbackReason,
       compression: 'gzip',
       format: 'ejsonl',
       sourceDatabase: sourceDb.databaseName,
@@ -176,6 +236,8 @@ async function runMongoBackup({
     return {
       skipped: false,
       runId: runId.toString(),
+      backupMode: destination.mode,
+      fallbackReason: destination.fallbackReason,
       collections: collections.length,
       documentCount,
       chunkCount,
@@ -223,10 +285,12 @@ module.exports = {
   BACKUP_META_COLLECTION,
   BACKUP_CHUNKS_COLLECTION,
   MAX_UNCOMPRESSED_CHUNK_BYTES,
+  FALLBACK_ARCHIVE_COLLECTION,
   copyCollection,
   gzipPayload,
   getTodayDelay,
   insertCompressedChunk,
+  isCollectionCapError,
   listSourceCollections,
   runMongoBackup,
   serializeBackupDoc,

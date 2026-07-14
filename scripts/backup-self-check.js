@@ -5,7 +5,9 @@ const {
   getTodayDelay,
   gzipPayload,
   insertCompressedChunk,
+  isCollectionCapError,
   serializeBackupDoc,
+  FALLBACK_ARCHIVE_COLLECTION,
 } = require('../server/services/dataHubBackupService');
 
 const morning = new Date(2026, 6, 9, 1, 30, 0, 0);
@@ -37,6 +39,19 @@ assert.strictEqual(restored.createdAt.toISOString(), doc.createdAt.toISOString()
   assert.strictEqual(inserted.length, 1);
   assert.strictEqual(inserted[0].compression, 'gzip');
   assert(Buffer.isBuffer(inserted[0].data));
+  assert.strictEqual(isCollectionCapError(new Error('cannot create a new collection -- already using 500 collections of 500')), true);
+
+  const fallbackInserted = [];
+  const fallbackDb = { collection: () => ({ insertOne: async (row) => fallbackInserted.push(row) }) };
+  await insertCompressedChunk(fallbackDb, {
+    runId: new ObjectId('507f1f77bcf86cd799439013'),
+    collectionName: 'people',
+    sequence: 0,
+    docs: [doc],
+    targetCollection: FALLBACK_ARCHIVE_COLLECTION,
+  });
+  assert.strictEqual(fallbackInserted[0].archiveType, 'auto_mailer_backup');
+  assert.strictEqual(fallbackInserted[0].recordType, 'auto_mailer_backup_chunk');
   console.log('backup-self-check passed');
 })().catch((err) => {
   console.error(err);
