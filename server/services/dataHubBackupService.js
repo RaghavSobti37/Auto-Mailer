@@ -7,6 +7,35 @@ const BACKUP_META_COLLECTION = '_auto_mailer_backup_runs';
 const BACKUP_CHUNKS_COLLECTION = '_auto_mailer_backup_chunks';
 const FALLBACK_ARCHIVE_COLLECTION = 'logarchives';
 const MAX_UNCOMPRESSED_CHUNK_BYTES = 4 * 1024 * 1024;
+const DEFAULT_BACKUP_COLLECTIONS = [
+  'campaigns',
+  'mailcampaigns',
+  'emaillogs',
+  'emailprofiles',
+  'mailtemplates',
+  'mailevents',
+  'whatsappevents',
+  'automailer_people',
+  'personhubviews',
+  'personindexes',
+  'persons',
+  'personidentifiers',
+  'personcommunicationprofiles',
+  'personsourcelinks',
+  'people',
+  'leads',
+  'contacts',
+  'crmimports',
+  'crmstatsnapshots',
+  'datahubsyncstates',
+  'outsourcedrecords',
+  'exlybookings',
+  'exlyofferings',
+  'bookedcalls',
+  'newslettersubscribers',
+  'artistpathresponses',
+  'tscdatas',
+];
 
 function redactMongoUri(uri = '') {
   return String(uri).replace(/\/\/([^:/@]+):([^@]+)@/, '//***:***@');
@@ -20,10 +49,17 @@ function getTodayDelay(now = new Date(), hour = 2) {
 }
 
 async function listSourceCollections(sourceDb) {
+  const configured = (process.env.BACKUP_COLLECTIONS || '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const allowList = configured.length ? configured : DEFAULT_BACKUP_COLLECTIONS;
   const collections = await sourceDb.listCollections({}, { nameOnly: true }).toArray();
+  const existing = new Set(collections.map((c) => c.name));
   return collections
     .map((c) => c.name)
-    .filter((name) => !name.startsWith('system.'));
+    .filter((name) => !name.startsWith('system.'))
+    .filter((name) => allowList.includes(name) && existing.has(name));
 }
 
 function serializeBackupDoc(doc) {
@@ -284,6 +320,7 @@ function scheduleDailyBackup({
 module.exports = {
   BACKUP_META_COLLECTION,
   BACKUP_CHUNKS_COLLECTION,
+  DEFAULT_BACKUP_COLLECTIONS,
   MAX_UNCOMPRESSED_CHUNK_BYTES,
   FALLBACK_ARCHIVE_COLLECTION,
   copyCollection,

@@ -6,6 +6,7 @@ const {
   gzipPayload,
   insertCompressedChunk,
   isCollectionCapError,
+  listSourceCollections,
   serializeBackupDoc,
   FALLBACK_ARCHIVE_COLLECTION,
 } = require('../server/services/dataHubBackupService');
@@ -52,6 +53,19 @@ assert.strictEqual(restored.createdAt.toISOString(), doc.createdAt.toISOString()
   });
   assert.strictEqual(fallbackInserted[0].archiveType, 'auto_mailer_backup');
   assert.strictEqual(fallbackInserted[0].recordType, 'auto_mailer_backup_chunk');
+
+  const fakeSourceDb = {
+    listCollections: () => ({
+      toArray: async () => [
+        { name: 'campaigns' },
+        { name: 'personhubviews' },
+        { name: 'artistgigs' },
+        { name: 'system.views' },
+      ],
+    }),
+  };
+  const scoped = await listSourceCollections(fakeSourceDb);
+  assert.deepStrictEqual(scoped, ['campaigns', 'personhubviews']);
   console.log('backup-self-check passed');
 })().catch((err) => {
   console.error(err);
