@@ -193,6 +193,12 @@ function addImportResults(a, b) {
 
 async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, status, timestamp, linkedCampaignId, tags = [] } = {}) {
   if (!normalized) return { person: null };
+  if (!personCollectionWritable) {
+    const fallbackPerson = buildFallbackPerson({ normalized, rawPhone, name, tags, source });
+    await upsertPersonHubView(fallbackPerson, { name, rawPhone, normalized, tags, timestamp, status });
+    return { person: fallbackPerson, persisted: false };
+  }
+
   const existing = await Person.findOne({ normalizedPhone: normalized }).catch((err) => {
     if (isCollectionCapError(err)) return null;
     throw err;
@@ -213,16 +219,7 @@ async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, 
     return { person: byRawPhone };
   }
 
-  const fallbackPerson = {
-    _id: `automailer-whatsapp:${normalized}`,
-    phone: rawPhone,
-    normalizedPhone: normalized,
-    name: name || undefined,
-    channel: 'whatsapp',
-    tags,
-    source: source?.campaignName || 'whatsapp-import',
-    collectionCapFallback: true,
-  };
+  const fallbackPerson = buildFallbackPerson({ normalized, rawPhone, name, tags, source });
 
   const person = personCollectionWritable
     ? await Person.create({
@@ -249,6 +246,19 @@ async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, 
     : fallbackPerson;
   await upsertPersonHubView(person, { name, rawPhone, normalized, tags, timestamp, status });
   return { person, persisted: !person.collectionCapFallback };
+}
+
+function buildFallbackPerson({ normalized, rawPhone, name, tags, source }) {
+  return {
+    _id: `automailer-whatsapp:${normalized}`,
+    phone: rawPhone,
+    normalizedPhone: normalized,
+    name: name || undefined,
+    channel: 'whatsapp',
+    tags,
+    source: source?.campaignName || 'whatsapp-import',
+    collectionCapFallback: true,
+  };
 }
 
 async function updatePersonWhatsAppStats(personId, { linkedCampaignId, status, timestamp }) {
@@ -381,14 +391,6 @@ async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, t
     },
   }, { upsert: true });
 
-  await col.updateMany(query, [
-    {
-      $set: {
-        inletCount: { $size: { $ifNull: ['$inletKeys', []] } },
-        isMultiInlet: { $gt: [{ $size: { $ifNull: ['$inletKeys', []] } }, 1] },
-      },
-    },
-  ]);
 }
 
 function isCollectionCapError(err) {
