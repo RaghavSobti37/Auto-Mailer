@@ -98,7 +98,7 @@ for (const file of files) {
     fileRows++;
 
     if (ops.length >= 500) {
-      const result = await col.bulkWrite(ops, { ordered: false });
+      const result = await col.bulkWrite(ops, { ordered: true });
       upserts += result.upsertedCount || 0;
       matched += result.matchedCount || 0;
       ops.length = 0;
@@ -106,7 +106,7 @@ for (const file of files) {
   }
 
   if (ops.length) {
-    const result = await col.bulkWrite(ops, { ordered: false });
+    const result = await col.bulkWrite(ops, { ordered: true });
     upserts += result.upsertedCount || 0;
     matched += result.matchedCount || 0;
   }
