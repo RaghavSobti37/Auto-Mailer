@@ -6,6 +6,8 @@ const PersonSchema = new mongoose.Schema({
   normalizedPhone: { type: String, index: true, sparse: true },
   name: { type: String, trim: true },
   channel: { type: String, enum: ['email', 'whatsapp', 'both'], default: 'email' },
+  tags: [{ type: String, trim: true }],
+  source: { type: String, trim: true },
   opened: { type: Number, default: 0 },
   clicked: { type: Number, default: 0 },
   bounced: { type: Boolean, default: false },
