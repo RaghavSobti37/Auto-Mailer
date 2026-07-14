@@ -8,7 +8,10 @@ const exlyAudienceController = require('../controllers/exlyAudienceController');
 const analyticsController = require('../controllers/analyticsController');
 const campaignApiController = require('../controllers/campaignApiController');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 75 * 1024 * 1024, files: 20 },
+});
 
 function registerRoutes(app) {
   // Health check

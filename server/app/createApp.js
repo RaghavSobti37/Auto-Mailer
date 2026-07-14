@@ -5,11 +5,13 @@ const morgan = require('morgan');
 const config = require('../config');
 
 function resolveCorsOrigin(value) {
-  if (!value || value === '*') return '*';
+  if (!value || value === '*') return true;
   const origins = value.split(',').map((item) => item.trim()).filter(Boolean);
-  if (origins.length <= 1) return origins[0] || '*';
   return (origin, callback) => {
-    if (!origin || origins.includes(origin)) {
+    const allowedVercel =
+      origin
+      && /^https:\/\/auto-mailer(?:-[a-z0-9-]+)?(?:-raghavsobti37s-projects)?\.vercel\.app$/i.test(origin);
+    if (!origin || origins.includes(origin) || allowedVercel) {
       callback(null, true);
       return;
     }
@@ -22,7 +24,15 @@ function createApp() {
 
   // Security
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
-  app.use(cors({ origin: resolveCorsOrigin(config.corsOrigin), credentials: true }));
+  const corsOptions = {
+    origin: resolveCorsOrigin(config.corsOrigin),
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 204,
+  };
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Body parsing
   app.use(express.json({ limit: '50mb' }));
