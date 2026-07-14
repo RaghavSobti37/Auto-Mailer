@@ -65,20 +65,22 @@ async function importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode = 
 
     const eventKey = `${linkedCampaignId || source.key || 'global'}:${normalized || rawPhone}:${status}:${timestamp.toISOString()}`;
 
+    const eventOnInsert = {
+      phone: rawPhone,
+      normalizedPhone: normalized || undefined,
+      name: rawName || undefined,
+      status,
+      timestamp,
+      linkedEmailCampaignId: linkedCampaignId || undefined,
+      needsReview: !match.person,
+      eventKey,
+    };
+    if (match.person?._id && match.persisted !== false) eventOnInsert.matchedToPersonId = match.person._id;
+
     const result = await WhatsAppEvent.updateOne(
       { eventKey },
       {
-        $setOnInsert: {
-          phone: rawPhone,
-          normalizedPhone: normalized || undefined,
-          name: rawName || undefined,
-          status,
-          timestamp,
-          linkedEmailCampaignId: linkedCampaignId || undefined,
-          matchedToPersonId: match.person?._id,
-          needsReview: !match.person,
-          eventKey,
-        },
+        $setOnInsert: eventOnInsert,
         $set: {
           importBatchId,
           rawRow: { ...row },
