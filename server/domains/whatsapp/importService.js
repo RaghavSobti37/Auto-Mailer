@@ -5,6 +5,8 @@ const { normalizePhone } = require('./phoneUtils');
 
 const VALID_STATUSES = ['sent', 'delivered', 'read', 'clicked', 'replied', 'failed'];
 const EMPTY_STATS = { sent: 0, delivered: 0, read: 0, clicked: 0, replied: 0, failed: 0 };
+let personCollectionWritable = true;
+let eventCollectionWritable = true;
 
 async function importAiSensyFiles(files, { linkedCampaignId, defaultCountryCode = '91', syncAfter = true } = {}) {
   const fileResults = [];
@@ -77,20 +79,26 @@ async function importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode = 
     };
     if (match.person?._id && match.persisted !== false) eventOnInsert.matchedToPersonId = match.person._id;
 
-    const result = await WhatsAppEvent.updateOne(
-      { eventKey },
-      {
-        $setOnInsert: eventOnInsert,
-        $set: {
-          importBatchId,
-          rawRow: { ...row },
+    let result = { upsertedCount: 0, matchedCount: 0, skippedByCollectionCap: true };
+    if (eventCollectionWritable) {
+      result = await WhatsAppEvent.updateOne(
+        { eventKey },
+        {
+          $setOnInsert: eventOnInsert,
+          $set: {
+            importBatchId,
+            rawRow: { ...row },
+          },
         },
-      },
-      { upsert: true },
-    ).catch((err) => {
-      if (isCollectionCapError(err)) return { upsertedCount: 0, matchedCount: 0, skippedByCollectionCap: true };
-      throw err;
-    });
+        { upsert: true },
+      ).catch((err) => {
+        if (isCollectionCapError(err)) {
+          eventCollectionWritable = false;
+          return { upsertedCount: 0, matchedCount: 0, skippedByCollectionCap: true };
+        }
+        throw err;
+      });
+    }
 
     if (result.skippedByCollectionCap) {
       updated++;
@@ -205,35 +213,40 @@ async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, 
     return { person: byRawPhone };
   }
 
-  const person = await Person.create({
+  const fallbackPerson = {
+    _id: `automailer-whatsapp:${normalized}`,
     phone: rawPhone,
     normalizedPhone: normalized,
     name: name || undefined,
     channel: 'whatsapp',
     tags,
     source: source?.campaignName || 'whatsapp-import',
-    campaignHistory: [{
-      campaignId: linkedCampaignId || undefined,
-      campaignTitle: source?.campaignName,
+    collectionCapFallback: true,
+  };
+
+  const person = personCollectionWritable
+    ? await Person.create({
+      phone: rawPhone,
+      normalizedPhone: normalized,
+      name: name || undefined,
       channel: 'whatsapp',
-      outcome: status,
-      timestamp,
-    }],
-  }).catch((err) => {
-    if (isCollectionCapError(err)) {
-      return {
-        _id: `automailer-whatsapp:${normalized}`,
-        phone: rawPhone,
-        normalizedPhone: normalized,
-        name: name || undefined,
+      tags,
+      source: source?.campaignName || 'whatsapp-import',
+      campaignHistory: [{
+        campaignId: linkedCampaignId || undefined,
+        campaignTitle: source?.campaignName,
         channel: 'whatsapp',
-        tags,
-        source: source?.campaignName || 'whatsapp-import',
-        collectionCapFallback: true,
-      };
-    }
-    throw err;
-  });
+        outcome: status,
+        timestamp,
+      }],
+    }).catch((err) => {
+      if (isCollectionCapError(err)) {
+        personCollectionWritable = false;
+        return fallbackPerson;
+      }
+      throw err;
+    })
+    : fallbackPerson;
   await upsertPersonHubView(person, { name, rawPhone, normalized, tags, timestamp, status });
   return { person, persisted: !person.collectionCapFallback };
 }
