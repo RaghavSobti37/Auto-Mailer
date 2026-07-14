@@ -4,10 +4,30 @@ const Person = require('../../models/Person');
 const { normalizePhone } = require('./phoneUtils');
 
 const VALID_STATUSES = ['sent', 'delivered', 'read', 'clicked', 'replied', 'failed'];
+const EMPTY_STATS = { sent: 0, delivered: 0, read: 0, clicked: 0, replied: 0, failed: 0 };
+
+async function importAiSensyFiles(files, { linkedCampaignId, defaultCountryCode = '91', syncAfter = true } = {}) {
+  const fileResults = [];
+  let totals = emptyImportResult();
+
+  for (const file of files || []) {
+    const text = file.buffer.toString('utf8').trim();
+    const rows = parseCsv(text);
+    const result = rows.length
+      ? await importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode })
+      : emptyImportResult();
+    const namedResult = { fileName: file.originalname || 'upload.csv', ...result };
+    fileResults.push(namedResult);
+    totals = addImportResults(totals, result);
+  }
+
+  const sync = syncAfter ? await syncWhatsAppEventsToPeople({ linkedCampaignId }) : null;
+  return { ...totals, files: fileResults, sync };
+}
 
 async function importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode = '91' } = {}) {
   if (!rows || !rows.length) {
-    return { totalRows: 0, matched: 0, unmatched: 0, needsReview: 0, importBatchId: null, inserted: 0, updated: 0 };
+    return emptyImportResult();
   }
 
   const importBatchId = crypto.randomUUID();
@@ -65,6 +85,84 @@ async function importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode = 
   }
 
   return { totalRows: rows.length, matched, unmatched, needsReview, importBatchId, inserted, updated };
+}
+
+async function syncWhatsAppEventsToPeople({ linkedCampaignId } = {}) {
+  const match = { normalizedPhone: { $type: 'string', $ne: '' } };
+
+  const groups = await WhatsAppEvent.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: '$normalizedPhone',
+        statuses: { $push: '$status' },
+        eventIds: { $push: '$_id' },
+        latest: { $max: '$timestamp' },
+        name: { $first: '$name' },
+        phone: { $first: '$phone' },
+      },
+    },
+  ]);
+
+  let matchedPeople = 0;
+  let matchedEvents = 0;
+
+  for (const group of groups) {
+    const person = await Person.findOne({ normalizedPhone: group._id });
+    if (!person) continue;
+    matchedPeople++;
+    matchedEvents += group.eventIds.length;
+
+    const whatsappStats = { ...EMPTY_STATS };
+    for (const status of group.statuses) {
+      if (Object.prototype.hasOwnProperty.call(whatsappStats, status)) whatsappStats[status]++;
+    }
+
+    await Person.updateOne(
+      { _id: person._id },
+      {
+        $set: {
+          whatsappStats,
+          channel: person.channel === 'email' ? 'both' : (person.channel || 'whatsapp'),
+        },
+        $push: {
+          campaignHistory: {
+            $each: [{
+              campaignId: linkedCampaignId || undefined,
+              channel: 'whatsapp',
+              outcome: 'synced',
+              timestamp: group.latest || new Date(),
+            }],
+            $slice: -100,
+          },
+        },
+      },
+    );
+
+    await WhatsAppEvent.updateMany(
+      { _id: { $in: group.eventIds } },
+      { $set: { matchedToPersonId: person._id, needsReview: false } },
+    );
+  }
+
+  const needsReview = await WhatsAppEvent.countDocuments({ needsReview: true });
+  return { matchedPeople, matchedEvents, needsReview, syncedAt: new Date().toISOString() };
+}
+
+function emptyImportResult() {
+  return { totalRows: 0, matched: 0, unmatched: 0, needsReview: 0, importBatchId: null, inserted: 0, updated: 0 };
+}
+
+function addImportResults(a, b) {
+  return {
+    totalRows: a.totalRows + b.totalRows,
+    matched: a.matched + b.matched,
+    unmatched: a.unmatched + b.unmatched,
+    needsReview: a.needsReview + b.needsReview,
+    importBatchId: b.importBatchId || a.importBatchId,
+    inserted: a.inserted + b.inserted,
+    updated: a.updated + b.updated,
+  };
 }
 
 async function findMatchingPerson(rawPhone, normalized) {
@@ -151,8 +249,11 @@ function parseCsv(text) {
 }
 
 module.exports = {
+  importAiSensyFiles,
   importAiSensyRows,
+  syncWhatsAppEventsToPeople,
   inferStatusFromRow,
   pickTimestamp,
   parseCsv,
+  addImportResults,
 };

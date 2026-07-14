@@ -125,7 +125,17 @@ export const live = {
         const error = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(error.error || `API error: ${res.status}`);
       }
-      return res.json() as Promise<{ totalRows: number; matched: number; unmatched: number; needsReview: number; importBatchId: string | null; inserted: number; updated: number }>;
+      return res.json() as Promise<{
+        totalRows: number;
+        matched: number;
+        unmatched: number;
+        needsReview: number;
+        importBatchId: string | null;
+        inserted: number;
+        updated: number;
+        files?: Array<{ fileName: string; totalRows: number; inserted: number; updated: number; needsReview: number }>;
+        sync?: { matchedPeople: number; matchedEvents: number; needsReview: number; syncedAt: string } | null;
+      }>;
     },
     review: (p?: Record<string, any>) => request<any[]>('/api/whatsapp/review', { params: p }),
     resolveReview: (id: string, action: string, data?: any) => request<any>(`/api/whatsapp/review/${id}`, { method: 'POST', body: JSON.stringify({ action, ...data }) }),

@@ -1,12 +1,13 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function WhatsAppPage() {
-  const [file, setFile] = useState<File | null>(null);
+  const queryClient = useQueryClient();
+  const [files, setFiles] = useState<File[]>([]);
   const [columnMapping] = useState<Record<string, string>>({});
   const [linkedCampaignId, setLinkedCampaignId] = useState('');
 
@@ -15,12 +16,17 @@ export default function WhatsAppPage() {
 
   const importMut = useMutation({
     mutationFn: async () => {
-      if (!file) return;
+      if (!files.length) return;
       const fd = new FormData();
-      fd.append('file', file);
+      files.forEach((file) => fd.append('files', file));
+      fd.append('syncAfter', 'true');
       if (linkedCampaignId) fd.append('linkedCampaignId', linkedCampaignId);
       if (Object.keys(columnMapping).length) fd.append('columnMapping', JSON.stringify(columnMapping));
       return live.whatsapp.import(fd);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-outcomes'] });
+      queryClient.invalidateQueries({ queryKey: ['audience'] });
     },
   });
 
@@ -33,11 +39,20 @@ export default function WhatsAppPage() {
         </div>
 
         <div className="card">
-          <h3 className="text-sm font-semibold mb-3">Import AiSensy CSV</h3>
+          <h3 className="text-sm font-semibold mb-3">Bulk import AiSensy CSVs</h3>
           <div className="space-y-4">
             <div>
-              <label className="label">CSV File</label>
-              <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files?.[0] || null)} className="input" />
+              <label className="label">CSV files</label>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                className="input"
+              />
+              <p className="mt-1 text-xs text-muted-ledger">
+                {files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected. Imports sync with audience data after upload.` : 'Upload sent, delivered, read, failed, clicked, or replied exports together.'}
+              </p>
             </div>
             <div>
               <label className="label">Link to Campaign (optional)</label>
@@ -46,8 +61,8 @@ export default function WhatsAppPage() {
                 {campaigns?.map((c: any) => <option key={c._id} value={c._id}>{c.title}</option>)}
               </select>
             </div>
-            <button onClick={() => importMut.mutate()} disabled={!file || importMut.isPending} className="btn-primary">
-              {importMut.isPending ? 'Importing...' : 'Import'}
+            <button onClick={() => importMut.mutate()} disabled={!files.length || importMut.isPending} className="btn-primary">
+              {importMut.isPending ? 'Importing and syncing...' : 'Import CSVs + sync data'}
             </button>
             {importMut.data && (
               <div className="rounded-lg border p-3 text-sm" style={{ borderColor: 'rgba(66, 211, 146, 0.38)', background: 'rgba(66, 211, 146, 0.08)' }}>
@@ -55,6 +70,21 @@ export default function WhatsAppPage() {
                 <p className="text-muted-ledger mt-1">
                   {importMut.data.totalRows} rows: {importMut.data.matched} matched, {importMut.data.unmatched} unmatched, {importMut.data.needsReview} needs review, {importMut.data.inserted || 0} inserted, {importMut.data.updated || 0} updated
                 </p>
+                {importMut.data.sync && (
+                  <p className="text-muted-ledger mt-1">
+                    Sync: {importMut.data.sync.matchedPeople} people, {importMut.data.sync.matchedEvents} events matched, {importMut.data.sync.needsReview} still needs review
+                  </p>
+                )}
+                {!!importMut.data.files?.length && (
+                  <div className="mt-3 space-y-1">
+                    {importMut.data.files.map((item) => (
+                      <div key={item.fileName} className="flex flex-wrap justify-between gap-2 text-xs text-muted-ledger">
+                        <span>{item.fileName}</span>
+                        <span>{item.totalRows} rows · {item.inserted} inserted · {item.updated} updated</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

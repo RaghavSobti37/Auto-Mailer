@@ -46,6 +46,7 @@ const {
   parseCsv,
   inferStatusFromRow,
   pickTimestamp,
+  addImportResults,
 } = require('../server/domains/whatsapp/importService');
 
 const parsed = parseCsv('Name,Mobile Number,Sent At,Read At\n"Ada","+91999","May 6, 2026, 2:29 PM","May 6, 2026, 3:23 PM"\n');
@@ -57,6 +58,14 @@ assert(pickTimestamp(parsed[0], 'read') === 'May 6, 2026, 3:23 PM', 'read timest
 
 const failedCsv = parseCsv('Name,Mobile Number,Sent At,Failure Reason\n"Ada","+91999","","template paused"\n');
 assert(inferStatusFromRow(failedCsv[0]) === 'failed', 'failed status inferred');
+
+const mergedImport = addImportResults(
+  { totalRows: 2, matched: 1, unmatched: 1, needsReview: 0, importBatchId: 'a', inserted: 2, updated: 0 },
+  { totalRows: 3, matched: 2, unmatched: 0, needsReview: 1, importBatchId: 'b', inserted: 1, updated: 2 },
+);
+assert(mergedImport.totalRows === 5, 'bulk import totals rows');
+assert(mergedImport.matched === 3, 'bulk import totals matched');
+assert(mergedImport.importBatchId === 'b', 'bulk import keeps latest batch id');
 
 if (failed) {
   console.error(`audience-read-self-check: ${failed} failure(s)`);

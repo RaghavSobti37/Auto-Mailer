@@ -166,15 +166,14 @@ function registerRoutes(app) {
   });
 
   // WhatsApp / AiSensy
-  app.post('/api/whatsapp/import', upload.single('file'), async (req, res) => {
+  app.post('/api/whatsapp/import', upload.any(), async (req, res) => {
     try {
-      if (!req.file?.buffer) return res.status(400).json({ error: 'CSV file required' });
-      const text = req.file.buffer.toString('utf8').trim();
-      const { importAiSensyRows, parseCsv } = require('../domains/whatsapp/importService');
-      const rows = parseCsv(text);
-      if (!rows.length) return res.json({ totalRows: 0, matched: 0, unmatched: 0, needsReview: 0, importBatchId: null, inserted: 0, updated: 0 });
-      res.json(await importAiSensyRows(rows, {
+      const files = (req.files || []).filter((file) => file?.buffer);
+      if (!files.length) return res.status(400).json({ error: 'At least one CSV file is required' });
+      const { importAiSensyFiles } = require('../domains/whatsapp/importService');
+      res.json(await importAiSensyFiles(files, {
         linkedCampaignId: req.body.linkedCampaignId || undefined,
+        syncAfter: req.body.syncAfter !== 'false',
       }));
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
