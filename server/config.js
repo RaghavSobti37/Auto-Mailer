@@ -11,6 +11,7 @@ module.exports = {
   trackingBaseUrl: process.env.TRACKING_BASE_URL || process.env.API_PUBLIC_URL || process.env.FRONTEND_URL || 'http://localhost:5001',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   systemFromEmail: process.env.SYSTEM_VERIFIED_FROM_EMAIL || 'onboarding@resend.dev',
+  sendConcurrency: Math.min(Math.max(parseInt(process.env.SEND_CONCURRENCY || '12', 10) || 12, 1), 50),
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
   onlineBackupMongoUri: process.env.ONLINE_BACKUP_MONGODB_URI || '',

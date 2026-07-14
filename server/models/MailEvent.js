@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const MailEventSchema = new mongoose.Schema({
   messageId: { type: String, index: true },
+  dedupeKey: { type: String, unique: true, sparse: true, index: true },
   eventType: { type: String, required: true },
   email: { type: String, index: true },
   timestamp: { type: Date, required: true },

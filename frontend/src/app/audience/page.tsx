@@ -1,80 +1,172 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { live } from '@/lib/api';
+import type { SortState } from '@/lib/columnSort';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
+import { DataOpsToolbar } from '@/components/DataOpsToolbar';
+import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
+import { TagBadges } from '@/components/table/TagBadges';
+
+type AudiencePerson = {
+  _id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  normalizedPhone?: string;
+  tags?: string[];
+  emailStatus?: string;
+  suppressed?: boolean;
+  suppressionReason?: string;
+};
+
+const SERVER_SORT_KEYS: Record<string, string> = {
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  emailStatus: 'emailStatus',
+  lastActivity: 'lastActivity',
+};
 
 export default function AudiencePage() {
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const pageSize = 50;
+  const [tag, setTag] = useState('');
+  const [suppressed, setSuppressed] = useState('');
+  const [emailStatus, setEmailStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [sortState, setSortState] = useState<SortState>({ key: 'lastActivity', direction: 'desc' });
+
+  const sortParam = sortState?.key ? SERVER_SORT_KEYS[sortState.key] : 'lastActivity';
+  const orderParam = sortState?.direction || 'desc';
+
+  const { data: tagData } = useQuery({
+    queryKey: ['audience-tags'],
+    queryFn: () => live.audience.tags(),
+    staleTime: 60_000,
+  });
 
   const { data: audience, isLoading } = useQuery({
-    queryKey: ['audience', page, search],
-    queryFn: () => live.audience.list({ page, limit: pageSize, search: search || undefined }),
+    queryKey: ['audience', page, pageSize, search, tag, suppressed, emailStatus, sortParam, orderParam],
+    queryFn: () => live.audience.list({
+      page,
+      limit: pageSize,
+      search: search || undefined,
+      tag: tag || undefined,
+      suppressed: suppressed || undefined,
+      emailStatus: emailStatus || undefined,
+      sort: sortParam,
+      order: orderParam,
+    }),
   });
+
+  const columns = useMemo<DataTableColumn<AudiencePerson>[]>(() => [
+    { key: 'name', header: 'Name', sortKey: 'name', render: (p) => <span className="font-medium">{p.name || '-'}</span> },
+    { key: 'email', header: 'Email', sortKey: 'email', render: (p) => <span className="text-muted-ledger">{p.email || '-'}</span> },
+    {
+      key: 'phone',
+      header: 'Phone',
+      sortKey: 'phone',
+      render: (p) => <span className="mono text-muted-ledger">{p.phone || p.normalizedPhone || '-'}</span>,
+    },
+    {
+      header: 'Tags',
+      sortable: false,
+      render: (p) => <TagBadges tags={p.tags} />,
+    },
+    {
+      header: 'Email status',
+      sortKey: 'emailStatus',
+      render: (p) => (p.emailStatus ? <span className="text-xs capitalize">{p.emailStatus}</span> : <span className="text-gray-300">-</span>),
+    },
+    {
+      header: 'Suppressed',
+      align: 'center',
+      sortable: false,
+      render: (p) => (p.suppressed
+        ? <PostmarkBadge status="failed" label={p.suppressionReason || 'suppressed'} size="sm" />
+        : <span className="text-gray-300">-</span>),
+    },
+  ], []);
+
+  const resetFilters = () => {
+    setSearch('');
+    setTag('');
+    setSuppressed('');
+    setEmailStatus('');
+    setPage(1);
+  };
 
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Audience</h1>
-            <p className="text-sm text-muted-ledger mt-1">Local MongoDB contacts — independent of CoreKnot</p>
+            <p className="text-sm text-muted-ledger mt-1">
+              {audience?.total?.toLocaleString() ?? '…'} contacts from hub view
+            </p>
           </div>
-          <span className="text-xs text-muted-ledger">{audience?.total?.toLocaleString() ?? '…'} people</span>
+          <DataOpsToolbar compact />
         </div>
 
-        <div className="flex gap-3">
-          <input className="input flex-1" placeholder="Search by email or phone..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} />
+        <DataOpsToolbar />
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <input
+            className="input lg:col-span-2"
+            placeholder="Search name, email, phone…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          />
+          <select className="input" value={tag} onChange={(e) => { setTag(e.target.value); setPage(1); }}>
+            <option value="">All tags</option>
+            {(tagData?.tags || []).map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select className="input" value={suppressed} onChange={(e) => { setSuppressed(e.target.value); setPage(1); }}>
+            <option value="">All suppression</option>
+            <option value="false">Active only</option>
+            <option value="true">Suppressed</option>
+          </select>
+          <select className="input" value={emailStatus} onChange={(e) => { setEmailStatus(e.target.value); setPage(1); }}>
+            <option value="">All email status</option>
+            <option value="Subscribed">Subscribed</option>
+            <option value="Unsubscribed">Unsubscribed</option>
+            <option value="Bounced">Bounced</option>
+          </select>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-12 text-muted-ledger">Loading audience...</div>
-        ) : !audience?.items?.length ? (
-          <div className="text-center py-12 text-muted-ledger">No audience data yet. Run migration or import contacts.</div>
-        ) : (
-          <>
-            <div className="ledger-shell">
-              <table className="ledger-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th className="text-center">Suppressed</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(audience.items || []).map((person: any) => (
-                    <tr key={person._id}
-                      className="cursor-pointer"
-                      onClick={() => window.location.href = '/audience/' + person._id}
-                    >
-                      <td className="font-medium">{person.name || '-'}</td>
-                      <td className="text-muted-ledger">{person.email || '-'}</td>
-                      <td className="mono text-muted-ledger">{person.phone || person.normalizedPhone || '-'}</td>
-                      <td className="text-center">
-                        {person.suppressed ? (
-                          <PostmarkBadge status="failed" label={person.suppressionReason || 'suppressed'} size="sm" />
-                        ) : <span className="text-gray-300">-</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Page {page + 1} / {Math.max(1, Math.ceil((audience.total || 0) / pageSize))}</span>
-              <div className="flex gap-2">
-                <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="btn-secondary text-xs">Previous</button>
-                <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= (audience.total || 0)} className="btn-secondary text-xs">Next</button>
-              </div>
-            </div>
-          </>
+        {(search || tag || suppressed || emailStatus) && (
+          <button type="button" onClick={resetFilters} className="btn-secondary text-xs">
+            Clear filters
+          </button>
         )}
+
+        <DataTable
+          columns={columns}
+          data={(audience?.items || []) as AudiencePerson[]}
+          getRowId={(p) => String(p._id)}
+          onRowClick={(p) => { window.location.href = `/audience/${p._id}`; }}
+          serverSide
+          paginated
+          isLoading={isLoading}
+          currentPage={page}
+          pageSize={pageSize}
+          totalItems={audience?.total || 0}
+          totalPages={audience?.totalPages || 1}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          sortState={sortState}
+          onSortChange={(next) => {
+            if (next?.key && !SERVER_SORT_KEYS[next.key]) return;
+            setSortState(next);
+            setPage(1);
+          }}
+          emptyTitle="No audience matches"
+          emptyDescription="Try clearing filters or run migration/import."
+        />
       </div>
     </ErrorBoundary>
   );

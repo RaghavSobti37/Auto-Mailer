@@ -123,6 +123,13 @@ function registerRoutes(app) {
   app.use('/webhooks', webhookRoutes);
 
   // Audience API (PersonHubView read model — no CoreKnot sync worker)
+  app.get('/api/audience/tags', async (req, res) => {
+    try {
+      const { listAudienceTagsFromHub } = require('../services/audienceReadService');
+      res.json({ tags: await listAudienceTagsFromHub() });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
   app.get('/api/audience', async (req, res) => {
     try {
       const { listAudienceFromHub } = require('../services/audienceReadService');
@@ -131,6 +138,11 @@ function registerRoutes(app) {
         page: q.page,
         limit: q.limit,
         search: q.search,
+        tag: q.tag,
+        suppressed: q.suppressed,
+        emailStatus: q.emailStatus,
+        sort: q.sort,
+        order: q.order,
       });
       res.json(result);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -158,18 +170,9 @@ function registerRoutes(app) {
     try {
       if (!req.file?.buffer) return res.status(400).json({ error: 'CSV file required' });
       const text = req.file.buffer.toString('utf8').trim();
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if (!lines.length) return res.json({ totalRows: 0, matched: 0, unmatched: 0, needsReview: 0, importBatchId: null });
-
-      const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-      const rows = lines.slice(1).map((line) => {
-        const vals = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
-        const row = {};
-        headers.forEach((h, i) => { row[h] = vals[i] || ''; });
-        return row;
-      });
-
-      const { importAiSensyRows } = require('../domains/whatsapp/importService');
+      const { importAiSensyRows, parseCsv } = require('../domains/whatsapp/importService');
+      const rows = parseCsv(text);
+      if (!rows.length) return res.json({ totalRows: 0, matched: 0, unmatched: 0, needsReview: 0, importBatchId: null, inserted: 0, updated: 0 });
       res.json(await importAiSensyRows(rows, {
         linkedCampaignId: req.body.linkedCampaignId || undefined,
       }));
@@ -235,6 +238,22 @@ function registerRoutes(app) {
     try {
       const { getBackupStatus } = require('../services/backupWorker');
       res.json(getBackupStatus());
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Sync Atlas → local Mongo (background worker; requires LOCAL_MONGODB_URI + mongodump)
+  app.post('/api/sync/local/run', (req, res) => {
+    try {
+      const { startSyncLocalRun, getSyncLocalStatus } = require('../services/syncLocalWorker');
+      const started = startSyncLocalRun();
+      if (!started.started) return res.status(started.reason?.includes('not configured') ? 400 : 409).json({ error: started.reason, status: started.status });
+      res.status(202).json({ message: 'Local sync started', status: getSyncLocalStatus() });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+  app.get('/api/sync/local/status', (req, res) => {
+    try {
+      const { getSyncLocalStatus } = require('../services/syncLocalWorker');
+      res.json(getSyncLocalStatus());
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 

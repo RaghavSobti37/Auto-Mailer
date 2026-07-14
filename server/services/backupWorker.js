@@ -2,9 +2,11 @@ const { runMongoBackup } = require('./dataHubBackupService');
 
 /** @type {{ status: 'idle'|'running'|'completed'|'failed', startedAt?: string, finishedAt?: string, result?: object, error?: string }} */
 let state = { status: 'idle' };
+/** @type {{ startedAt?: string, finishedAt?: string, result?: object }|null} */
+let lastCompleted = null;
 
 function getBackupStatus() {
-  return { ...state };
+  return { ...state, lastCompleted };
 }
 
 function startBackupRun() {
@@ -27,10 +29,16 @@ function startBackupRun() {
         };
         return;
       }
+      const finishedAt = new Date().toISOString();
       state = {
         status: 'completed',
         startedAt: state.startedAt,
-        finishedAt: new Date().toISOString(),
+        finishedAt,
+        result,
+      };
+      lastCompleted = {
+        startedAt: state.startedAt,
+        finishedAt,
         result,
       };
     } catch (err) {

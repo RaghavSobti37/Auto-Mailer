@@ -1,10 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { live } from '@/lib/api';
 import type { CampaignStatus } from '@/lib/types';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
+import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
 
 const STATUS_ACTIONS: Record<CampaignStatus, string[]> = {
   Draft: ['Dispatch'],
@@ -17,6 +18,17 @@ const STATUS_ACTIONS: Record<CampaignStatus, string[]> = {
 
 const FILTERS = ['all', 'Draft', 'Queued', 'Sending', 'Stopped', 'Completed', 'Failed'] as const;
 
+type CampaignRow = {
+  _id: string;
+  title: string;
+  subject?: string;
+  status: CampaignStatus;
+  stats?: { sent?: number; opened?: number; clicked?: number };
+  metrics?: { totalSent?: number; opened?: number; clicked?: number };
+  recipientCount?: number;
+  recipients?: unknown[];
+};
+
 export default function CampaignsPage() {
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -27,9 +39,10 @@ export default function CampaignsPage() {
     refetchInterval: 15_000,
   });
 
-  const filtered = statusFilter === 'all'
-    ? (campaigns || [])
-    : (campaigns || []).filter((campaign: any) => campaign.status === statusFilter);
+  const filtered = useMemo(() => {
+    const list = (campaigns || []) as CampaignRow[];
+    return statusFilter === 'all' ? list : list.filter((c) => c.status === statusFilter);
+  }, [campaigns, statusFilter]);
 
   const handleAction = async (id: string, action: string) => {
     setActionLoading(id);
@@ -43,6 +56,79 @@ export default function CampaignsPage() {
       setActionLoading(null);
     }
   };
+
+  const columns = useMemo<DataTableColumn<CampaignRow>[]>(() => [
+    {
+      header: 'Subject',
+      sortKey: 'title',
+      sortFn: (c) => c.title,
+      render: (campaign) => {
+        const isLegacy = !!campaign.stats;
+        return (
+          <>
+            <a href={`/campaigns/${campaign._id}`} className="font-semibold hover:text-postmark" onClick={(e) => e.stopPropagation()}>{campaign.title}</a>
+            <div className="text-xs text-muted-ledger">{campaign.subject || 'No subject'}{isLegacy ? ' · legacy' : ''}</div>
+          </>
+        );
+      },
+    },
+    {
+      header: 'Status',
+      sortKey: 'status',
+      render: (campaign) => <PostmarkBadge status={campaign.status} size="sm" />,
+    },
+    {
+      header: 'Recipients',
+      align: 'right',
+      sortKey: 'recipients',
+      sortFn: (c) => c.recipientCount || c.recipients?.length || 0,
+      render: (c) => <span className="mono">{c.recipientCount || c.recipients?.length || 0}</span>,
+    },
+    {
+      header: 'Sent',
+      align: 'right',
+      sortFn: (c) => c.metrics?.totalSent || c.stats?.sent || 0,
+      render: (c) => <span className="mono">{c.metrics?.totalSent || c.stats?.sent || 0}</span>,
+    },
+    {
+      header: 'Opened',
+      align: 'right',
+      sortFn: (c) => c.metrics?.opened || c.stats?.opened || 0,
+      render: (c) => <span className="mono">{c.metrics?.opened || c.stats?.opened || 0}</span>,
+    },
+    {
+      header: 'Clicked',
+      align: 'right',
+      sortFn: (c) => c.metrics?.clicked || c.stats?.clicked || 0,
+      render: (c) => <span className="mono">{c.metrics?.clicked || c.stats?.clicked || 0}</span>,
+    },
+    {
+      header: 'Actions',
+      align: 'right',
+      sortable: false,
+      render: (campaign) => {
+        const isLegacy = !!campaign.stats;
+        const status = campaign.status;
+        const actions = STATUS_ACTIONS[status] || ['View'];
+        return (
+          <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+            <a href={`/campaigns/${campaign._id}`} className="btn-secondary px-2 py-1 text-xs">View</a>
+            {!isLegacy && actions.filter((a) => a !== 'View').map((action) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => handleAction(campaign._id, action)}
+                disabled={actionLoading === campaign._id}
+                className={action === 'Dispatch' || action === 'Retry' ? 'btn-primary px-2 py-1 text-xs' : 'btn-secondary px-2 py-1 text-xs'}
+              >
+                {actionLoading === campaign._id ? '…' : action}
+              </button>
+            ))}
+          </div>
+        );
+      },
+    },
+  ], [actionLoading]);
 
   return (
     <div className="space-y-6">
@@ -58,6 +144,7 @@ export default function CampaignsPage() {
         {FILTERS.map((filter) => (
           <button
             key={filter}
+            type="button"
             onClick={() => setStatusFilter(filter)}
             className={`pb-2 text-sm font-semibold transition-colors ${statusFilter === filter ? 'text-postmark border-b-2' : 'text-muted-ledger hover:text-postmark'}`}
             style={{ borderColor: statusFilter === filter ? 'var(--postmark)' : 'transparent' }}
@@ -67,64 +154,16 @@ export default function CampaignsPage() {
         ))}
       </div>
 
-      {isLoading ? (
-        <div className="py-12 text-center text-muted-ledger">Loading campaigns...</div>
-      ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-ledger">No campaigns found</div>
-      ) : (
-        <div className="ledger-shell">
-          <div className="overflow-x-auto">
-            <table className="ledger-table">
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Postmark</th>
-                  <th className="text-right">Recipients</th>
-                  <th className="text-right">Sent</th>
-                  <th className="text-right">Opened</th>
-                  <th className="text-right">Clicked</th>
-                  <th className="text-right">Last action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((campaign: any) => {
-                  const isLegacy = !!campaign.stats;
-                  const status = campaign.status as CampaignStatus;
-                  const actions = STATUS_ACTIONS[status] || ['View'];
-                  return (
-                    <tr key={campaign._id}>
-                      <td>
-                        <a href={`/campaigns/${campaign._id}`} className="font-semibold hover:text-postmark">{campaign.title}</a>
-                        <div className="text-xs text-muted-ledger">{campaign.subject || 'No subject'}{isLegacy ? ' · legacy' : ''}</div>
-                      </td>
-                      <td><PostmarkBadge status={status} size="sm" /></td>
-                      <td className="mono text-right">{campaign.recipientCount || campaign.recipients?.length || 0}</td>
-                      <td className="mono text-right">{campaign.metrics?.totalSent || campaign.stats?.sent || 0}</td>
-                      <td className="mono text-right">{campaign.metrics?.opened || campaign.stats?.opened || 0}</td>
-                      <td className="mono text-right">{campaign.metrics?.clicked || campaign.stats?.clicked || 0}</td>
-                      <td>
-                        <div className="flex justify-end gap-2">
-                          <a href={`/campaigns/${campaign._id}`} className="btn-secondary px-2 py-1 text-xs">View</a>
-                          {!isLegacy && actions.filter((action) => action !== 'View').map((action) => (
-                            <button
-                              key={action}
-                              onClick={() => handleAction(campaign._id, action)}
-                              disabled={actionLoading === campaign._id}
-                              className={action === 'Dispatch' || action === 'Retry' ? 'btn-primary px-2 py-1 text-xs' : 'btn-secondary px-2 py-1 text-xs'}
-                            >
-                              {actionLoading === campaign._id ? '...' : action}
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={filtered}
+        getRowId={(c) => c._id}
+        onRowClick={(c) => { window.location.href = `/campaigns/${c._id}`; }}
+        isLoading={isLoading}
+        defaultPageSize={25}
+        emptyTitle="No campaigns found"
+        emptyDescription={statusFilter !== 'all' ? 'Try another status filter.' : 'Create your first campaign.'}
+      />
     </div>
   );
 }

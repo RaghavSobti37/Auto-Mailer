@@ -37,48 +37,93 @@ async function resolveCampaign(campaignKey) {
   return MailCampaign.findOne(query).select('_id').lean();
 }
 
-async function recordMailEvent({ eventType, email, campaignKey, metadata, messageId, linkClicked, senderProfileId, rotationProvider }) {
+function normalizeEmail(email) {
+  return String(email || 'unknown').toLowerCase().trim() || 'unknown';
+}
+
+function buildDedupeKey({ eventType, campaignId, campaignKey, email, messageId, metadata, linkClicked }) {
+  const type = String(eventType || '').toLowerCase();
+  const scope = campaignId ? String(campaignId) : String(campaignKey || '');
+  if (messageId && ['send', 'delivery', 'bounce', 'complaint', 'skipped'].includes(type)) {
+    return `${type}:message:${messageId}`;
+  }
+  if (type === 'open') {
+    const recipient = metadata?.recipientId || messageId || normalizeEmail(email);
+    return `open:${scope}:${recipient}`;
+  }
+  if (type === 'click') {
+    const recipient = metadata?.trackingId || messageId || normalizeEmail(email);
+    const target = linkClicked || metadata?.targetUrl || '';
+    return `click:${scope}:${recipient}:${target}`;
+  }
+  return undefined;
+}
+
+async function recordMailEvent({ eventType, email, campaignKey, metadata, messageId, linkClicked, senderProfileId, rotationProvider, dedupeKey }) {
   const campaign = await resolveCampaign(campaignKey);
-  await MailEvent.create({
+  const campaignId = campaign?._id;
+  const normalizedEmail = normalizeEmail(email);
+  const eventDedupeKey = dedupeKey || buildDedupeKey({
     eventType,
-    email: email || 'unknown',
+    email: normalizedEmail,
+    campaignKey,
+    campaignId,
+    metadata,
+    messageId,
+    linkClicked,
+  });
+  const doc = {
+    eventType,
+    email: normalizedEmail,
     timestamp: new Date(),
-    campaignId: campaign?._id,
+    campaignId,
     messageId: messageId || undefined,
+    dedupeKey: eventDedupeKey,
     metadata: metadata || undefined,
     linkClicked: linkClicked || undefined,
     senderProfileId: senderProfileId || undefined,
     rotationProvider: rotationProvider || undefined,
-  });
-  return campaign?._id;
+  };
+  let created = true;
+  if (eventDedupeKey) {
+    const result = await MailEvent.updateOne(
+      { dedupeKey: eventDedupeKey },
+      { $setOnInsert: doc },
+      { upsert: true },
+    );
+    created = Boolean(result.upsertedCount);
+  } else {
+    await MailEvent.create(doc);
+  }
+  return { campaignId, created };
 }
 
 async function recordOpen({ campaignKey, recipientId, email }) {
-  const campaignObjectId = await recordMailEvent({
+  const result = await recordMailEvent({
     eventType: 'Open',
     email,
     campaignKey,
     metadata: { recipientId },
   });
-  if (!campaignObjectId) return;
+  if (!result.campaignId || !result.created) return;
 
-  await Campaign.findByIdAndUpdate(campaignObjectId, {
+  await Campaign.findByIdAndUpdate(result.campaignId, {
     $inc: { 'metrics.opened': 1, 'stats.opened': 1 },
     $push: { timeSeries: { time: new Date(), opens: 1, clicks: 0 } },
   });
 }
 
 async function recordClick({ campaignKey, trackingId, email, targetUrl }) {
-  const campaignObjectId = await recordMailEvent({
+  const result = await recordMailEvent({
     eventType: 'Click',
     email,
     campaignKey,
-    metadata: { trackingId, clicked: true },
+    metadata: { trackingId, clicked: true, targetUrl },
     linkClicked: targetUrl || undefined,
   });
-  if (!campaignObjectId) return;
+  if (!result.campaignId || !result.created) return;
 
-  await Campaign.findByIdAndUpdate(campaignObjectId, {
+  await Campaign.findByIdAndUpdate(result.campaignId, {
     $inc: { 'metrics.clicked': 1, 'stats.clicked': 1 },
     $push: { timeSeries: { time: new Date(), opens: 0, clicks: 1 } },
   });
@@ -90,4 +135,5 @@ module.exports = {
   recordOpen,
   recordClick,
   resolveCampaign,
+  buildDedupeKey,
 };

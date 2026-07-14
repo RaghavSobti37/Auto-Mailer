@@ -74,6 +74,24 @@ Start local services:
 docker compose up -d
 ```
 
+**First-time: pull Atlas mail + data-hub into local Mongo**
+
+```bash
+npm run setup:local-mongo
+# or: npm run migrate:to-local
+# dry-run counts: node scripts/migrate-to-local.mjs --dry-run
+# mail only: node scripts/migrate-to-local.mjs --only=mail
+```
+
+Source URI: `COREKNOT_MONGODB_URI` / `ATLAS_MONGODB_URI`, or `.env.render-backup.json` (gitignored).  
+Target: `LOCAL_MONGODB_URI` / `MONGODB_URI` → `mongodb://localhost:27017/auto-mailer`.
+
+Re-pull after prod changes:
+
+```bash
+npm run migrate:to-local
+```
+
 Run backend:
 
 ```bash
@@ -106,7 +124,8 @@ Local dev can still tunnel the API if needed, but production should use the Rend
 
 - **Auto-Mailer** owns campaigns, templates, tracking, audience, analytics.
 - **Audience** reads `personhubviews` in Mongo (legacy CoreKnot hub shape) — no mirror/sync worker.
-- **Primary DB:** `MONGODB_URI` (local Docker or Render Atlas).
+- **Primary DB:** `MONGODB_URI` → local Docker Mongo (`auto-mailer` database).
+- **Atlas source:** migration scripts read prod from `COREKNOT_MONGODB_URI` or `.env.render-backup.json`.
 - **Online backup:** gzip EJSON chunks via Settings → **Back up to online Mongo** (`ONLINE_BACKUP_MONGODB_URI`; can match primary DB on Atlas M0).
 - CoreKnot `/api/data-hub`, `/api/campaigns`, `/api/track` return **410 Gone** → use Auto-Mailer.
 

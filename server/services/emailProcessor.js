@@ -2,7 +2,7 @@ const Campaign = require('../models/Campaign');
 const EmailProfile = require('../models/EmailProfile');
 const MailEvent = require('../models/MailEvent');
 const mailService = require('./mailService');
-const { enqueueEngagementWrite, recordMailEvent } = require('./engagementWriteQueue');
+const { enqueueEngagementWrite, recordMailEvent, buildDedupeKey } = require('./engagementWriteQueue');
 
 const config = require('../config');
 
@@ -85,43 +85,66 @@ async function batchSendEmails(campaign) {
   if (campaign.status === 'Stopped') return [];
 
   const trackingBaseUrl = resolveTrackingBaseUrl();
-  const results = [];
+  const jobs = (campaign.recipients || [])
+    .map((recipient, idx) => ({ recipient, idx, campaignId: campaign._id }))
+    .filter(({ recipient }) => recipient.status === 'Pending' || recipient.status === 'Queued');
 
-  for (let idx = 0; idx < (campaign.recipients || []).length; idx++) {
-    const recipient = campaign.recipients[idx];
-    if (recipient.status !== 'Pending' && recipient.status !== 'Queued') continue;
-
+  const results = await runConcurrent(jobs, config.sendConcurrency, async ({ recipient, idx }) => {
     const result = await mailService.sendCampaignEmail({
       campaign,
       recipient,
       profile: campaign.senderProfileId,
       trackingBaseUrl,
     });
-
-    // Update recipient in-memory (saved later in bulk)
-    recipient.status = result.status;
-    if (result.messageId) recipient.messageId = result.messageId;
-    if (result.error) recipient.error = result.error;
-    recipient.sentAt = new Date();
-
-    // Update metrics in-memory
-    if (result.status === 'Sent') {
-      campaign.metrics.totalSent = (campaign.metrics.totalSent || 0) + 1;
-    } else if (result.status === 'Failed' || result.status === 'Invalid' || result.status === 'Bounced') {
-      campaign.metrics.bounced = (campaign.metrics.bounced || 0) + 1;
-    }
-
-    results.push({
+    return {
       email: recipient.email,
       status: result.status,
       messageId: result.messageId,
       error: result.error,
       recipientIndex: idx,
       campaignId: campaign._id,
-    });
+    };
+  });
+
+  for (const result of results) {
+    const recipient = campaign.recipients[result.recipientIndex];
+    if (!recipient) continue;
+    recipient.status = result.status;
+    if (result.messageId) recipient.messageId = result.messageId;
+    if (result.error) recipient.error = result.error;
+    recipient.sentAt = new Date();
+    if (result.status === 'Sent') {
+      campaign.metrics.totalSent = (campaign.metrics.totalSent || 0) + 1;
+    } else if (result.status === 'Failed' || result.status === 'Invalid' || result.status === 'Bounced') {
+      campaign.metrics.bounced = (campaign.metrics.bounced || 0) + 1;
+    }
   }
 
   return results;
+}
+
+async function runConcurrent(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(concurrency, items.length || 1);
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex++;
+      try {
+        results[currentIndex] = await worker(items[currentIndex]);
+      } catch (err) {
+        const item = items[currentIndex];
+        results[currentIndex] = {
+          email: item.recipient.email,
+          status: 'Failed',
+          error: err.message,
+          recipientIndex: item.idx,
+          campaignId: item.campaignId,
+        };
+      }
+    }
+  }));
+  return results.filter(Boolean);
 }
 
 /**
@@ -139,6 +162,13 @@ async function batchCreateTrackingEvents(results) {
       timestamp: new Date(),
       campaignId: r.campaignId,
       messageId: r.messageId || undefined,
+      dedupeKey: buildDedupeKey({
+        eventType: r.status === 'Sent' ? 'Send' : r.status === 'Unsubscribed' ? 'Skipped' : 'Bounce',
+        campaignId: r.campaignId,
+        email: r.email,
+        messageId: r.messageId,
+        metadata: { recipientIndex: r.recipientIndex, error: r.error },
+      }),
       metadata: { recipientIndex: r.recipientIndex, error: r.error },
     }));
 
@@ -159,4 +189,5 @@ module.exports = {
   batchSendEmails,
   batchCreateTrackingEvents,
   resolveTrackingBaseUrl,
+  runConcurrent,
 };

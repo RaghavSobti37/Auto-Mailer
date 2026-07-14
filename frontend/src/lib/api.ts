@@ -48,6 +48,24 @@ export type BackupJobStatus = {
     collections?: number;
   };
   error?: string;
+  lastCompleted?: {
+    startedAt?: string;
+    finishedAt?: string;
+    result?: BackupJobStatus['result'];
+  } | null;
+};
+
+export type SyncLocalStatus = {
+  status: 'idle' | 'running' | 'completed' | 'failed';
+  startedAt?: string;
+  finishedAt?: string;
+  error?: string;
+  lastSyncAt?: string | null;
+  rowsSynced?: number | null;
+  collections?: string[] | null;
+  lastError?: string | null;
+  lastErrorAt?: string | null;
+  localConfigured?: boolean;
 };
 
 export const live = {
@@ -62,7 +80,8 @@ export const live = {
     recipients: (id: string, p?: Record<string, any>) => request<any>(`/api/campaigns/${id}/recipients`, { params: p }),
   },
   audience: {
-    list: (p?: Record<string, any>) => request<any>('/api/audience', { params: p }),
+    list: (p?: Record<string, any>) => request<{ items: any[]; total: number; page: number; limit: number; totalPages: number }>('/api/audience', { params: p }),
+    tags: () => request<{ tags: string[] }>('/api/audience/tags'),
     getById: (id: string) => request<any>(`/api/audience/${id}`),
   },
   templates: {
@@ -95,6 +114,10 @@ export const live = {
     start: () => request<{ message: string; status: BackupJobStatus }>('/api/backup/run', { method: 'POST' }),
     status: () => request<BackupJobStatus>('/api/backup/status'),
   },
+  sync: {
+    localStart: () => request<{ message: string; status: SyncLocalStatus }>('/api/sync/local/run', { method: 'POST' }),
+    localStatus: () => request<SyncLocalStatus>('/api/sync/local/status'),
+  },
   whatsapp: {
     import: async (fd: FormData) => {
       const res = await fetch(`${API_URL}/api/whatsapp/import`, { method: 'POST', body: fd });
@@ -102,7 +125,7 @@ export const live = {
         const error = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(error.error || `API error: ${res.status}`);
       }
-      return res.json() as Promise<{ totalRows: number; matched: number; unmatched: number; needsReview: number; importBatchId: string | null }>;
+      return res.json() as Promise<{ totalRows: number; matched: number; unmatched: number; needsReview: number; importBatchId: string | null; inserted: number; updated: number }>;
     },
     review: (p?: Record<string, any>) => request<any[]>('/api/whatsapp/review', { params: p }),
     resolveReview: (id: string, action: string, data?: any) => request<any>(`/api/whatsapp/review/${id}`, { method: 'POST', body: JSON.stringify({ action, ...data }) }),

@@ -1,6 +1,5 @@
-const config = require('../config');
 const Campaign = require('../models/Campaign');
-const MailEvent = require('../models/MailEvent');
+const { recordMailEvent, recordOpen, recordClick } = require('../services/engagementWriteQueue');
 
 /**
  * Handle incoming Resend webhook events (delivery, open, click, bounce, complaint).
@@ -25,25 +24,42 @@ async function handleResendWebhook(req, res) {
       case 'email.bounced': mappedType = 'Bounce'; break;
       case 'email.complained': mappedType = 'Complaint'; break;
       case 'email.sent': mappedType = 'Send'; break;
+      case 'email.opened': mappedType = 'Open'; break;
+      case 'email.clicked': mappedType = 'Click'; break;
       default: mappedType = eventType;
     }
 
-    // Log the event
-    await MailEvent.create({
-      eventType: mappedType,
-      email,
-      messageId,
-      timestamp: new Date(),
-      metadata: payload.data,
-    });
+    const campaign = messageId
+      ? await Campaign.findOne({ 'recipients.messageId': messageId }).select('_id campaignId recipients.$').lean()
+      : null;
+    const campaignKey = campaign?.campaignId || (campaign?._id ? String(campaign._id) : undefined);
+    const recipientId = campaign?.recipients?.[0]?._id ? String(campaign.recipients[0]._id) : messageId;
 
-    // Update campaign if messageId matches
-    if (messageId) {
+    if (mappedType === 'Open' && campaignKey) {
+      await recordOpen({ campaignKey, recipientId, email });
+    } else if (mappedType === 'Click' && campaignKey) {
+      await recordClick({
+        campaignKey,
+        trackingId: recipientId,
+        email,
+        targetUrl: payload.data?.link?.url || payload.data?.url,
+      });
+    } else {
+      await recordMailEvent({
+        eventType: mappedType,
+        email,
+        campaignKey,
+        messageId,
+        metadata: payload.data,
+      });
+    }
+
+    if (messageId && mappedType !== 'Open' && mappedType !== 'Click') {
       await Campaign.updateOne(
         { 'recipients.messageId': messageId },
         {
-          $set: { 'recipients.$.status': mappedType === 'Bounce' ? 'Bounced' : mappedType === 'Delivery' ? 'Sent' : 'Sent' },
-          $inc: mappedType === 'Bounce' ? { 'metrics.bounced': 1 } : { 'metrics.totalSent': 1 },
+          $set: { 'recipients.$.status': mappedType === 'Bounce' ? 'Bounced' : 'Sent' },
+          $inc: mappedType === 'Bounce' ? { 'metrics.bounced': 1 } : {},
         },
       );
     }

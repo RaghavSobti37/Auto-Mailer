@@ -1,10 +1,11 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { live } from '@/lib/api';
 import type { MailTemplate, TemplateStatus } from '@/lib/types';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
+import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
 
 const FILTERS = ['all', 'draft', 'pending_approval', 'approved', 'rejected'] as const;
 
@@ -27,9 +28,66 @@ export default function TemplatesPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['templates'] }),
   });
 
-  const filtered = statusFilter === 'all'
-    ? (templates || [])
-    : (templates || []).filter((template: any) => template.status === statusFilter);
+  const filtered = useMemo(() => {
+    const list = (templates || []) as MailTemplate[];
+    return statusFilter === 'all' ? list : list.filter((t) => t.status === statusFilter);
+  }, [templates, statusFilter]);
+
+  const columns = useMemo<DataTableColumn<MailTemplate>[]>(() => [
+    {
+      header: 'Template',
+      sortKey: 'name',
+      render: (template) => (
+        <>
+          <a href={`/templates/${template._id}`} className="font-semibold hover:text-postmark" onClick={(e) => e.stopPropagation()}>{template.name}</a>
+          {template.subject && <div className="text-xs text-muted-ledger">{template.subject}</div>}
+        </>
+      ),
+    },
+    {
+      header: 'Status',
+      sortKey: 'status',
+      render: (template) => <PostmarkBadge status={template.status} label={template.status.replace('_', ' ')} size="sm" />,
+    },
+    {
+      header: 'Format',
+      sortKey: 'format',
+      render: (template) => <span className="mono">{template.format}</span>,
+    },
+    {
+      header: 'Created',
+      align: 'right',
+      sortKey: 'createdAt',
+      sortFn: (t) => new Date(t.createdAt).getTime(),
+      render: (template) => <span className="mono">{new Date(template.createdAt).toLocaleDateString()}</span>,
+    },
+    {
+      header: 'Actions',
+      align: 'right',
+      sortable: false,
+      render: (template) => (
+        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          <a href={`/templates/${template._id}`} className="btn-secondary px-2 py-1 text-xs">Open</a>
+          {template.status === 'pending_approval' && (
+            <>
+              <button type="button" onClick={() => approveMutation.mutate(template._id)} disabled={approveMutation.isPending} className="btn-primary px-2 py-1 text-xs">Approve</button>
+              <button
+                type="button"
+                onClick={() => {
+                  const note = prompt('Rejection reason (optional):');
+                  rejectMutation.mutate({ id: template._id, note: note || undefined });
+                }}
+                disabled={rejectMutation.isPending}
+                className="btn-secondary px-2 py-1 text-xs"
+              >
+                Reject
+              </button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ], [approveMutation.isPending, rejectMutation.isPending]);
 
   return (
     <div className="space-y-6">
@@ -45,6 +103,7 @@ export default function TemplatesPage() {
         {FILTERS.map((filter) => (
           <button
             key={filter}
+            type="button"
             onClick={() => setStatusFilter(filter)}
             className={`pb-2 text-sm font-semibold transition-colors ${statusFilter === filter ? 'text-postmark border-b-2' : 'text-muted-ledger hover:text-postmark'}`}
             style={{ borderColor: statusFilter === filter ? 'var(--postmark)' : 'transparent' }}
@@ -54,60 +113,16 @@ export default function TemplatesPage() {
         ))}
       </div>
 
-      {isLoading ? (
-        <div className="py-12 text-center text-muted-ledger">Loading templates...</div>
-      ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-ledger">No templates found</div>
-      ) : (
-        <div className="ledger-shell">
-          <div className="overflow-x-auto">
-            <table className="ledger-table">
-              <thead>
-                <tr>
-                  <th>Template</th>
-                  <th>Postmark</th>
-                  <th>Format</th>
-                  <th className="text-right">Created</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((template: MailTemplate) => (
-                  <tr key={template._id}>
-                    <td>
-                      <a href={`/templates/${template._id}`} className="font-semibold hover:text-postmark">{template.name}</a>
-                      {template.subject && <div className="text-xs text-muted-ledger">{template.subject}</div>}
-                    </td>
-                    <td><PostmarkBadge status={template.status} label={template.status.replace('_', ' ')} size="sm" /></td>
-                    <td className="mono">{template.format}</td>
-                    <td className="mono text-right">{new Date(template.createdAt).toLocaleDateString()}</td>
-                    <td>
-                      <div className="flex justify-end gap-2">
-                        <a href={`/templates/${template._id}`} className="btn-secondary px-2 py-1 text-xs">Open</a>
-                        {template.status === 'pending_approval' && (
-                          <>
-                            <button onClick={() => approveMutation.mutate(template._id)} disabled={approveMutation.isPending} className="btn-primary px-2 py-1 text-xs">Approve</button>
-                            <button
-                              onClick={() => {
-                                const note = prompt('Rejection reason (optional):');
-                                rejectMutation.mutate({ id: template._id, note: note || undefined });
-                              }}
-                              disabled={rejectMutation.isPending}
-                              className="btn-secondary px-2 py-1 text-xs"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={filtered}
+        getRowId={(t) => t._id}
+        onRowClick={(t) => { window.location.href = `/templates/${t._id}`; }}
+        isLoading={isLoading}
+        defaultPageSize={25}
+        emptyTitle="No templates found"
+        emptyDescription="Create a template or change the status filter."
+      />
     </div>
   );
 }

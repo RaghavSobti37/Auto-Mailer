@@ -12,6 +12,7 @@ const WhatsAppEventSchema = new mongoose.Schema({
   importBatchId: { type: String, index: true },
   rawRow: { type: Map, of: String },
   messageId: { type: String },
+  eventKey: { type: String, unique: true, sparse: true, index: true },
 }, { timestamps: true });
 
 WhatsAppEventSchema.index({ importBatchId: 1, status: 1 });

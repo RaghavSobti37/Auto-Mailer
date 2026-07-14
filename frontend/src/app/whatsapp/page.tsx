@@ -28,12 +28,12 @@ export default function WhatsAppPage() {
     <ErrorBoundary>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div><h1 className="text-2xl font-bold tracking-tight">WhatsApp / AiSensy</h1><p className="text-sm text-gray-500 mt-1">Import and manage WhatsApp campaign data</p></div>
+          <div><h1 className="text-2xl font-bold tracking-tight">WhatsApp / AiSensy</h1><p className="text-sm text-muted-ledger mt-1">Import and manage WhatsApp campaign data</p></div>
           <a href="/whatsapp/review" className="btn-secondary">Review queue</a>
         </div>
 
         <div className="card">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Import AiSensy CSV</h3>
+          <h3 className="text-sm font-semibold mb-3">Import AiSensy CSV</h3>
           <div className="space-y-4">
             <div>
               <label className="label">CSV File</label>
@@ -50,10 +50,10 @@ export default function WhatsAppPage() {
               {importMut.isPending ? 'Importing...' : 'Import'}
             </button>
             {importMut.data && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm">
-                <p className="font-medium text-emerald-800">Import complete</p>
-                <p className="text-emerald-600 mt-1">
-                  {importMut.data.totalRows} rows: {importMut.data.matched} matched, {importMut.data.unmatched} unmatched, {importMut.data.needsReview} needs review
+              <div className="rounded-lg border p-3 text-sm" style={{ borderColor: 'rgba(66, 211, 146, 0.38)', background: 'rgba(66, 211, 146, 0.08)' }}>
+                <p className="font-medium" style={{ color: 'var(--ledger-green)' }}>Import complete</p>
+                <p className="text-muted-ledger mt-1">
+                  {importMut.data.totalRows} rows: {importMut.data.matched} matched, {importMut.data.unmatched} unmatched, {importMut.data.needsReview} needs review, {importMut.data.inserted || 0} inserted, {importMut.data.updated || 0} updated
                 </p>
               </div>
             )}
@@ -62,14 +62,14 @@ export default function WhatsAppPage() {
 
         {outcomes && outcomes.length > 0 && (
           <div className="card">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Outcomes</h3>
+            <h3 className="text-sm font-semibold mb-3">Outcomes</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {['sent', 'delivered', 'read', 'clicked', 'replied', 'failed'].map((status) => {
                 const count = outcomes.filter((o: any) => o.status === status).length;
                 return (
-                  <div key={status} className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className={`text-lg font-bold ${status === 'failed' ? 'text-red-600' : 'text-gray-800'}`}>{count}</div>
-                    <div className="text-xs text-gray-500 capitalize mt-1">{status}</div>
+                  <div key={status} className="metric-tile text-center">
+                    <div className="text-lg font-bold" style={{ color: status === 'failed' ? 'var(--void)' : 'var(--ink)' }}>{count}</div>
+                    <div className="text-xs text-muted-ledger capitalize mt-1">{status}</div>
                   </div>
                 );
               })}

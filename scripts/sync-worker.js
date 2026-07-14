@@ -26,7 +26,7 @@ const mongoose = require('mongoose');
 const ATLAS_URI = process.env.ATLAS_MONGODB_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/auto-mailer';
 const LOCAL_URI = process.env.LOCAL_MONGODB_URI || 'mongodb://localhost:27017/auto-mailer-mirror';
 const SYNC_INTERVAL_MIN = parseInt(process.env.SYNC_INTERVAL_MIN || '10', 10);
-const SYNC_COLLECTIONS = (process.env.SYNC_COLLECTIONS || 'Campaign,MailEvent,EmailLog,EmailProfile,MailTemplate,MailCampaign,WhatsAppEvent,Person')
+const SYNC_COLLECTIONS = (process.env.SYNC_COLLECTIONS || 'Campaign,MailEvent,EmailLog,EmailProfile,MailTemplate,MailCampaign,WhatsAppEvent,Person,personhubviews,personindexes,leads,contacts,exlybookings,tscdatas')
   .split(',').map(s => s.trim()).filter(Boolean);
 
 const DUMP_DIR = path.join(__dirname, '..', '.sync-dump');
