@@ -85,11 +85,16 @@ async function importAiSensyRows(rows, { linkedCampaignId, defaultCountryCode = 
         },
       },
       { upsert: true },
-    );
+    ).catch((err) => {
+      if (isCollectionCapError(err)) return { upsertedCount: 0, matchedCount: 0, skippedByCollectionCap: true };
+      throw err;
+    });
 
-    if (result.upsertedCount) {
+    if (result.skippedByCollectionCap) {
+      updated++;
+    } else if (result.upsertedCount) {
       inserted++;
-      if (match.person?._id) await updatePersonWhatsAppStats(match.person._id, { linkedCampaignId, status, timestamp });
+      if (match.person?._id && match.persisted !== false) await updatePersonWhatsAppStats(match.person._id, { linkedCampaignId, status, timestamp });
     } else {
       updated++;
     }
@@ -178,13 +183,19 @@ function addImportResults(a, b) {
 
 async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, status, timestamp, linkedCampaignId, tags = [] } = {}) {
   if (!normalized) return { person: null };
-  const existing = await Person.findOne({ normalizedPhone: normalized });
+  const existing = await Person.findOne({ normalizedPhone: normalized }).catch((err) => {
+    if (isCollectionCapError(err)) return null;
+    throw err;
+  });
   if (existing) {
     await enrichPerson(existing, { name, rawPhone, tags, status, timestamp, linkedCampaignId, source });
     await upsertPersonHubView(existing, { name, rawPhone, normalized, tags, timestamp, status });
     return { person: existing };
   }
-  const byRawPhone = await Person.findOne({ phone: rawPhone });
+  const byRawPhone = await Person.findOne({ phone: rawPhone }).catch((err) => {
+    if (isCollectionCapError(err)) return null;
+    throw err;
+  });
   if (byRawPhone) {
     byRawPhone.normalizedPhone = normalized;
     await enrichPerson(byRawPhone, { name, rawPhone, tags, status, timestamp, linkedCampaignId, source });
@@ -206,9 +217,23 @@ async function findOrCreateMatchingPerson(rawPhone, normalized, { name, source, 
       outcome: status,
       timestamp,
     }],
+  }).catch((err) => {
+    if (isCollectionCapError(err)) {
+      return {
+        _id: `automailer-whatsapp:${normalized}`,
+        phone: rawPhone,
+        normalizedPhone: normalized,
+        name: name || undefined,
+        channel: 'whatsapp',
+        tags,
+        source: source?.campaignName || 'whatsapp-import',
+        collectionCapFallback: true,
+      };
+    }
+    throw err;
   });
   await upsertPersonHubView(person, { name, rawPhone, normalized, tags, timestamp, status });
-  return { person };
+  return { person, persisted: !person.collectionCapFallback };
 }
 
 async function updatePersonWhatsAppStats(personId, { linkedCampaignId, status, timestamp }) {
@@ -287,7 +312,9 @@ async function enrichPerson(person, { name, rawPhone, tags, status, timestamp, l
       timestamp,
     },
   ].slice(-100);
-  await person.save();
+  await person.save().catch((err) => {
+    if (!isCollectionCapError(err)) throw err;
+  });
 }
 
 async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, timestamp, status }) {
@@ -344,6 +371,10 @@ async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, t
       },
     },
   ]);
+}
+
+function isCollectionCapError(err) {
+  return /cannot create a new collection|using 500 collections/i.test(String(err?.message || err || ''));
 }
 
 function parseCsv(text) {
