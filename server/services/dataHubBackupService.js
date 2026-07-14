@@ -18,11 +18,6 @@ const DEFAULT_BACKUP_COLLECTIONS = [
   'automailer_people',
   'personhubviews',
   'personindexes',
-  'persons',
-  'personidentifiers',
-  'personcommunicationprofiles',
-  'personsourcelinks',
-  'people',
   'leads',
   'contacts',
   'crmimports',
@@ -56,8 +51,7 @@ async function listSourceCollections(sourceDb) {
   const allowList = configured.length ? configured : DEFAULT_BACKUP_COLLECTIONS;
   const collections = await sourceDb.listCollections({}, { nameOnly: true }).toArray();
   const existing = new Set(collections.map((c) => c.name));
-  return collections
-    .map((c) => c.name)
+  return allowList
     .filter((name) => !name.startsWith('system.'))
     .filter((name) => allowList.includes(name) && existing.has(name));
 }
