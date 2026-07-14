@@ -13,7 +13,8 @@ const SORT_FIELDS = {
 };
 
 function mapHubRow(hub) {
-  const email = hub.email ? String(hub.email).toLowerCase().trim() : '';
+  const rawEmail = hub.email ? String(hub.email).toLowerCase().trim() : '';
+  const email = rawEmail.endsWith('@auto-mailer.local') ? '' : rawEmail;
   const phone = hub.phone ? String(hub.phone).trim() : '';
   const tags = Array.isArray(hub.inletKeys)
     ? hub.inletKeys.map((t) => String(t).trim()).filter(Boolean)

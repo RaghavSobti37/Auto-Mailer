@@ -326,11 +326,13 @@ async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, t
   const col = mongoose.connection.db.collection('personhubviews');
   const now = new Date();
   const personId = `automailer-whatsapp:${normalized}`;
+  const internalEmail = buildInternalWhatsAppEmail(normalized || rawPhone);
   const query = {
     $or: [
       { personId },
       { phone: normalized },
       { phone: rawPhone },
+      { email: internalEmail },
     ],
   };
 
@@ -353,6 +355,7 @@ async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, t
     },
     $set: {
       name: person.name || name || normalized || rawPhone || 'WhatsApp Contact',
+      email: internalEmail,
       phone: normalized || rawPhone,
       inMailer: true,
       lastActivityAt: timestamp || now,
@@ -377,6 +380,11 @@ async function upsertPersonHubView(person, { name, rawPhone, normalized, tags, t
 
 function isCollectionCapError(err) {
   return /cannot create a new collection|using 500 collections/i.test(String(err?.message || err || ''));
+}
+
+function buildInternalWhatsAppEmail(phone) {
+  const digits = String(phone || '').replace(/\D/g, '') || crypto.randomUUID().replace(/-/g, '');
+  return `whatsapp-${digits}@auto-mailer.local`;
 }
 
 function parseCsv(text) {
