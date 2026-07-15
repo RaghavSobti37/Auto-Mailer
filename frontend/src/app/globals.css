@@ -149,6 +149,76 @@
   }
 
   /* Stamp badges — status vocabulary */
+  .eyebrow {
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--status-delivered);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 16px;
+    height: 1px;
+    background: var(--status-delivered);
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 8px 14px;
+    border-radius: 3px;
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--ink-muted);
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--status-delivered);
+  }
+
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
+  }
+  .stamp.pending {
+    color: var(--status-pending);
+    background: rgba(217, 164, 65, 0.14);
+    border: 1px solid rgba(217, 164, 65, 0.35);
+  }
+  .stamp.active, .stamp.delivered {
+    color: var(--status-delivered);
+    background: rgba(13, 148, 136, 0.14);
+    border: 1px solid rgba(13, 148, 136, 0.35);
+  }
+  .stamp.bounced {
+    color: var(--status-bounced);
+    background: rgba(220, 38, 38, 0.14);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+  }
+  .stamp.read {
+    color: var(--status-read);
+    background: rgba(124, 58, 237, 0.14);
+    border: 1px solid rgba(124, 58, 237, 0.35);
+  }
+
   .postmark-badge {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
     position: relative;

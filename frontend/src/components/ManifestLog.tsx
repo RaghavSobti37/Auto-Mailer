@@ -14,25 +14,32 @@ type ManifestLogProps = {
   entries?: ManifestEntry[];
 };
 
-function outcomeColor(outcome?: string) {
-  const o = String(outcome || '').toLowerCase();
-  if (o.includes('bounce') || o.includes('fail') || o.includes('error') || o.includes('invalid')) return 'var(--status-bounced)';
-  if (o.includes('read') || o.includes('open')) return 'var(--status-read)';
-  if (o.includes('click') || o.includes('repli')) return 'var(--status-pending)';
-  if (o.includes('deliver') || o.includes('sent')) return 'var(--status-delivered)';
-  if (o.includes('add') || o.includes('import') || o.includes('csv') || o.includes('batch')) return 'var(--status-pending)';
-  return 'var(--ink-muted)';
-}
+const OUTCOME_COLORS: Record<string, string> = {
+  delivered: 'var(--status-delivered)',
+  read: 'var(--status-read)',
+  clicked: 'var(--status-pending)',
+  replied: 'var(--status-delivered)',
+  failed: 'var(--status-bounced)',
+  added: 'var(--ink-muted)',
+};
+
+const OUTCOME_LABELS: Record<string, string> = {
+  delivered: 'Delivered',
+  read: 'Read',
+  clicked: 'Clicked',
+  replied: 'Replied',
+  failed: 'Failed',
+  added: 'Added',
+};
 
 function simplifyOutcome(outcome?: string): string {
   const o = String(outcome || '').toLowerCase();
-  if (o.includes('bounce') || o.includes('fail') || o.includes('invalid')) return 'failed';
+  if (o.includes('bounce') || o.includes('fail') || o.includes('invalid') || o.includes('error')) return 'failed';
   if (o.includes('read') || o.includes('open')) return 'read';
   if (o.includes('click')) return 'clicked';
   if (o.includes('repli')) return 'replied';
-  if (o.includes('deliver')) return 'delivered';
-  if (o.includes('sent')) return 'sent';
-  if (o.includes('add') || o.includes('import')) return 'added';
+  if (o.includes('deliver') || o.includes('sent')) return 'delivered';
+  if (o.includes('add') || o.includes('import') || o.includes('csv') || o.includes('batch')) return 'added';
   return outcome || 'unknown';
 }
 
@@ -44,9 +51,9 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
   if (!sorted.length) {
     return (
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-ledger">Manifest Log</h3>
+        <h3 className="mono text-[10px] font-semibold uppercase tracking-widest text-muted-ledger">Manifest Log</h3>
         <p className="text-xs text-muted-ledger border border-[var(--line)] px-3 py-3">
-          No activity recorded. A contact with 0 sent looks the same as silence until events land here.
+          No activity recorded yet.
         </p>
       </section>
     );
@@ -54,10 +61,12 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
 
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-ledger">Manifest Log</h3>
+      <h3 className="mono text-[10px] font-semibold uppercase tracking-widest text-muted-ledger">Manifest Log</h3>
       <ol className="space-y-3">
         {sorted.map((entry, i) => {
-          const color = outcomeColor(entry.outcome);
+          const outcome = simplifyOutcome(entry.outcome);
+          const color = OUTCOME_COLORS[outcome] || 'var(--ink-muted)';
+          const label = OUTCOME_LABELS[outcome] || outcome;
           return (
             <motion.li
               key={`${entry.campaignId || 'x'}-${entry.timestamp || i}-${i}`}
@@ -70,8 +79,8 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
               <span className="manifest-dot" />
               <div className="pl-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-display text-[var(--ink-text)]">
-                    {simplifyOutcome(entry.outcome)}
+                  <span className="font-display capitalize text-[var(--ink-text)] font-medium">
+                    {label}
                   </span>
                   <time className="mono shrink-0 text-[10px] text-muted-ledger">
                     {entry.timestamp
@@ -86,8 +95,6 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
                 </div>
                 <div className="mt-0.5 mono text-[11px] text-muted-ledger">
                   <span className="uppercase">{entry.channel || 'email'}</span>
-                  {' · '}
-                  <span style={{ color }}>{simplifyOutcome(entry.outcome)}</span>
                 </div>
               </div>
             </motion.li>

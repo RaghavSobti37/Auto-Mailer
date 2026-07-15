@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
@@ -15,7 +15,6 @@ type FilterStatus = 'all' | 'sent' | 'opened' | 'clicked' | 'bounced';
 
 function sanitizeEmailHtml(html: string): string {
   if (!html) return '';
-  // Strip full-document wrapper tags so the content renders cleanly in an iframe
   return html
     .replace(/<!DOCTYPE[^>]*>/i, '')
     .replace(/<html[^>]*>/gi, '')
@@ -27,6 +26,16 @@ function sanitizeEmailHtml(html: string): string {
 }
 
 const PAGE_SIZE = 25;
+const STATUS_COLORS: Record<string, string> = {
+  Sent: 'var(--status-delivered)',
+  Opened: 'var(--status-read)',
+  Clicked: 'var(--status-pending)',
+  Bounced: 'var(--status-bounced)',
+  Failed: 'var(--status-bounced)',
+  Invalid: 'var(--status-bounced)',
+  Unsubscribed: 'var(--status-pending)',
+  Pending: 'var(--ink-muted)',
+};
 
 export default function CampaignDetailPage() {
   const params = useParams();
@@ -39,12 +48,15 @@ export default function CampaignDetailPage() {
   const [resultFilter, setResultFilter] = useState<FilterStatus>('all');
   const [resultPage, setResultPage] = useState(1);
 
+  // Use the campaign data for all tabs — keep it cached
   const { data: campaign, isLoading, error, refetch } = useQuery({
     queryKey: ['campaign', id],
     queryFn: () => live.campaigns.getById(id),
     refetchInterval: (query) => query.state.data?.status === 'Sending' ? 5000 : false,
+    staleTime: 30_000,
   });
 
+  // Pre-fetch recipient data for all tabs — no `enabled` gate so data stays cached across tab switches
   const { data: recipientsData, isLoading: recipientsLoading } = useQuery({
     queryKey: ['campaign-recipients', id, recipientPage, recipientStatus],
     queryFn: () => live.campaigns.recipients(id, {
@@ -52,10 +64,11 @@ export default function CampaignDetailPage() {
       limit: PAGE_SIZE,
       status: recipientStatus !== 'all' ? recipientStatus : undefined,
     }),
-    enabled: tab === 'Recipients',
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
 
-  // Separate query for Results tab so it works independently with its own filter
+  // Results tab data — separate query so it can have its own filter/page; no `enabled` gate
   const { data: resultsData, isLoading: resultsLoading } = useQuery({
     queryKey: ['campaign-results', id, resultPage, resultFilter],
     queryFn: () => live.campaigns.recipients(id, {
@@ -63,7 +76,8 @@ export default function CampaignDetailPage() {
       limit: PAGE_SIZE,
       status: resultFilter !== 'all' ? resultFilter.charAt(0).toUpperCase() + resultFilter.slice(1) : undefined,
     }),
-    enabled: tab === 'Results',
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
 
   const dispatchMut = useMutation({
@@ -87,7 +101,7 @@ export default function CampaignDetailPage() {
   };
 
   if (error) return <QueryErrorDisplay error={error} retry={() => refetch()} />;
-  if (isLoading) return <div className="py-12 text-center text-muted-ledger">Loading campaign...</div>;
+  if (isLoading) return <div className="py-12 text-center text-muted-ledger">Loading campaign…</div>;
   if (!campaign) return <div className="py-12 text-center text-muted-ledger">Campaign not found</div>;
 
   const isLegacy = campaign && 'stats' in campaign;
@@ -103,38 +117,88 @@ export default function CampaignDetailPage() {
   const statusFilterOptions = ['all', 'Sent', 'Opened', 'Clicked', 'Bounced', 'Failed', 'Pending'];
   const isCampaignContent = Boolean(campaign.content);
 
-  const recipientsColumns = useMemo<DataTableColumn<any>[]>(() => [
+  // Results column — simplified: just show email, name, and simplified status
+  const resultsColumns = useMemo<DataTableColumn<any>[]>(() => [
     {
       header: 'Email',
       sortKey: 'email',
-      render: (r) => <span className="font-semibold">{r.email}</span>,
+      render: (r) => <span className="font-semibold text-sm">{r.email}</span>,
+    },
+    {
+      header: 'Name',
+      sortKey: 'name',
+      render: (r) => <span className="text-muted-ledger text-sm">{r.name || '—'}</span>,
     },
     {
       header: 'Status',
       sortKey: 'status',
-      render: (r) => <PostmarkBadge status={r.status} size="sm" />,
+      render: (r) => {
+        const label = r.status || 'Pending';
+        const color = STATUS_COLORS[r.status] || 'var(--ink-muted)';
+        return (
+          <span
+            className="stamp"
+            style={{
+              color,
+              background: `${color}1a`,
+              borderColor: `${color}55`,
+            }}
+          >
+            {label}
+          </span>
+        );
+      },
+    },
+  ], []);
+
+  // Recipients column
+  const recipientsColumns = useMemo<DataTableColumn<any>[]>(() => [
+    {
+      header: 'Email',
+      sortKey: 'email',
+      render: (r) => <span className="font-semibold text-sm">{r.email}</span>,
+    },
+    {
+      header: 'Status',
+      sortKey: 'status',
+      render: (r) => {
+        const label = r.status || 'Pending';
+        const color = STATUS_COLORS[r.status] || 'var(--ink-muted)';
+        return (
+          <span
+            className="stamp"
+            style={{
+              color,
+              background: `${color}1a`,
+              borderColor: `${color}55`,
+            }}
+          >
+            {label}
+          </span>
+        );
+      },
     },
     {
       header: 'Opened',
-      render: (r) => <span className="mono">{r.eventDetails?.opened ? '● Yes' : '○ No'}</span>,
+      render: (r) => <span className="mono text-sm">{r.eventDetails?.opened ? '✓' : '—'}</span>,
     },
     {
       header: 'Clicked',
-      render: (r) => <span className="mono">{r.eventDetails?.clicked ? '● Yes' : '○ No'}</span>,
+      render: (r) => <span className="mono text-sm">{r.eventDetails?.clicked ? '✓' : '—'}</span>,
     },
     {
       header: 'Sent at',
       sortKey: 'sentAt',
       sortFn: (r) => r.sentAt ? new Date(r.sentAt).getTime() : 0,
-      render: (r) => <span className="mono text-xs">{r.sentAt ? new Date(r.sentAt).toLocaleString() : '-'}</span>,
+      render: (r) => <span className="mono text-xs text-muted-ledger">{r.sentAt ? new Date(r.sentAt).toLocaleString() : '—'}</span>,
     },
   ], []);
 
-  // Clicking a metric card filters the Results table inline (stays on Results tab)
-  const handleCardClick = (filter: FilterStatus) => {
+  // Clicking a metric card filters the Results table inline
+  const handleCardClick = useCallback((filter: FilterStatus) => {
     setResultFilter(resultFilter === filter ? 'all' : filter);
     setResultPage(1);
-  };
+  }, [resultFilter]);
 
   return (
     <ErrorBoundary>
@@ -196,7 +260,7 @@ export default function CampaignDetailPage() {
         {tab === 'Recipients' && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold uppercase text-muted-ledger">Filter:</span>
+              <span className="mono text-[10px] font-semibold uppercase tracking-wider text-muted-ledger">Filter:</span>
               <select
                 className="input w-auto"
                 value={recipientStatus}
@@ -233,33 +297,33 @@ export default function CampaignDetailPage() {
 
         {tab === 'Results' && (
           <div className="space-y-5">
-            {/* Clickable metric cards — clicking stays on Results and filters the table below */}
+            {/* Clickable metric cards — clicking stays on Results and filters the table */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <button
                 type="button"
                 onClick={() => handleCardClick('sent')}
-                className={`text-left transition-all ${resultFilter === 'sent' ? 'ring-2 ring-postmark ring-offset-2' : 'hover:opacity-80'}`}
+                className={`text-left transition-all ${resultFilter === 'sent' ? 'ring-2 ring-[var(--status-delivered)] ring-offset-2' : 'hover:opacity-80'}`}
               >
-                <FlatMetricTile label="Sent" value={sent} />
+                <FlatMetricTile label="Sent" value={sent} hint={total > 0 ? `${Math.round((sent / total) * 100)}%` : undefined} />
               </button>
               <button
                 type="button"
                 onClick={() => handleCardClick('opened')}
-                className={`text-left transition-all ${resultFilter === 'opened' ? 'ring-2 ring-postmark ring-offset-2' : 'hover:opacity-80'}`}
+                className={`text-left transition-all ${resultFilter === 'opened' ? 'ring-2 ring-[var(--status-read)] ring-offset-2' : 'hover:opacity-80'}`}
               >
                 <FlatMetricTile label="Opened" value={opened} hint={sent > 0 ? `${Math.round((opened / sent) * 100)}%` : undefined} />
               </button>
               <button
                 type="button"
                 onClick={() => handleCardClick('clicked')}
-                className={`text-left transition-all ${resultFilter === 'clicked' ? 'ring-2 ring-postmark ring-offset-2' : 'hover:opacity-80'}`}
+                className={`text-left transition-all ${resultFilter === 'clicked' ? 'ring-2 ring-[var(--status-pending)] ring-offset-2' : 'hover:opacity-80'}`}
               >
                 <FlatMetricTile label="Clicked" value={clicked} hint={sent > 0 ? `${Math.round((clicked / sent) * 100)}%` : undefined} />
               </button>
               <button
                 type="button"
                 onClick={() => handleCardClick('bounced')}
-                className={`text-left transition-all ${resultFilter === 'bounced' ? 'ring-2 ring-postmark ring-offset-2' : 'hover:opacity-80'}`}
+                className={`text-left transition-all ${resultFilter === 'bounced' ? 'ring-2 ring-[var(--status-bounced)] ring-offset-2' : 'hover:opacity-80'}`}
               >
                 <FlatMetricTile label="Bounced" value={bounced} />
               </button>
@@ -276,22 +340,24 @@ export default function CampaignDetailPage() {
               </div>
             </div>
 
-            {/* People table — filtered by card clicks, stays on this page */}
+            {/* People table — no time tracking per event, just people counts */}
             <div>
-              <h3 className="mb-3 text-sm font-semibold">
-                {resultFilter === 'all' ? 'All recipients' : `${resultFilter.charAt(0).toUpperCase() + resultFilter.slice(1)} recipients`}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold">
+                  {resultFilter === 'all' ? 'All recipients' : `${resultFilter.charAt(0).toUpperCase() + resultFilter.slice(1)} recipients`}
+                </h3>
                 {resultFilter !== 'all' && (
                   <button
                     type="button"
                     onClick={() => handleCardClick('all')}
-                    className="ml-2 text-xs text-postmark font-semibold hover:underline"
+                    className="text-xs text-postmark font-semibold hover:underline"
                   >
                     Clear filter
                   </button>
                 )}
-              </h3>
+              </div>
               <DataTable
-                columns={recipientsColumns}
+                columns={resultsColumns}
                 data={(resultsData?.recipients || []) as any[]}
                 getRowId={(r) => r._id || r.email}
                 serverSide

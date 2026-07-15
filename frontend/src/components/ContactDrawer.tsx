@@ -19,10 +19,12 @@ type ContactDrawerProps = {
 export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
   const router = useRouter();
   const open = Boolean(personId);
-  const { data: person, isLoading } = useQuery({
+
+  const { data: person, isLoading, isError } = useQuery({
     queryKey: ['person', personId],
     queryFn: () => live.audience.getById(personId!),
     enabled: open,
+    staleTime: 60_000,
   });
 
   const handleOpenFullPage = useCallback(() => {
@@ -66,7 +68,7 @@ export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
             <header className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
               <div>
                 <p className="mono text-[10px] uppercase tracking-widest text-muted-ledger">Dispatch ledger</p>
-                <h2 className="font-display text-xl leading-tight mt-0.5">Contact</h2>
+                <h2 className="font-display text-xl leading-tight mt-0.5">Contact Manifest</h2>
               </div>
               <button type="button" className="btn-secondary text-xs px-2.5 py-1" onClick={onClose} aria-label="Close">
                 Close
@@ -74,16 +76,16 @@ export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
             </header>
 
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-              {isLoading || !person ? (
-                <p className="py-12 text-center text-sm text-muted-ledger">
-                  {isLoading ? 'Loading manifest…' : 'Person not found'}
-                </p>
+              {isLoading ? (
+                <p className="py-12 text-center text-sm text-muted-ledger">Loading manifest…</p>
+              ) : isError || !person ? (
+                <p className="py-12 text-center text-sm text-muted-ledger">Person not found</p>
               ) : (
                 <ContactBody person={person as Person & { tags?: string[]; emailStatus?: string; suppressionReason?: string }} />
               )}
             </div>
 
-            {person && (
+            {person && !isLoading && !isError && (
               <footer className="border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
                 <button
                   type="button"
@@ -119,14 +121,14 @@ function ContactBody({
         <div className="min-w-0 flex-1 space-y-2">
           <h3 className="font-display text-2xl leading-tight truncate">{person.name || 'Unknown'}</h3>
           {person.email && (
-            <p className="text-sm text-muted-ledger truncate">{person.email}</p>
+            <p className="text-sm text-muted-ledger truncate mono">{person.email}</p>
           )}
           {(person.phone || person.normalizedPhone) && (
             <p className="mono text-xs text-muted-ledger">
               {person.phone || person.normalizedPhone}
             </p>
           )}
-          <p className="mono text-[10px] text-muted-ledger truncate">ID {String(person._id)}</p>
+          <p className="text-xs text-muted-ledger">ID {String(person._id).slice(-8)}</p>
           <TagBadges tags={person.tags} max={8} />
         </div>
       </div>
@@ -148,7 +150,7 @@ function ContactBody({
           { key: 'delivered', label: 'Delivered', value: wa.delivered || 0, color: 'var(--status-delivered)' },
           { key: 'read', label: 'Read', value: wa.read || 0, color: 'var(--status-read)' },
           { key: 'clicked', label: 'Clicked', value: wa.clicked || 0, color: 'var(--status-pending)' },
-          { key: 'replied', label: 'Replied', value: wa.replied || 0, color: 'var(--status-read)' },
+          { key: 'replied', label: 'Replied', value: wa.replied || 0, color: 'var(--status-delivered)' },
           { key: 'failed', label: 'Failed', value: wa.failed || 0, color: 'var(--status-bounced)' },
         ]}
       />
