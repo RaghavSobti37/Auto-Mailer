@@ -49,7 +49,7 @@ export default function TemplateEditorPage() {
   return (
     <ErrorBoundary>
       <div className="max-w-4xl mx-auto space-y-6">
-        <a href="/templates" className="text-sm font-semibold text-postmark">Back to templates</a>
+        <button type="button" onClick={() => router.push('/templates')} className="text-sm font-semibold text-postmark">Back to templates</button>
         <h1 className="text-2xl font-bold tracking-tight">{id === 'new' ? 'New Template' : 'Edit Template'}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -88,7 +88,7 @@ export default function TemplateEditorPage() {
         <div className="flex gap-3">
           <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !name} className="btn-primary">{saveMut.isPending ? 'Saving...' : 'Save'}</button>
           {id !== 'new' && <button onClick={() => submitMut.mutate()} disabled={submitMut.isPending} className="btn-secondary">{submitMut.isPending ? 'Submitting...' : 'Submit for Approval'}</button>}
-          <a href="/templates" className="btn-secondary">Cancel</a>
+          <button type="button" onClick={() => router.push('/templates')} className="btn-secondary">Cancel</button>
         </div>
       </div>
     </ErrorBoundary>

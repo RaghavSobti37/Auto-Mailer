@@ -2,10 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function WhatsAppPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<File[]>([]);
   const [columnMapping] = useState<Record<string, string>>({});
@@ -35,7 +37,7 @@ export default function WhatsAppPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div><h1 className="text-2xl font-bold tracking-tight">WhatsApp / AiSensy</h1><p className="text-sm text-muted-ledger mt-1">Import and manage WhatsApp campaign data</p></div>
-          <a href="/whatsapp/review" className="btn-secondary">Review queue</a>
+          <button type="button" onClick={() => router.push('/whatsapp/review')} className="btn-secondary">Review queue</button>
         </div>
 
         <div className="card">

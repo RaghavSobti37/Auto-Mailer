@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
@@ -14,6 +15,7 @@ type ReviewRow = {
 };
 
 export default function WhatsAppReviewPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['whatsapp-review'],
@@ -75,7 +77,7 @@ export default function WhatsAppReviewPage() {
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <a href="/whatsapp" className="text-sm text-postmark hover:underline">&larr; Back to WhatsApp</a>
+        <button type="button" onClick={() => router.push('/whatsapp')} className="text-sm text-postmark hover:underline">&larr; Back to WhatsApp</button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Needs Review</h1>
           <p className="text-sm text-muted-ledger mt-1">Unmatched phone numbers requiring manual resolution</p>

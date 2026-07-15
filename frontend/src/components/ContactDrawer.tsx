@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { live } from '@/lib/api';
@@ -16,12 +17,20 @@ type ContactDrawerProps = {
 };
 
 export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
+  const router = useRouter();
   const open = Boolean(personId);
   const { data: person, isLoading } = useQuery({
     queryKey: ['person', personId],
     queryFn: () => live.audience.getById(personId!),
     enabled: open,
   });
+
+  const handleOpenFullPage = useCallback(() => {
+    if (person?._id) {
+      router.push(`/audience/${person._id}`);
+      onClose();
+    }
+  }, [person?._id, router, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -76,12 +85,13 @@ export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
 
             {person && (
               <footer className="border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
-                <a
-                  href={`/audience/${person._id}`}
+                <button
+                  type="button"
+                  onClick={handleOpenFullPage}
                   className="text-xs font-medium text-[var(--status-delivered)] hover:underline"
                 >
                   Open full page →
-                </a>
+                </button>
               </footer>
             )}
           </motion.aside>

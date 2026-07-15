@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { InkStamp, resolveStampTone } from '@/components/InkStamp';
@@ -12,6 +12,7 @@ import type { Person } from '@/lib/types';
 
 export default function ContactTimelinePage() {
   const params = useParams();
+  const router = useRouter();
   const personId = params.personId as string;
 
   const { data: person, isLoading } = useQuery({
@@ -29,9 +30,9 @@ export default function ContactTimelinePage() {
   return (
     <ErrorBoundary>
       <div className="space-y-6 max-w-3xl">
-        <a href="/audience" className="text-sm text-[var(--status-delivered)] hover:underline">
+        <button type="button" onClick={() => router.push('/audience')} className="text-sm text-[var(--status-delivered)] hover:underline">
           ← Back to audience
-        </a>
+        </button>
 
         {isLoading ? (
           <div className="text-center py-12 text-muted-ledger">Loading…</div>
@@ -54,13 +55,14 @@ export default function ContactTimelinePage() {
                   <TagBadges tags={p.tags} max={12} />
                 </div>
                 {p.needsReview && (
-                  <a
-                    href="/whatsapp/review"
+                  <button
+                    type="button"
+                    onClick={() => router.push('/whatsapp/review')}
                     className="inline-block mt-3 mono text-[10px] uppercase tracking-wide px-2 py-1 border"
                     style={{ borderColor: 'var(--status-pending)', color: 'var(--status-pending)' }}
                   >
                     Needs review
-                  </a>
+                  </button>
                 )}
               </div>
             </div>

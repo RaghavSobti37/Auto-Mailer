@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import type { MailTemplate, TemplateStatus } from '@/lib/types';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
@@ -10,6 +11,7 @@ import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
 const FILTERS = ['all', 'draft', 'pending_approval', 'approved', 'rejected'] as const;
 
 export default function TemplatesPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<TemplateStatus | 'all'>('all');
   const queryClient = useQueryClient();
 
@@ -39,7 +41,7 @@ export default function TemplatesPage() {
       sortKey: 'name',
       render: (template) => (
         <>
-          <a href={`/templates/${template._id}`} className="font-semibold hover:text-postmark" onClick={(e) => e.stopPropagation()}>{template.name}</a>
+          <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/templates/${template._id}`); }} className="font-semibold hover:text-postmark text-left">{template.name}</button>
           {template.subject && <div className="text-xs text-muted-ledger">{template.subject}</div>}
         </>
       ),
@@ -67,7 +69,7 @@ export default function TemplatesPage() {
       sortable: false,
       render: (template) => (
         <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-          <a href={`/templates/${template._id}`} className="btn-secondary px-2 py-1 text-xs">Open</a>
+          <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/templates/${template._id}`); }} className="btn-secondary px-2 py-1 text-xs">Open</button>
           {template.status === 'pending_approval' && (
             <>
               <button type="button" onClick={() => approveMutation.mutate(template._id)} disabled={approveMutation.isPending} className="btn-primary px-2 py-1 text-xs">Approve</button>
@@ -96,7 +98,7 @@ export default function TemplatesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Templates</h1>
           <p className="mt-1 text-sm text-muted-ledger">{filtered.length} template{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <a href="/templates/new" className="btn-primary">New template</a>
+        <button type="button" onClick={() => router.push('/templates/new')} className="btn-primary">New template</button>
       </div>
 
       <div className="flex flex-wrap gap-5 border-b" style={{ borderColor: 'var(--line)' }}>
@@ -117,7 +119,7 @@ export default function TemplatesPage() {
         columns={columns}
         data={filtered}
         getRowId={(t) => t._id}
-        onRowClick={(t) => { window.location.href = `/templates/${t._id}`; }}
+        onRowClick={(t) => { router.push(`/templates/${t._id}`); }}
         isLoading={isLoading}
         defaultPageSize={25}
         emptyTitle="No templates found"
