@@ -98,19 +98,22 @@ export interface Person {
   _id: string;
   email?: string;
   phone?: string;
+  normalizedPhone?: string;
   name?: string;
+  tags?: string[];
+  emailStatus?: string;
   channel?: 'email' | 'whatsapp' | 'both';
   opened?: number;
   clicked?: number;
   bounced?: boolean;
   suppressed?: boolean;
-  suppressionReason?: 'bounced' | 'unsubscribed';
+  suppressionReason?: 'bounced' | 'unsubscribed' | string;
   campaignId?: string;
   emailStats?: { sent: number; opened: number; clicked: number; bounced: number; };
   whatsappStats?: { sent: number; delivered: number; read: number; clicked: number; replied: number; failed: number; };
   campaignHistory?: Array<{ campaignId: string; campaignTitle: string; channel: 'email' | 'whatsapp'; outcome: string; timestamp: string; }>;
   needsReview?: boolean;
-  createdAt: string;
+  createdAt?: string;
 }
 
 // ============ WhatsApp ============

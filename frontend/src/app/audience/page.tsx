@@ -6,6 +6,7 @@ import { live } from '@/lib/api';
 import type { SortState } from '@/lib/columnSort';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
+import { ContactDrawer } from '@/components/ContactDrawer';
 import { DataOpsToolbar } from '@/components/DataOpsToolbar';
 import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
 import { TagBadges } from '@/components/table/TagBadges';
@@ -30,6 +31,19 @@ const SERVER_SORT_KEYS: Record<string, string> = {
   lastActivity: 'lastActivity',
 };
 
+function statusBadge(p: AudiencePerson) {
+  if (p.suppressed) {
+    return <PostmarkBadge status="bounced" label={p.suppressionReason || 'suppressed'} size="sm" />;
+  }
+  if (p.emailStatus) {
+    const s = p.emailStatus.toLowerCase();
+    if (s.includes('bounce')) return <PostmarkBadge status="bounced" label={p.emailStatus} size="sm" />;
+    if (s.includes('unsub')) return <PostmarkBadge status="pending" label={p.emailStatus} size="sm" />;
+    return <PostmarkBadge status="delivered" label={p.emailStatus} size="sm" />;
+  }
+  return <PostmarkBadge status="active" label="Active" size="sm" />;
+}
+
 export default function AudiencePage() {
   const [search, setSearch] = useState('');
   const [tag, setTag] = useState('');
@@ -38,6 +52,7 @@ export default function AudiencePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortState, setSortState] = useState<SortState>({ key: 'lastActivity', direction: 'desc' });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const sortParam = sortState?.key ? SERVER_SORT_KEYS[sortState.key] : 'lastActivity';
   const orderParam = sortState?.direction || 'desc';
@@ -63,13 +78,23 @@ export default function AudiencePage() {
   });
 
   const columns = useMemo<DataTableColumn<AudiencePerson>[]>(() => [
-    { key: 'name', header: 'Name', sortKey: 'name', render: (p) => <span className="font-medium">{p.name || '-'}</span> },
-    { key: 'email', header: 'Email', sortKey: 'email', render: (p) => <span className="text-muted-ledger">{p.email || '-'}</span> },
+    {
+      key: 'name',
+      header: 'Name',
+      sortKey: 'name',
+      render: (p) => <span className="font-display text-base">{p.name || '—'}</span>,
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      sortKey: 'email',
+      render: (p) => <span className="text-muted-ledger">{p.email || '—'}</span>,
+    },
     {
       key: 'phone',
       header: 'Phone',
       sortKey: 'phone',
-      render: (p) => <span className="mono text-muted-ledger">{p.phone || p.normalizedPhone || '-'}</span>,
+      render: (p) => <span className="mono text-muted-ledger">{p.phone || p.normalizedPhone || '—'}</span>,
     },
     {
       header: 'Tags',
@@ -77,17 +102,9 @@ export default function AudiencePage() {
       render: (p) => <TagBadges tags={p.tags} />,
     },
     {
-      header: 'Email status',
+      header: 'Status',
       sortKey: 'emailStatus',
-      render: (p) => (p.emailStatus ? <span className="text-xs capitalize">{p.emailStatus}</span> : <span className="text-gray-300">-</span>),
-    },
-    {
-      header: 'Suppressed',
-      align: 'center',
-      sortable: false,
-      render: (p) => (p.suppressed
-        ? <PostmarkBadge status="failed" label={p.suppressionReason || 'suppressed'} size="sm" />
-        : <span className="text-gray-300">-</span>),
+      render: (p) => statusBadge(p),
     },
   ], []);
 
@@ -104,9 +121,9 @@ export default function AudiencePage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Audience</h1>
+            <h1 className="text-2xl tracking-tight">Audience</h1>
             <p className="text-sm text-muted-ledger mt-1">
-              {audience?.total?.toLocaleString() ?? '…'} contacts from hub view
+              <span className="mono">{audience?.total?.toLocaleString() ?? '…'}</span> contacts · dispatch ledger
             </p>
           </div>
           <DataOpsToolbar compact />
@@ -148,7 +165,7 @@ export default function AudiencePage() {
           columns={columns}
           data={(audience?.items || []) as AudiencePerson[]}
           getRowId={(p) => String(p._id)}
-          onRowClick={(p) => { window.location.href = `/audience/${p._id}`; }}
+          onRowClick={(p) => setSelectedId(String(p._id))}
           serverSide
           paginated
           isLoading={isLoading}
@@ -167,6 +184,8 @@ export default function AudiencePage() {
           emptyTitle="No audience matches"
           emptyDescription="Try clearing filters or run migration/import."
         />
+
+        <ContactDrawer personId={selectedId} onClose={() => setSelectedId(null)} />
       </div>
     </ErrorBoundary>
   );

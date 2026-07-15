@@ -36,8 +36,8 @@ export default function OverviewPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
-          <p className="mt-1 text-sm text-muted-ledger">Auto-Mailer dispatch ledger (local Mongo)</p>
+          <h1 className="text-2xl tracking-tight">Overview</h1>
+          <p className="mt-1 text-sm text-muted-ledger">Dispatch ledger · local Mongo</p>
         </div>
         <a href="/settings" className="text-xs font-semibold text-postmark">
           Backup: {backupStatus?.status ?? '…'}

@@ -151,7 +151,43 @@ async function getAudiencePersonFromHub(id) {
   const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
   const hub = await col.findOne(query);
   if (!hub) return null;
-  return mapHubRow(hub);
+  const base = mapHubRow(hub);
+
+  // Merge local automailer_people engagement so drawer/funnel/manifest aren't empty shells
+  const Person = require('../models/Person');
+  const or = [];
+  if (base.email) or.push({ email: base.email });
+  if (base.normalizedPhone) or.push({ normalizedPhone: base.normalizedPhone });
+  if (base.phone) or.push({ phone: base.phone });
+  if (ObjectId.isValid(id)) or.push({ _id: new ObjectId(id) });
+
+  let local = null;
+  if (or.length) {
+    local = await Person.findOne({ $or: or }).lean();
+  }
+
+  if (!local) {
+    return {
+      ...base,
+      emailStats: { sent: 0, opened: 0, clicked: 0, bounced: 0 },
+      whatsappStats: { sent: 0, delivered: 0, read: 0, clicked: 0, replied: 0, failed: 0 },
+      campaignHistory: [],
+      needsReview: false,
+    };
+  }
+
+  return {
+    ...base,
+    name: base.name || local.name,
+    suppressed: base.suppressed || Boolean(local.suppressed),
+    suppressionReason: base.suppressionReason || local.suppressionReason,
+    needsReview: Boolean(local.needsReview),
+    emailStats: local.emailStats || { sent: 0, opened: 0, clicked: 0, bounced: 0 },
+    whatsappStats: local.whatsappStats || {
+      sent: 0, delivered: 0, read: 0, clicked: 0, replied: 0, failed: 0,
+    },
+    campaignHistory: Array.isArray(local.campaignHistory) ? local.campaignHistory : [],
+  };
 }
 
 module.exports = {

@@ -13,18 +13,18 @@ function normalizeStatus(status?: string) {
 
 export function PostmarkBadge({ status, label, pressed = false, size = 'md' }: PostmarkBadgeProps) {
   const normalized = normalizeStatus(status);
-  const isSending = normalized === 'sending' || normalized === 'queued' || normalized === 'pending_approval';
-  const isSuccess = normalized === 'completed' || normalized === 'approved' || normalized === 'healthy' || normalized === 'synced';
-  const isFailed = normalized === 'failed' || normalized === 'rejected' || normalized === 'bounced' || normalized === 'offline' || normalized === 'degraded';
-  const isDraft = normalized === 'draft' || normalized === 'stopped';
+  const isPending = ['sending', 'queued', 'pending', 'pending_approval', 'draft', 'stopped'].includes(normalized);
+  const isDelivered = ['completed', 'approved', 'healthy', 'synced', 'delivered', 'sent', 'subscribed', 'active'].includes(normalized);
+  const isBounced = ['failed', 'rejected', 'bounced', 'offline', 'degraded', 'unsubscribed'].includes(normalized);
+  const isRead = ['read', 'opened', 'open'].includes(normalized);
 
   const className = [
     'postmark-badge',
     size === 'sm' ? 'postmark-badge-sm' : '',
-    isSending ? 'postmark-badge-pending' : '',
-    isSuccess ? 'postmark-badge-success' : '',
-    isFailed ? 'postmark-badge-failed' : '',
-    isDraft ? 'postmark-badge-draft' : '',
+    isPending && !isDelivered && !isBounced && !isRead ? 'postmark-badge-pending' : '',
+    isDelivered ? 'postmark-badge-delivered' : '',
+    isBounced ? 'postmark-badge-bounced' : '',
+    isRead ? 'postmark-badge-read' : '',
     pressed ? 'postmark-badge-press' : '',
   ].filter(Boolean).join(' ');
 
