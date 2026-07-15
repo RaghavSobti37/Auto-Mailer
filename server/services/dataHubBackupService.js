@@ -209,6 +209,7 @@ async function resolveBackupDestination({ sourceDb, targetDb, startedAt, runId }
 async function runMongoBackup({
   sourceConnection = mongoose.connection,
   targetUri = config.onlineBackupMongoUri,
+  onProgress = null,
 } = {}) {
   if (!targetUri) {
     return { skipped: true, reason: 'ONLINE_BACKUP_MONGODB_URI is not set' };
@@ -217,8 +218,14 @@ async function runMongoBackup({
     throw new Error('Local MongoDB connection is not ready');
   }
 
+  const report = (patch) => {
+    if (typeof onProgress === 'function') onProgress(patch);
+  };
+
   const startedAt = new Date();
   const runId = new mongoose.Types.ObjectId();
+  report({ phase: 'queued', percent: 0, current: 0, total: 0, collectionName: null });
+
   const targetConnection = await mongoose.createConnection(targetUri, {
     serverSelectionTimeoutMS: 10000,
     connectTimeoutMS: 10000,
@@ -229,12 +236,38 @@ async function runMongoBackup({
     let targetDb = targetConnection.db;
     const collections = await listSourceCollections(sourceDb);
     const copied = {};
+    report({
+      phase: 'connecting',
+      percent: 2,
+      current: 0,
+      total: collections.length,
+      collectionName: null,
+    });
     const destination = await resolveBackupDestination({ sourceDb, targetDb, startedAt, runId });
     targetDb = destination.db;
 
-    for (const collectionName of collections) {
+    for (let i = 0; i < collections.length; i += 1) {
+      const collectionName = collections[i];
+      const percent = collections.length
+        ? Math.min(96, Math.round(((i) / collections.length) * 100))
+        : 50;
+      report({
+        phase: 'copying',
+        percent,
+        current: i + 1,
+        total: collections.length,
+        collectionName,
+      });
       copied[collectionName] = await copyCollection(sourceDb, targetDb, collectionName, startedAt, runId, destination.collections);
     }
+
+    report({
+      phase: 'finalizing',
+      percent: 98,
+      current: collections.length,
+      total: collections.length,
+      collectionName: destination.collections.meta,
+    });
     const documentCount = Object.values(copied).reduce((sum, row) => sum + row.copied, 0);
     const chunkCount = Object.values(copied).reduce((sum, row) => sum + row.chunks, 0);
     const uncompressedBytes = Object.values(copied).reduce((sum, row) => sum + row.uncompressedBytes, 0);
@@ -263,6 +296,14 @@ async function runMongoBackup({
       completedAt: new Date(),
     });
 
+    report({
+      phase: 'completed',
+      percent: 100,
+      current: collections.length,
+      total: collections.length,
+      collectionName: null,
+    });
+
     return {
       skipped: false,
       runId: runId.toString(),
@@ -274,6 +315,9 @@ async function runMongoBackup({
       uncompressedBytes,
       compressedBytes,
       copied,
+      backupDatabase: targetDb.databaseName,
+      backupMetaCollection: destination.collections.meta,
+      sourceDatabase: sourceDb.databaseName,
     };
   } finally {
     await targetConnection.close();

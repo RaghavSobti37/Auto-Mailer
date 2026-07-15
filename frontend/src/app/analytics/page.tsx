@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FlatMetricTile } from '@/components/FlatMetricTile';
@@ -18,6 +19,7 @@ type CampaignAnalyticsRow = {
 };
 
 export default function AnalyticsPage() {
+  const router = useRouter();
   const { data: stats } = useQuery({ queryKey: ['mail-stats-mirror'], queryFn: () => live.stats.get(), refetchInterval: 60_000 });
   const { data: campaigns, isLoading } = useQuery({ queryKey: ['campaigns-mirror'], queryFn: () => live.campaigns.list() });
 
@@ -109,7 +111,7 @@ export default function AnalyticsPage() {
           columns={columns}
           data={(campaigns || []) as CampaignAnalyticsRow[]}
           getRowId={(c) => c._id}
-          onRowClick={(c) => { window.location.href = `/campaigns/${c._id}`; }}
+          onRowClick={(c) => { router.push(`/campaigns/${c._id}`); }}
           isLoading={isLoading}
           defaultPageSize={25}
           emptyTitle="No campaign analytics yet"

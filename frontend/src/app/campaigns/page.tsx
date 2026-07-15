@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import type { CampaignStatus } from '@/lib/types';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
@@ -30,6 +31,7 @@ type CampaignRow = {
 };
 
 export default function CampaignsPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -66,7 +68,7 @@ export default function CampaignsPage() {
         const isLegacy = !!campaign.stats;
         return (
           <>
-            <a href={`/campaigns/${campaign._id}`} className="font-semibold hover:text-postmark" onClick={(e) => e.stopPropagation()}>{campaign.title}</a>
+            <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/campaigns/${campaign._id}`); }} className="font-semibold hover:text-postmark text-left">{campaign.title}</button>
             <div className="text-xs text-muted-ledger">{campaign.subject || 'No subject'}{isLegacy ? ' · legacy' : ''}</div>
           </>
         );
@@ -112,7 +114,7 @@ export default function CampaignsPage() {
         const actions = STATUS_ACTIONS[status] || ['View'];
         return (
           <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-            <a href={`/campaigns/${campaign._id}`} className="btn-secondary px-2 py-1 text-xs">View</a>
+            <button type="button" onClick={(e) => { e.stopPropagation(); router.push(`/campaigns/${campaign._id}`); }} className="btn-secondary px-2 py-1 text-xs">View</button>
             {!isLegacy && actions.filter((a) => a !== 'View').map((action) => (
               <button
                 key={action}
@@ -137,7 +139,7 @@ export default function CampaignsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Campaigns</h1>
           <p className="mt-1 text-sm text-muted-ledger">{filtered.length} campaign{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <a href="/campaigns/new" className="btn-primary">New campaign</a>
+        <button type="button" onClick={() => router.push('/campaigns/new')} className="btn-primary">New campaign</button>
       </div>
 
       <div className="flex flex-wrap gap-5 border-b" style={{ borderColor: 'var(--line)' }}>
@@ -158,7 +160,7 @@ export default function CampaignsPage() {
         columns={columns}
         data={filtered}
         getRowId={(c) => c._id}
-        onRowClick={(c) => { window.location.href = `/campaigns/${c._id}`; }}
+        onRowClick={(c) => { router.push(`/campaigns/${c._id}`); }}
         isLoading={isLoading}
         defaultPageSize={25}
         emptyTitle="No campaigns found"

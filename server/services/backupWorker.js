@@ -1,24 +1,43 @@
 const { runMongoBackup } = require('./dataHubBackupService');
+const { getMongoOpenTargets } = require('./mongoOpenLinks');
 
-/** @type {{ status: 'idle'|'running'|'completed'|'failed', startedAt?: string, finishedAt?: string, result?: object, error?: string }} */
+/** @type {{ status: 'idle'|'queued'|'running'|'completed'|'failed', startedAt?: string, finishedAt?: string, result?: object, error?: string, progress?: object }} */
 let state = { status: 'idle' };
 /** @type {{ startedAt?: string, finishedAt?: string, result?: object }|null} */
 let lastCompleted = null;
 
 function getBackupStatus() {
-  return { ...state, lastCompleted };
+  return {
+    ...state,
+    lastCompleted,
+    mongo: getMongoOpenTargets(),
+  };
 }
 
 function startBackupRun() {
-  if (state.status === 'running') {
+  if (state.status === 'running' || state.status === 'queued') {
     return { started: false, reason: 'Backup already running', status: getBackupStatus() };
   }
 
-  state = { status: 'running', startedAt: new Date().toISOString() };
+  state = {
+    status: 'queued',
+    startedAt: new Date().toISOString(),
+    progress: { phase: 'queued', percent: 0, current: 0, total: 0, collectionName: null },
+  };
 
   setImmediate(async () => {
+    state = {
+      ...state,
+      status: 'running',
+      progress: { phase: 'connecting', percent: 1, current: 0, total: 0, collectionName: null },
+    };
     try {
-      const result = await runMongoBackup();
+      const result = await runMongoBackup({
+        onProgress: (progress) => {
+          if (state.status !== 'running' && state.status !== 'queued') return;
+          state = { ...state, status: 'running', progress };
+        },
+      });
       if (result.skipped) {
         state = {
           status: 'failed',
@@ -26,6 +45,7 @@ function startBackupRun() {
           finishedAt: new Date().toISOString(),
           error: result.reason || 'Backup skipped',
           result,
+          progress: { phase: 'failed', percent: 0, current: 0, total: 0, collectionName: null },
         };
         return;
       }
@@ -35,6 +55,7 @@ function startBackupRun() {
         startedAt: state.startedAt,
         finishedAt,
         result,
+        progress: { phase: 'completed', percent: 100, current: result.collections || 0, total: result.collections || 0, collectionName: null },
       };
       lastCompleted = {
         startedAt: state.startedAt,
@@ -47,6 +68,7 @@ function startBackupRun() {
         startedAt: state.startedAt,
         finishedAt: new Date().toISOString(),
         error: err.message || 'Backup failed',
+        progress: { phase: 'failed', percent: 0, current: 0, total: 0, collectionName: null },
       };
     }
   });

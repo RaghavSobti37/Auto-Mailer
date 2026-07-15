@@ -16,6 +16,11 @@ module.exports = {
   smtpPass: process.env.SMTP_PASS || '',
   onlineBackupMongoUri: process.env.ONLINE_BACKUP_MONGODB_URI || '',
   backupScheduleHour: parseInt(process.env.BACKUP_SCHEDULE_HOUR || '2', 10),
+  /** Enables Atlas Data Explorer deep links: cloud.mongodb.com/v2/<id>/explorer/... */
+  atlasProjectId: process.env.ATLAS_PROJECT_ID || '',
+  /** Full override URLs for "Open in Mongo" buttons (optional) */
+  mongoLocalOpenUrl: process.env.MONGO_LOCAL_OPEN_URL || '',
+  mongoBackupOpenUrl: process.env.MONGO_BACKUP_OPEN_URL || '',
   holysheetApiKey: process.env.HOLYSHEET_API_KEY || '',
   get holysheetUrl() {
     if (!this.holysheetApiKey) return '';

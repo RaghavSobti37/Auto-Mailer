@@ -38,14 +38,24 @@ async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
 }
 
 export type BackupJobStatus = {
-  status: 'idle' | 'running' | 'completed' | 'failed';
+  status: 'idle' | 'queued' | 'running' | 'completed' | 'failed';
   startedAt?: string;
   finishedAt?: string;
+  progress?: {
+    phase?: string;
+    percent?: number;
+    current?: number;
+    total?: number;
+    collectionName?: string | null;
+  };
   result?: {
     documentCount?: number;
     chunkCount?: number;
     compressedBytes?: number;
     collections?: number;
+    backupDatabase?: string;
+    backupMetaCollection?: string;
+    sourceDatabase?: string;
   };
   error?: string;
   lastCompleted?: {
@@ -53,6 +63,27 @@ export type BackupJobStatus = {
     finishedAt?: string;
     result?: BackupJobStatus['result'];
   } | null;
+  mongo?: {
+    local?: {
+      configured?: boolean;
+      kind?: string;
+      host?: string | null;
+      database?: string | null;
+      collection?: string | null;
+      openUrl?: string | null;
+      redactedUri?: string | null;
+    };
+    onlineBackup?: {
+      configured?: boolean;
+      kind?: string;
+      host?: string | null;
+      database?: string | null;
+      collection?: string | null;
+      openUrl?: string | null;
+      redactedUri?: string | null;
+    };
+    onlineBackupFallbackCollection?: string;
+  };
 };
 
 export type SyncLocalStatus = {

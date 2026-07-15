@@ -10,7 +10,10 @@ export function DataOpsToolbar({ compact = false }: { compact?: boolean }) {
   const { data: backup } = useQuery({
     queryKey: ['backup-status'],
     queryFn: () => live.backup.status(),
-    refetchInterval: (q) => (q.state.data?.status === 'running' ? 3000 : 30_000),
+    refetchInterval: (q) => {
+      const s = q.state.data?.status;
+      return s === 'running' || s === 'queued' ? 1500 : 30_000;
+    },
   });
 
   const { data: sync } = useQuery({
@@ -39,6 +42,8 @@ export function DataOpsToolbar({ compact = false }: { compact?: boolean }) {
           status={backup?.status || 'idle'}
           compact
           lastBackupAt={lastBackupAt}
+          progress={backup?.progress}
+          mongo={backup?.mongo}
         />
         {lastSyncAt && (
           <span className="text-[10px] text-muted-ledger">
@@ -57,6 +62,8 @@ export function DataOpsToolbar({ compact = false }: { compact?: boolean }) {
           lastBackupAt={lastBackupAt}
           onBackup={() => backupMut.mutate()}
           backingUp={backupMut.isPending}
+          progress={backup?.progress}
+          mongo={backup?.mongo}
         />
       </div>
       <div

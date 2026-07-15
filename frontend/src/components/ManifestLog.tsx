@@ -16,11 +16,24 @@ type ManifestLogProps = {
 
 function outcomeColor(outcome?: string) {
   const o = String(outcome || '').toLowerCase();
-  if (o.includes('bounce') || o.includes('fail')) return 'var(--status-bounced)';
+  if (o.includes('bounce') || o.includes('fail') || o.includes('error') || o.includes('invalid')) return 'var(--status-bounced)';
   if (o.includes('read') || o.includes('open')) return 'var(--status-read)';
   if (o.includes('click') || o.includes('repli')) return 'var(--status-pending)';
   if (o.includes('deliver') || o.includes('sent')) return 'var(--status-delivered)';
+  if (o.includes('add') || o.includes('import') || o.includes('csv') || o.includes('batch')) return 'var(--status-pending)';
   return 'var(--ink-muted)';
+}
+
+function simplifyOutcome(outcome?: string): string {
+  const o = String(outcome || '').toLowerCase();
+  if (o.includes('bounce') || o.includes('fail') || o.includes('invalid')) return 'failed';
+  if (o.includes('read') || o.includes('open')) return 'read';
+  if (o.includes('click')) return 'clicked';
+  if (o.includes('repli')) return 'replied';
+  if (o.includes('deliver')) return 'delivered';
+  if (o.includes('sent')) return 'sent';
+  if (o.includes('add') || o.includes('import')) return 'added';
+  return outcome || 'unknown';
 }
 
 export function ManifestLog({ entries = [] }: ManifestLogProps) {
@@ -58,7 +71,7 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
               <div className="pl-1">
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-display text-[var(--ink-text)]">
-                    {entry.campaignTitle || 'Campaign'}
+                    {simplifyOutcome(entry.outcome)}
                   </span>
                   <time className="mono shrink-0 text-[10px] text-muted-ledger">
                     {entry.timestamp
@@ -74,7 +87,7 @@ export function ManifestLog({ entries = [] }: ManifestLogProps) {
                 <div className="mt-0.5 mono text-[11px] text-muted-ledger">
                   <span className="uppercase">{entry.channel || 'email'}</span>
                   {' · '}
-                  <span style={{ color }}>{entry.outcome || 'unknown'}</span>
+                  <span style={{ color }}>{simplifyOutcome(entry.outcome)}</span>
                 </div>
               </div>
             </motion.li>

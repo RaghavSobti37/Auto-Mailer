@@ -9,6 +9,16 @@ exports.list = async (req, res) => {
   }
 };
 
+exports.getById = async (req, res) => {
+  try {
+    const profile = await EmailProfile.findById(req.params.id).select('-smtpPass -providerCredentials').lean();
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    res.json(profile);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.create = async (req, res) => {
   try {
     const data = { ...req.body };
