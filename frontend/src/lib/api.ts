@@ -170,7 +170,11 @@ export const live = {
     },
     review: (p?: Record<string, any>) => request<any[]>('/api/whatsapp/review', { params: p }),
     resolveReview: (id: string, action: string, data?: any) => request<any>(`/api/whatsapp/review/${id}`, { method: 'POST', body: JSON.stringify({ action, ...data }) }),
-    outcomes: (p?: Record<string, any>) => request<any[]>('/api/whatsapp/outcomes', { params: p }),
+    outcomes: (p?: Record<string, any>) => request<{
+      counts: Record<string, number>;
+      totalEvents: number;
+      uniqueContacts: number;
+    }>('/api/whatsapp/outcomes', { params: p }),
   },
 };
 

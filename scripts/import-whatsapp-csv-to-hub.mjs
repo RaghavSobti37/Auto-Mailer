@@ -23,10 +23,13 @@ if (!uri) {
 
 await mongoose.connect(uri, { serverSelectionTimeoutMS: 15000 });
 const col = mongoose.connection.db.collection('personhubviews');
+const eventCol = mongoose.connection.db.collection('whatsappevents');
 
 let totalRows = 0;
 let upserts = 0;
 let matched = 0;
+let eventsInserted = 0;
+let eventsMatched = 0;
 const byFile = [];
 
 for (const file of files) {
@@ -34,9 +37,10 @@ for (const file of files) {
   const text = fs.readFileSync(file, 'utf8').trim();
   const rows = parseCsv(text);
   const ops = [];
+  const eventOps = [];
   let fileRows = 0;
 
-  for (const row of rows) {
+  for (const [rowIndex, row] of rows.entries()) {
     const rawPhone = String(row.phone || row.Phone || row.PHONE || row['Phone Number'] || row.Mobile || row['Mobile Number'] || '').trim();
     const normalized = normalizePhone(rawPhone, '91');
     if (!normalized) continue;
@@ -88,20 +92,53 @@ for (const file of files) {
         upsert: true,
       },
     });
+    const eventKey = `csv-row:${slugify(path.basename(file))}:${rowIndex}`;
+    eventOps.push({
+      updateOne: {
+        filter: { eventKey },
+        update: {
+          $setOnInsert: {
+            phone: rawPhone,
+            normalizedPhone: normalized,
+            name: rawName || undefined,
+            status,
+            timestamp,
+            eventKey,
+            importBatchId: `csv:${slugify(path.basename(file))}`,
+            needsReview: false,
+            rawRow: row,
+            createdAt: now,
+          },
+          $set: { updatedAt: now },
+        },
+        upsert: true,
+      },
+    });
     fileRows++;
 
     if (ops.length >= 500) {
-      const result = await col.bulkWrite(ops, { ordered: true });
+      const [result, eventResult] = await Promise.all([
+        col.bulkWrite(ops, { ordered: false }),
+        eventCol.bulkWrite(eventOps, { ordered: false }),
+      ]);
       upserts += result.upsertedCount || 0;
       matched += result.matchedCount || 0;
+      eventsInserted += eventResult.upsertedCount || 0;
+      eventsMatched += eventResult.matchedCount || 0;
       ops.length = 0;
+      eventOps.length = 0;
     }
   }
 
   if (ops.length) {
-    const result = await col.bulkWrite(ops, { ordered: true });
+    const [result, eventResult] = await Promise.all([
+      col.bulkWrite(ops, { ordered: false }),
+      eventCol.bulkWrite(eventOps, { ordered: false }),
+    ]);
     upserts += result.upsertedCount || 0;
     matched += result.matchedCount || 0;
+    eventsInserted += eventResult.upsertedCount || 0;
+    eventsMatched += eventResult.matchedCount || 0;
   }
 
   totalRows += fileRows;
@@ -130,7 +167,7 @@ await col.updateMany(
 );
 
 await mongoose.disconnect();
-console.log(JSON.stringify({ totalRows, upserts, matched, files: byFile.length }, null, 2));
+console.log(JSON.stringify({ totalRows, upserts, matched, eventsInserted, eventsMatched, files: byFile.length }, null, 2));
 
 function loadEnv() {
   const renderEnvPath = path.resolve('.env.render-backup.json');

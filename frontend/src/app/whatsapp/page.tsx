@@ -92,15 +92,20 @@ export default function WhatsAppPage() {
           </div>
         </div>
 
-        {outcomes && outcomes.length > 0 && (
+        {outcomes && outcomes.totalEvents > 0 && (
           <div className="card">
-            <h3 className="text-sm font-semibold mb-3">Outcomes</h3>
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+              <h3 className="text-sm font-semibold">Outcomes</h3>
+              <p className="mono text-xs text-muted-ledger">
+                {outcomes.totalEvents.toLocaleString()} events · {outcomes.uniqueContacts.toLocaleString()} unique contacts
+              </p>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {['sent', 'delivered', 'read', 'clicked', 'replied', 'failed'].map((status) => {
-                const count = outcomes.filter((o: any) => o.status === status).length;
+                const count = outcomes.counts?.[status] || 0;
                 return (
                   <div key={status} className="metric-tile text-center">
-                    <div className="text-lg font-bold" style={{ color: status === 'failed' ? 'var(--void)' : 'var(--ink-text)' }}>{count}</div>
+                    <div className="text-lg font-bold" style={{ color: status === 'failed' ? 'var(--void)' : 'var(--ink-text)' }}>{count.toLocaleString()}</div>
                     <div className="text-xs text-muted-ledger capitalize mt-1">{status}</div>
                   </div>
                 );

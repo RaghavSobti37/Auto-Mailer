@@ -222,8 +222,18 @@ function registerRoutes(app) {
   app.get('/api/whatsapp/outcomes', async (req, res) => {
     try {
       const WhatsAppEvent = require('../models/WhatsAppEvent');
-      const items = await WhatsAppEvent.find().sort({ timestamp: -1 }).limit(500).lean();
-      res.json(items);
+      const [counts, uniqueContacts] = await Promise.all([
+        WhatsAppEvent.aggregate([
+          { $group: { _id: '$status', count: { $sum: 1 } } },
+        ]),
+        WhatsAppEvent.distinct('normalizedPhone'),
+      ]);
+      const byStatus = Object.fromEntries(counts.map((item) => [item._id, item.count]));
+      res.json({
+        counts: byStatus,
+        totalEvents: counts.reduce((sum, item) => sum + item.count, 0),
+        uniqueContacts: uniqueContacts.filter(Boolean).length,
+      });
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
