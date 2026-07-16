@@ -9,6 +9,7 @@
         "backup:data-hub": "node scripts/backup-data-hub.js",
         "migrate:from-coreknot": "node scripts/migrate-from-coreknot.mjs",
         "migrate:to-local": "node scripts/migrate-to-local.mjs",
+        "data:consolidate-email": "node scripts/consolidate-clean-email-data.mjs",
         "setup:local-mongo": "node scripts/setup-local-mongo.mjs",
         "campaign:dummy": "node scripts/create-dummy-campaign.mjs",
         "test": "node scripts/backup-self-check.js && node scripts/mail-self-check.js && node scripts/audience-read-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js && node --check server/services/backupWorker.js && node --check server/services/syncLocalWorker.js && node --check server/services/audienceReadService.js",
