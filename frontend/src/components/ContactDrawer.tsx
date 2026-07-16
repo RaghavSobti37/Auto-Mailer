@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -27,12 +27,12 @@ export function ContactDrawer({ personId, onClose }: ContactDrawerProps) {
     staleTime: 60_000,
   });
 
-  const handleOpenFullPage = useCallback(() => {
+  const handleOpenFullPage = () => {
     if (person?._id) {
       router.push(`/audience/${person._id}`);
       onClose();
     }
-  }, [person?._id, router, onClose]);
+  };
 
   useEffect(() => {
     if (!open) return;

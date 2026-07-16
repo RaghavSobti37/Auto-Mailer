@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Link from 'next/link';
 
 export default function NewSenderPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function NewSenderPage() {
     <ErrorBoundary>
       <div className="space-y-6">
         <div>
-          <a href="/senders" className="text-sm font-semibold text-postmark">← Back to senders</a>
+          <Link href="/senders" className="text-sm font-semibold text-postmark">← Back to senders</Link>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">New sender</h1>
           <p className="mt-1 text-sm text-muted-ledger">Add an email profile for sending campaigns.</p>
         </div>

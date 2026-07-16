@@ -3,15 +3,10 @@
 import { ChangeEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { live } from '@/lib/api';
 import { uploadFiles } from '@/lib/uploadthing';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-const TEST_EMAILS = [
-  'raghavsobti37@gmail.com',
-  'raghavishaan@gmail.com',
-  'Harshika@theshakticollective.in',
-];
 
 const ASPECTS = [
   { label: 'Auto', value: '3:1', ratio: 3 },
@@ -45,6 +40,15 @@ function splitRecipients(value: string) {
 function bannerHtml(asset: BannerAsset | null) {
   if (!asset?.storageUrl) return '';
   return `<div style="margin:0 0 20px 0;"><img src="${asset.storageUrl}" alt="" style="width:100%;max-width:640px;height:auto;display:block;border:0;" /></div>`;
+}
+
+function addBannerToHtml(content: string, asset: BannerAsset | null) {
+  const banner = bannerHtml(asset);
+  if (!banner) return content;
+  const body = content.match(/<body\b[^>]*>/i);
+  if (body?.index === undefined) return `${banner}${content}`;
+  const insertAt = body.index + body[0].length;
+  return `${content.slice(0, insertAt)}${banner}${content.slice(insertAt)}`;
 }
 
 async function loadImage(file: File) {
@@ -104,7 +108,8 @@ export default function NewCampaignPage() {
   const [content, setContent] = useState('<p>Hi {{name}},</p><p></p>');
   const [format, setFormat] = useState<'visual' | 'rawHtml'>('rawHtml');
   const [templateId, setTemplateId] = useState('');
-  const [customRecipients, setCustomRecipients] = useState(TEST_EMAILS.join('\n'));
+  const [customRecipients, setCustomRecipients] = useState('');
+  const [testEmail, setTestEmail] = useState('');
   const [senderId, setSenderId] = useState('');
   const [senderMode, setSenderMode] = useState<'single' | 'pool'>('single');
   const [includeSignature, setIncludeSignature] = useState(false);
@@ -124,7 +129,7 @@ export default function NewCampaignPage() {
   const recipients = useMemo(() => splitRecipients(customRecipients), [customRecipients]);
   const selectedSender = senders?.find((sender: any) => sender._id === senderId);
 
-  const finalContent = `${bannerHtml(bannerAsset)}${content}`;
+  const finalContent = addBannerToHtml(content, bannerAsset);
 
   const createMut = useMutation({
     mutationFn: () => live.campaigns.create({
@@ -164,7 +169,7 @@ export default function NewCampaignPage() {
       subject,
       content: finalContent,
       format,
-      testEmail: TEST_EMAILS.join(','),
+      testEmail,
       senderProfileId: senderId || undefined,
       senderMode,
       includeSignature,
@@ -206,7 +211,7 @@ export default function NewCampaignPage() {
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <a href="/campaigns" className="text-sm font-semibold text-postmark">Back to campaigns</a>
+            <Link href="/campaigns" className="text-sm font-semibold text-postmark">Back to campaigns</Link>
             <h1 className="text-2xl font-bold tracking-tight mt-1">New campaign</h1>
             <p className="text-sm text-muted-ledger mt-1">Compose, preview, test, then send.</p>
           </div>
@@ -357,11 +362,12 @@ export default function NewCampaignPage() {
                 <button type="button" onClick={() => previewMut.mutate()} disabled={previewMut.isPending || !content} className="btn-secondary">
                   {previewMut.isPending ? 'Rendering...' : 'Preview'}
                 </button>
-                <button type="button" onClick={() => testMut.mutate()} disabled={testMut.isPending || !senderId || !subject} className="btn-secondary">
+                <button type="button" onClick={() => testMut.mutate()} disabled={testMut.isPending || !senderId || !subject || !testEmail} className="btn-secondary">
                   {testMut.isPending ? 'Sending...' : 'Send test'}
                 </button>
               </div>
-              {testMut.data && <p className="text-xs text-emerald-700">Test requested for {TEST_EMAILS.length} addresses.</p>}
+              <input className="input" type="email" value={testEmail} onChange={(event) => setTestEmail(event.target.value)} placeholder="Test recipient email" />
+              {testMut.data && <p className="text-xs text-emerald-700">Test email requested.</p>}
               {testMut.error && <p className="text-xs text-red-600">{(testMut.error as Error).message}</p>}
             </section>
 

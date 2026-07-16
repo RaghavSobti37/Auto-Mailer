@@ -13,18 +13,6 @@ import { DataTable, type DataTableColumn } from '@/components/table/DataTable';
 const TABS = ['Compose', 'Recipients', 'Results'] as const;
 type FilterStatus = 'all' | 'sent' | 'opened' | 'clicked' | 'bounced';
 
-function sanitizeEmailHtml(html: string): string {
-  if (!html) return '';
-  return html
-    .replace(/<!DOCTYPE[^>]*>/i, '')
-    .replace(/<html[^>]*>/gi, '')
-    .replace(/<\/html>/gi, '')
-    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
-    .replace(/<body[^>]*>/gi, '')
-    .replace(/<\/body>/gi, '')
-    .trim();
-}
-
 const PAGE_SIZE = 25;
 const STATUS_COLORS: Record<string, string> = {
   Sent: 'var(--status-delivered)',
@@ -100,11 +88,7 @@ export default function CampaignDetailPage() {
     }
   };
 
-  if (error) return <QueryErrorDisplay error={error} retry={() => refetch()} />;
-  if (isLoading) return <div className="py-12 text-center text-muted-ledger">Loading campaign…</div>;
-  if (!campaign) return <div className="py-12 text-center text-muted-ledger">Campaign not found</div>;
-
-  const isLegacy = campaign && 'stats' in campaign;
+  const isLegacy = Boolean(campaign && 'stats' in campaign);
   const isSending = campaign?.status === 'Sending';
   const isDraft = campaign?.status === 'Draft';
   const sent = campaign.metrics?.totalSent || campaign.stats?.sent || 0;
@@ -196,9 +180,13 @@ export default function CampaignDetailPage() {
 
   // Clicking a metric card filters the Results table inline
   const handleCardClick = useCallback((filter: FilterStatus) => {
-    setResultFilter(resultFilter === filter ? 'all' : filter);
+    setResultFilter((current) => current === filter ? 'all' : filter);
     setResultPage(1);
-  }, [resultFilter]);
+  }, []);
+
+  if (error) return <QueryErrorDisplay error={error} retry={() => refetch()} />;
+  if (isLoading) return <div className="py-12 text-center text-muted-ledger">Loading campaign…</div>;
+  if (!campaign) return <div className="py-12 text-center text-muted-ledger">Campaign not found</div>;
 
   return (
     <ErrorBoundary>
@@ -247,7 +235,7 @@ export default function CampaignDetailPage() {
                 <h2 className="mb-3 text-sm font-semibold">Saved content</h2>
                 <iframe
                   title="Campaign content"
-                  srcDoc={sanitizeEmailHtml(campaign.content)}
+                  srcDoc={campaign.content}
                   className="h-[520px] w-full rounded-lg border bg-white"
                   style={{ borderColor: 'var(--line)' }}
                   sandbox="allow-same-origin"

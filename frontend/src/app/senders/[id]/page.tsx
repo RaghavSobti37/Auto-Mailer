@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { live } from '@/lib/api';
@@ -24,14 +25,6 @@ export default function SenderDetailPage() {
   const [email, setEmail] = useState('');
   const [dailyLimit, setDailyLimit] = useState(500);
   const [rotationEnabled, setRotationEnabled] = useState(true);
-
-  // Populate form when profile loads
-  if (profile && !name && !editing) {
-    setName(profile.name || '');
-    setEmail(profile.email || '');
-    setDailyLimit(profile.dailyLimit || 500);
-    setRotationEnabled(profile.rotationEnabled !== false);
-  }
 
   const updateMut = useMutation({
     mutationFn: () => live.senders.update(id, {
@@ -58,10 +51,18 @@ export default function SenderDetailPage() {
     }
   };
 
+  const startEditing = () => {
+    setName(profile?.name || '');
+    setEmail(profile?.email || '');
+    setDailyLimit(profile?.dailyLimit || 500);
+    setRotationEnabled(profile?.rotationEnabled !== false);
+    setEditing(true);
+  };
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <a href="/senders" className="text-sm font-semibold text-postmark">Back to senders</a>
+        <Link href="/senders" className="text-sm font-semibold text-postmark">Back to senders</Link>
         {isLoading ? <div className="py-12 text-center text-muted-ledger">Loading...</div> : !profile ? <div className="py-12 text-center text-muted-ledger">Sender not found</div> : (
           <>
             <div className="flex items-start justify-between gap-4">
@@ -109,7 +110,7 @@ export default function SenderDetailPage() {
             ) : (
               <>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setEditing(true)} className="btn-secondary">Edit</button>
+                  <button type="button" onClick={startEditing} className="btn-secondary">Edit</button>
                   <button type="button" onClick={handleDelete} disabled={deleteMut.isPending} className="btn-secondary" style={{ color: 'var(--status-bounced)', borderColor: 'var(--status-bounced)' }}>
                     {deleteMut.isPending ? 'Deleting...' : 'Delete'}
                   </button>

@@ -5,6 +5,7 @@ import { live } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PostmarkBadge } from '@/components/PostmarkBadge';
 import { QuotaBar } from '@/components/QuotaBar';
+import Link from 'next/link';
 
 export default function SendersPage() {
   const { data: senders, isLoading, error } = useQuery({
@@ -26,7 +27,7 @@ export default function SendersPage() {
               <span className="mono text-base font-medium text-[var(--ink-text)]">{senders?.length ?? '…'}</span> email profiles
             </p>
           </div>
-          <a href="/senders/new" className="btn-primary">Add sender</a>
+          <Link href="/senders/new" className="btn-primary">Add sender</Link>
         </div>
 
         {isLoading ? (
@@ -44,7 +45,7 @@ export default function SendersPage() {
               const dailyUsage = profile.sendStats?.today || 0;
               const dailyLimit = profile.dailyLimit || 500;
               return (
-                <a
+                <Link
                   key={profile._id}
                   href={`/senders/${profile._id}`}
                   className="card block cursor-pointer transition-all hover:border-[var(--status-delivered)]"
@@ -65,7 +66,7 @@ export default function SendersPage() {
                     <span>Total sent</span>
                     <span className="mono font-medium">{profile.sendStats?.total || 0}</span>
                   </div>
-                </a>
+                </Link>
               );
             })}
           </div>
