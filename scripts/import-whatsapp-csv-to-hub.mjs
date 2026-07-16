@@ -54,14 +54,7 @@ for (const file of files) {
 
     ops.push({
       updateOne: {
-        filter: {
-          $or: [
-            { personId },
-            { phone: normalized },
-            { phone: rawPhone },
-            { email: internalEmail },
-          ],
-        },
+        filter: { personId },
         update: {
           $setOnInsert: {
             personId,
@@ -116,6 +109,26 @@ for (const file of files) {
   console.log(`${path.basename(file)} rows=${fileRows}`);
 }
 
+await col.updateMany(
+  { personId: /^automailer-whatsapp:/ },
+  [{
+    $set: {
+      inletKeys: {
+        $filter: {
+          input: { $ifNull: ['$inletKeys', []] },
+          as: 'tag',
+          cond: {
+            $and: [
+              { $not: { $in: ['$$tag', ['whatsapp', 'aisensy']] } },
+              { $not: { $regexMatch: { input: '$$tag', regex: /^(campaign:|campaign-name:|whatsapp:)/ } } },
+            ],
+          },
+        },
+      },
+    },
+  }],
+);
+
 await mongoose.disconnect();
 console.log(JSON.stringify({ totalRows, upserts, matched, files: byFile.length }, null, 2));
 
@@ -146,13 +159,7 @@ function buildSourceFromFileName(fileName = '') {
 }
 
 function buildTags({ source = {}, status } = {}) {
-  return [...new Set([
-    'whatsapp',
-    'aisensy',
-    source.key ? `campaign:${source.key}` : '',
-    source.campaignName ? `campaign-name:${source.campaignName}` : '',
-    status ? `whatsapp:${status}` : '',
-  ].filter(Boolean))];
+  return status ? [status] : [];
 }
 
 function slugify(value) {

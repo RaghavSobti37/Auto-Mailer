@@ -10,7 +10,7 @@ const campaignApiController = require('../controllers/campaignApiController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 75 * 1024 * 1024, files: 20 },
+  limits: { fileSize: 75 * 1024 * 1024, files: 50 },
 });
 
 function registerRoutes(app) {

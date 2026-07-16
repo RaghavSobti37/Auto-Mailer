@@ -2,24 +2,25 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     /* Dispatch ledger — postal ink vocabulary */
     --ink: #0A0C0F;
-    --paper: #F7F5F1;
-    --paper-ruled: #EDEAE4;
-    --ink-text: #0A0C0F;
-    --ink-muted: #5C6169;
-    --ink-faint: #9AA0A8;
-    --line: rgba(10, 12, 15, 0.12);
-    --line-strong: rgba(10, 12, 15, 0.22);
-    --panel: #FFFEFB;
-    --panel-soft: rgba(10, 12, 15, 0.03);
+    --paper: #0A0C0F;
+    --paper-ruled: #171B20;
+    --ink-text: #EDE9DF;
+    --ink-muted: #9BA1A8;
+    --ink-faint: #656C74;
+    --line: rgba(237, 233, 223, 0.12);
+    --line-strong: rgba(237, 233, 223, 0.22);
+    --panel: #12151A;
+    --panel-soft: rgba(237, 233, 223, 0.05);
 
     /* Status vocabulary (not one accent for everything) */
-    --status-delivered: #0D9488;
-    --status-pending: #D97706;
-    --status-bounced: #DC2626;
-    --status-read: #7C3AED;
-    --status-active: #0D9488;
+    --status-delivered: #2BB3A3;
+    --status-pending: #D9A441;
+    --status-bounced: #E06B62;
+    --status-read: #9B8FE3;
+    --status-active: #2BB3A3;
 
     /* Legacy aliases → status map */
     --postmark: var(--status-delivered);
@@ -58,11 +59,11 @@
 @layer components {
   .btn-primary {
     @apply px-4 py-2 text-sm font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--status-delivered);
+    color: var(--ink);
   }
   .btn-primary:hover {
-    background: #1a1e24;
+    background: #46c5b7;
   }
   .btn-secondary {
     @apply px-4 py-2 bg-transparent text-sm font-medium rounded border transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
@@ -90,6 +91,9 @@
   .input option {
     background: var(--panel);
     color: var(--ink-text);
+  }
+  input[type="checkbox"], input[type="radio"], input[type="range"] {
+    accent-color: var(--status-delivered);
   }
   .label {
     @apply block text-sm font-medium mb-1;
@@ -269,7 +273,7 @@
     transform: rotate(-12deg);
     opacity: 0.92;
     flex-shrink: 0;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), transparent 55%);
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 55%);
     box-shadow: inset 0 0 0 1px currentColor;
   }
   .ink-stamp-inner {
@@ -298,7 +302,7 @@
 
   .funnel-track {
     @apply h-1.5 w-full overflow-hidden rounded-full;
-    background: rgba(10, 12, 15, 0.08);
+    background: rgba(237, 233, 223, 0.08);
   }
   .funnel-fill {
     @apply h-full rounded-full transition-all duration-500;
@@ -344,7 +348,7 @@
   }
   .quota-bar {
     @apply h-2 flex-1 overflow-hidden rounded-full;
-    background: rgba(10, 12, 15, 0.08);
+    background: rgba(237, 233, 223, 0.08);
   }
   .quota-fill {
     @apply h-full rounded-full transition-all duration-500;

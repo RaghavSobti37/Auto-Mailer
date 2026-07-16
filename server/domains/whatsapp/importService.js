@@ -303,13 +303,7 @@ function buildSourceFromFileName(fileName = '') {
 }
 
 function buildTags({ source = {}, status } = {}) {
-  return [...new Set([
-    'whatsapp',
-    'aisensy',
-    source.key ? `campaign:${source.key}` : '',
-    source.campaignName ? `campaign-name:${source.campaignName}` : '',
-    status ? `whatsapp:${status}` : '',
-  ].filter(Boolean))];
+  return status ? [status] : [];
 }
 
 function slugify(value) {

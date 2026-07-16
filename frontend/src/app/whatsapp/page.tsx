@@ -100,7 +100,7 @@ export default function WhatsAppPage() {
                 const count = outcomes.filter((o: any) => o.status === status).length;
                 return (
                   <div key={status} className="metric-tile text-center">
-                    <div className="text-lg font-bold" style={{ color: status === 'failed' ? 'var(--void)' : 'var(--ink)' }}>{count}</div>
+                    <div className="text-lg font-bold" style={{ color: status === 'failed' ? 'var(--void)' : 'var(--ink-text)' }}>{count}</div>
                     <div className="text-xs text-muted-ledger capitalize mt-1">{status}</div>
                   </div>
                 );

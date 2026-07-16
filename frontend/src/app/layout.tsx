@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             >
               <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'rgba(247,245,241,0.12)' }}>
                 {sidebarOpen && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-[var(--paper)]">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-[var(--ink-text)]">
                     <span
                       className="h-7 w-7 rounded-full border border-dashed grid place-items-center text-[10px] font-bold mono"
                       style={{ borderColor: 'var(--status-delivered)', color: 'var(--status-delivered)' }}
@@ -68,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 )}
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="rounded p-1.5 text-[var(--paper)]/70 transition-colors hover:bg-white/10"
+                  className="rounded p-1.5 text-[var(--ink-text)]/70 transition-colors hover:bg-white/10"
                   aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                 >
                   <span>{sidebarOpen ? '‹' : '›'}</span>
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {['top', 'Compose', 'Reach', 'Insight'].map((group) => (
                   <div key={group} className="space-y-1">
                     {sidebarOpen && group !== 'top' && (
-                      <div className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--paper)]/45">
+                      <div className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-text)]/45">
                         {group}
                       </div>
                     )}
@@ -90,8 +90,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           href={item.href}
                           className={`relative flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
                             isActive
-                              ? 'bg-white/10 text-[var(--paper)] font-semibold'
-                              : 'text-[var(--paper)]/75 hover:bg-white/6 hover:text-[var(--paper)]'
+                              ? 'bg-white/10 text-[var(--ink-text)] font-semibold'
+                              : 'text-[var(--ink-text)]/75 hover:bg-white/6 hover:text-[var(--ink-text)]'
                           }`}
                         >
                           {isActive && (
@@ -117,8 +117,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       href={item.href}
                       className={`relative flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
                         isActive
-                          ? 'bg-white/10 text-[var(--paper)] font-semibold'
-                          : 'text-[var(--paper)]/75 hover:bg-white/6 hover:text-[var(--paper)]'
+                          ? 'bg-white/10 text-[var(--ink-text)] font-semibold'
+                          : 'text-[var(--ink-text)]/75 hover:bg-white/6 hover:text-[var(--ink-text)]'
                       }`}
                     >
                       {isActive && (

@@ -11,7 +11,7 @@ export function QueryErrorDisplay({ error, retry }: { error: Error | null; retry
         <p className="text-xs text-red-600 mt-0.5">{error.message}</p>
       </div>
       {retry && (
-        <button onClick={retry} className="px-3 py-1.5 text-xs font-medium bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+        <button onClick={retry} className="btn-secondary px-3 py-1.5 text-xs">
           Retry
         </button>
       )}

@@ -244,9 +244,9 @@ export default function NewCampaignPage() {
                 </div>
                 <div>
                   <label className="label">Content mode</label>
-                  <div className="flex rounded-lg border bg-white/70 p-1" style={{ borderColor: 'var(--line)' }}>
+                  <div className="flex rounded border p-1" style={{ borderColor: 'var(--line)', background: 'var(--panel-soft)' }}>
                     {(['visual', 'rawHtml'] as const).map((nextFormat) => (
-                      <button key={nextFormat} type="button" onClick={() => setFormat(nextFormat)} className={`flex-1 rounded-md px-3 py-1.5 text-sm ${format === nextFormat ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
+                      <button key={nextFormat} type="button" onClick={() => setFormat(nextFormat)} className={`flex-1 rounded px-3 py-1.5 text-sm ${format === nextFormat ? 'bg-[var(--status-delivered)] text-[var(--ink)]' : 'text-muted-ledger hover:bg-[var(--panel-soft)]'}`}>
                         {nextFormat === 'rawHtml' ? 'Raw HTML' : 'Rich editor'}
                       </button>
                     ))}
@@ -263,25 +263,25 @@ export default function NewCampaignPage() {
             <section className="card space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-900">Banner</h2>
+                  <h2 className="text-sm font-semibold">Banner</h2>
                   <p className="text-xs text-muted-ledger">Crop locally, upload to UploadThing, store only the URL.</p>
                 </div>
                 {bannerAsset && <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Uploaded</span>}
               </div>
               <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-                <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50" style={{ aspectRatio: aspect.value.replace(':', ' / ') }}>
+                <div className="overflow-hidden rounded border" style={{ aspectRatio: aspect.value.replace(':', ' / '), borderColor: 'var(--line)', background: 'var(--panel-soft)' }}>
                   {bannerPreviewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={bannerPreviewUrl} alt="Banner crop preview" className="h-full w-full object-cover" style={{ transform: `scale(${zoom})` }} />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-gray-400">No banner</div>
+                    <div className="flex h-full items-center justify-center text-xs text-muted-ledger">No banner</div>
                   )}
                 </div>
                 <div className="space-y-3">
-                  <input type="file" accept="image/*" onChange={onBannerChange} className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white" />
+                  <input type="file" accept="image/*" onChange={onBannerChange} className="input block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-[var(--status-delivered)] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[var(--ink)]" />
                   <div className="flex flex-wrap gap-2">
                     {ASPECTS.map((nextAspect) => (
-                      <button key={nextAspect.value} type="button" onClick={() => setAspect(nextAspect)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${aspect.value === nextAspect.value ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600'}`}>
+                      <button key={nextAspect.value} type="button" onClick={() => setAspect(nextAspect)} className={`rounded border px-3 py-1.5 text-xs font-medium ${aspect.value === nextAspect.value ? 'border-[var(--status-delivered)] bg-[var(--status-delivered)] text-[var(--ink)]' : 'text-muted-ledger'}`}>
                         {nextAspect.label}
                       </button>
                     ))}
@@ -319,7 +319,7 @@ export default function NewCampaignPage() {
                       <option value="pool">Pool rotation</option>
                     </select>
                   </div>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <label className="flex items-center gap-2 text-sm text-muted-ledger">
                     <input type="checkbox" checked={action === 'dispatch'} onChange={(event) => setAction(event.target.checked ? 'dispatch' : 'draft')} />
                     Send immediately after creating
                   </label>
@@ -340,7 +340,7 @@ export default function NewCampaignPage() {
                 Add unsubscribe text at the bottom
               </label>
               <div className="rounded-lg border p-3 text-xs text-muted-ledger" style={{ borderColor: 'var(--line)' }}>
-                <div className="mb-2 font-semibold" style={{ color: 'var(--ink)' }}>Footer preview</div>
+                <div className="mb-2 font-semibold">Footer preview</div>
                 <p>You are receiving this because you are on this campaign list.</p>
                 <label className="mt-2 flex items-center gap-2"><input type="checkbox" readOnly checked /> Unsubscribe from this list</label>
                 <label className="mt-1 flex items-center gap-2"><input type="checkbox" readOnly /> Unsubscribe from all emails</label>
@@ -350,13 +350,13 @@ export default function NewCampaignPage() {
 
           <aside className="space-y-5">
             <section className="card space-y-3">
-              <h2 className="text-sm font-semibold text-gray-900">Review</h2>
+              <h2 className="text-sm font-semibold">Review</h2>
               <dl className="space-y-2 text-sm">
-                <div className="flex justify-between gap-4"><dt className="text-gray-500">Recipients</dt><dd className="font-medium">{recipients.length}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-gray-500">Sender</dt><dd className="truncate font-medium">{selectedSender?.name || 'Missing'}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-gray-500">Banner</dt><dd className="font-medium">{bannerAsset ? aspect.value : 'None'}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-gray-500">Signature</dt><dd className="font-medium">{includeSignature ? 'On' : 'Off'}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-gray-500">Unsubscribe</dt><dd className="font-medium">{includeUnsubscribe ? 'On' : 'Off'}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="text-muted-ledger">Recipients</dt><dd className="font-medium">{recipients.length}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="text-muted-ledger">Sender</dt><dd className="truncate font-medium">{selectedSender?.name || 'Missing'}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="text-muted-ledger">Banner</dt><dd className="font-medium">{bannerAsset ? aspect.value : 'None'}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="text-muted-ledger">Signature</dt><dd className="font-medium">{includeSignature ? 'On' : 'Off'}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="text-muted-ledger">Unsubscribe</dt><dd className="font-medium">{includeUnsubscribe ? 'On' : 'Off'}</dd></div>
               </dl>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => previewMut.mutate()} disabled={previewMut.isPending || !content} className="btn-secondary">
@@ -373,8 +373,8 @@ export default function NewCampaignPage() {
 
             <section className="card">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-900">Preview</h2>
-                <span className="text-xs text-gray-500">{format}</span>
+                <h2 className="text-sm font-semibold">Preview</h2>
+                <span className="text-xs text-muted-ledger">{format}</span>
               </div>
               <iframe title="Email preview" srcDoc={previewHtml || finalContent} className="h-[560px] w-full rounded-lg border border-gray-200 bg-white" />
             </section>
