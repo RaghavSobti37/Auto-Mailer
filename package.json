@@ -28,8 +28,11 @@
         "mongoose": "^8.8.0",
         "morgan": "^1.10.0",
         "multer": "^1.4.5-lts.1",
-        "nodemailer": "^6.9.16",
+        "nodemailer": "^9.0.3",
         "resend": "^4.0.0",
-        "uuid": "^10.0.0"
+        "uuid": "^11.1.1"
+    },
+    "overrides": {
+        "semver": "7.7.1"
     }
 }
