@@ -28,7 +28,7 @@ function createApp() {
     origin: resolveCorsOrigin(config.corsOrigin),
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CoreKnot-Mail-Secret'],
     optionsSuccessStatus: 204,
   };
   app.use(cors(corsOptions));

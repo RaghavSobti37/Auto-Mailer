@@ -12,7 +12,7 @@
         "data:consolidate-email": "node scripts/consolidate-clean-email-data.mjs",
         "setup:local-mongo": "node scripts/setup-local-mongo.mjs",
         "campaign:dummy": "node scripts/create-dummy-campaign.mjs",
-        "test": "node scripts/backup-self-check.js && node scripts/mail-self-check.js && node scripts/audience-read-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js && node --check server/services/backupWorker.js && node --check server/services/syncLocalWorker.js && node --check server/services/audienceReadService.js",
+        "test": "node scripts/backup-self-check.js && node scripts/mail-self-check.js && node scripts/transactional-self-check.js && node scripts/audience-read-self-check.js && node --check server/server.js && node --check server/services/dataHubBackupService.js && node --check server/services/backupWorker.js && node --check server/services/syncLocalWorker.js && node --check server/services/audienceReadService.js && node --check server/routes/transactionalRouter.js",
         "vercel-build": "npm run build --prefix frontend"
     },
     "dependencies": {

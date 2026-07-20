@@ -2,6 +2,7 @@ const multer = require('multer');
 const mailRoutes = require('../routes/index');
 const trackRoutes = require('../routes/track');
 const webhookRoutes = require('../routes/webhookRoutes');
+const transactionalRoutes = require('../routes/transactionalRouter');
 const previewController = require('../controllers/previewController');
 const recipientsController = require('../controllers/recipientsController');
 const exlyAudienceController = require('../controllers/exlyAudienceController');
@@ -124,6 +125,7 @@ function registerRoutes(app) {
 
   app.use('/track', trackRoutes);
   app.use('/webhooks', webhookRoutes);
+  app.use('/api/transactional', transactionalRoutes);
 
   // Audience API (PersonHubView read model — no CoreKnot sync worker)
   app.get('/api/audience/tags', async (req, res) => {

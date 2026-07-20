@@ -20,16 +20,18 @@ function normalizeToList(to) {
     .filter((e) => e && /[^\s@]+@[^\s@]+/.test(e) && !seen.has(e) && seen.add(e));
 }
 
-async function sendViaResend({ to, subject, html, from }) {
+async function sendViaResend({ to, subject, html, from, cc }) {
   if (!resendClient) {
     throw new Error('Resend client not initialized. Set RESEND_API_KEY');
   }
   const recipients = normalizeToList(to);
   if (!recipients.length) throw new Error('No valid recipients');
 
+  const ccList = normalizeToList(cc);
   const response = await resendClient.emails.send({
     from: from || config.systemFromEmail || 'onboarding@resend.dev',
     to: recipients,
+    ...(ccList.length ? { cc: ccList } : {}),
     subject,
     html,
   });
@@ -39,7 +41,7 @@ async function sendViaResend({ to, subject, html, from }) {
   return response;
 }
 
-async function sendViaSmtp({ to, subject, html, from, smtpHost, smtpPort, smtpUser, smtpPass }) {
+async function sendViaSmtp({ to, subject, html, from, cc, smtpHost, smtpPort, smtpUser, smtpPass }) {
   const transporter = nodemailer.createTransport({
     host: smtpHost || 'smtp.gmail.com',
     port: smtpPort || 587,
@@ -50,9 +52,11 @@ async function sendViaSmtp({ to, subject, html, from, smtpHost, smtpPort, smtpUs
   const recipients = normalizeToList(to);
   if (!recipients.length) throw new Error('No valid recipients');
 
+  const ccList = normalizeToList(cc);
   const info = await transporter.sendMail({
     from: from || smtpUser,
     to: recipients.join(', '),
+    ...(ccList.length ? { cc: ccList.join(', ') } : {}),
     subject,
     html,
   });
@@ -68,7 +72,7 @@ async function dispatchEmailPayload({ to, subject, html, from, cc } = {}) {
   // Try Resend first
   if (resendClient && config.resendApiKey) {
     try {
-      const result = await sendViaResend({ to: recipients, subject, html, from });
+      const result = await sendViaResend({ to: recipients, cc, subject, html, from });
       return { provider: 'resend', ...result };
     } catch (err) {
       console.warn('[MailDriver] Resend failed, falling back to SMTP:', err.message);
@@ -80,6 +84,7 @@ async function dispatchEmailPayload({ to, subject, html, from, cc } = {}) {
     try {
       const result = await sendViaSmtp({
         to: recipients,
+        cc,
         subject,
         html,
         from,

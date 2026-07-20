@@ -22,6 +22,7 @@ module.exports = {
   mongoLocalOpenUrl: process.env.MONGO_LOCAL_OPEN_URL || '',
   mongoBackupOpenUrl: process.env.MONGO_BACKUP_OPEN_URL || '',
   holysheetApiKey: process.env.HOLYSHEET_API_KEY || '',
+  coreKnotMailBridgeSecret: process.env.COREKNOT_MAIL_BRIDGE_SECRET || process.env.AUTO_MAILER_INTERNAL_TOKEN || '',
   get holysheetUrl() {
     if (!this.holysheetApiKey) return '';
     return `https://holysheet.soneshjain.com/api/v1/${this.holysheetApiKey}/rows`;
