@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const multer = require('multer');
 const mailRoutes = require('../routes/index');
 const trackRoutes = require('../routes/track');
@@ -15,8 +16,29 @@ const upload = multer({
 });
 
 function registerRoutes(app) {
-  // Health check
-  app.get('/health', (req, res) => res.json({ status: 'ok', service: 'auto-mailer', timestamp: new Date().toISOString() }));
+  // Health check (standalone — no DB required)
+  app.get('/health', (req, res) => {
+    const mongooseStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    res.json({
+      status: 'ok',
+      service: 'auto-mailer',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      db: mongooseStatus,
+      uptime: process.uptime(),
+    });
+  });
+
+  // Root redirect for easy verification
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'Auto-Mailer',
+      description: 'Standalone email campaign and automation service. Referenced by CoreKnot for transactional email dispatch.',
+      version: '1.0.0',
+      docs: '/health',
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   // Mail domain routes
   app.use('/api/mail', mailRoutes);
